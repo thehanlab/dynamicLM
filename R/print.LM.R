@@ -3,7 +3,7 @@
 # -----------------------------------------------------------------------
 print.LM.data.frame <- function(LMdata){
   cat("$LMdata\n")
-  print(head(LMdata$LMdata))
+  print(utils::head(LMdata$LMdata))
   if(nrow(LMdata$LMdata) > 5) cat(paste0(" [ omitted ",nrow(LMdata$LMdata)-5," rows ]\n"))
   cat("\n")
   cat("\n")

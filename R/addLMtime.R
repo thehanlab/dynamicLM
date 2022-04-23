@@ -1,26 +1,28 @@
 # -----------------------------------------------------------------------
-# addLMtime : Add LM-time interations to a dataset that contains a column LM
-# -----------------------------------------------------------------------
-# Input:
-# - LMdata           : An object of class "LM.data.frame", this can be created by running cutLMsuper, or creating a stacked data set and storing it in a list with attributes outcome and w
-# - LMcovars         : List of covariates that are to have a LM interaction
-# - func_covars      : A list of functions to use for interactions between LMs and covariates. If fitting a coxph model, the list has length 1, e.g. list(c(f1,f2,f3)). If fitting a CSC model, the list can have length 1 or length=number of causes, if different interactions are desired for different causes.
-# - func_LMs         : A list of functions to use for transformations of the LMs. Its form is analogous to func_covars.
-# - LM_col           : Character string specifying the column name of the LM value for a data point.
-# -----------------------------------------------------------------------
-# Output:
-# LMdata : An object of class "LM.data.frame" which has the following components:
-# - LMdata: The LM super dataset which now also contains LM time-interactions.
-#           LM interactions with covariates are newly labelled as var_1,...,var_i if length(func_covars) == i and if var was a variable in LMcovars
-#           LM effects are newly labelled as LM_1,...,LM_j if length(func_LMs) == j
-# - w, outcome: (already)
-# - func_covars: as the input
-# - func_LMs: as the input
-# - LMcovars: as the input
-# - allLMcovars: a list of covariates that include LM-time interactions, i.e. if cov was in LMcovars, allLMcovars will contain cov_1, cov_2, ..., cov_i if there are i func_covars interactions
-# - LM_col: as the input
-# -----------------------------------------------------------------------
-addLMtime <- function(LMdata, LMcovars, func_covars, func_LMs, LM_col="LM"){
+#' Add landmarking time interations to a dataset
+#'
+#' @param LMdata An object of class "LM.data.frame".
+#' This can be created by running cutLMsuper, or creating a stacked data set and storing it in a list with attributes outcome, w and end_time
+#' (see cutLMsuper for further description of outcome and w), end_time is the largest landmarking time.
+#' @param LMcovars Vector of strings indicating the columns that are to have a LM interaction
+#' @param func_covars A list of functions to use for interactions between LMs and covariates.
+#' @param func_LMs A list of functions to use for transformations of the landmark times.
+#' @param LM_col Character string specifying the column name that indicates the landmark time point for a row.
+#' @param keep Boolean value to indicate whether or not to keep the columns given by LMcovars without the time interactions or not. Default=FALSE.
+#'
+#' @return An object of class "LM.data.frame" which now also contains LM time-interactions.
+#' For each variable "var" in LMcovars, new columns var_1,...,var_i (length(func_covars) == i) are added. One for each interaction given in func_covars
+#' Transformations of the LM column are added and labelled as LM_1,...,LM_j (length(func_LMs) == j). One column for each interaction given in func_LMs
+#' The object has the following components:
+#' - w, outcome: as the input (obtained from LMdata)
+#' - func_covars: as the input
+#' - func_LMs: as the input
+#' - LMcovars: as the input
+#' - allLMcovars: a list of the new columns added
+#' - LM_col: as the input
+#' @export
+addLMtime <- function(LMdata, LMcovars, func_covars, func_LMs, LM_col="LM",keep=F){
+  # TODO: check LM_col not in func_covars
   data <- LMdata$LMdata
   if (missing(func_covars)){
     # f gives covariate-time interactions
@@ -55,7 +57,10 @@ addLMtime <- function(LMdata, LMcovars, func_covars, func_LMs, LM_col="LM"){
     allLMcovars <- c(allLMcovars, name)
   }
 
-  data <- data %>% select(-all_of(LMcovars))
+  if(!keep){
+    remaining = colnames(data)[! colnames(data)  %in% LMcovars]
+    data <- data[remaining]
+  }
   LMdata$LMdata <- data
 
   LMdata$func_covars <- func_covars
@@ -69,5 +74,5 @@ addLMtime <- function(LMdata, LMcovars, func_covars, func_LMs, LM_col="LM"){
 
 
 head.LM.data.frame <- function(LMdata){
-  print(head(LMdata$LMdata))
+  print(utils::head(LMdata$LMdata))
 }
