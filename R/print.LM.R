@@ -1,6 +1,12 @@
-# -----------------------------------------------------------------------
-# print.LM.data.frame: Print function for object of class LM.data.frame
-# -----------------------------------------------------------------------
+#' Print function for object of class LM.data.frame
+#'
+#' @param LMdata Object of class LM.data.frame
+#'
+#' @return Printed output.
+#' @export
+#'
+#' @examples
+#'
 print.LM.data.frame <- function(LMdata){
   cat("$LMdata\n")
   print(utils::head(LMdata$LMdata))
