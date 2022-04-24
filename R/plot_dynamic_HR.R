@@ -1,20 +1,3 @@
-# ----------------------------------------------------------
-# find_se: Helper function to calculate SE for time varying log HR
-# of the form coef[1] + t*coef[2] + t^2*coef[2] + ..
-# ----------------------------------------------------------
-find_se <- function(t, coefs, covar, func_covars){
-  form <- "x1"
-  if (length(coefs) > 1){
-    for (i in 2:length(coefs)){
-      form <- paste(form, sprintf("%s * %f", paste("x",i,sep=""), func_covars[[i]](t)),sep=" + ")
-    }
-  }
-  form <- paste("~", form)
-  se <- msm::deltamethod(stats::as.formula(form), coefs, covar)
-  return(se)
-}
-
-
 #' Plots the dynamic hazard ratio of a cox or CSC supermodel
 #'
 #' @param superfm An object of class "LMcoxph" or "LMCSC", i.e. a fitted supermodel
@@ -38,6 +21,11 @@ plot_dynamic_HR <- function(superfm, covars, CI=T, cause, end_time, extend=F, si
                             xlab="LM time", ylab="log HR", ylim, ...){
   # TODO: for non-binary variables allow for choice of value (instead of assumed=1)
   fm = superfm$superfm
+
+  if(CI){
+    if (!requireNamespace("msm", quietly = TRUE)) {
+      stop("Package \"msm\" must be installed to use this function.", call. = FALSE)}
+  }
 
   if (missing(covars)){ covars <- superfm$LMcovars }
 
@@ -83,10 +71,9 @@ plot_dynamic_HR <- function(superfm, covars, CI=T, cause, end_time, extend=F, si
         bet_var[i] * func_covars[[i]](x)
       })) # bet0 + bet1*x + bet2*x^2 + ...
     })
-    se <- sapply(t, find_se, bet_var, sig[idx,idx], func_covars)
     if (set_ylim) ylim <- c(min(HR),max(HR))
-
     if(CI){
+      se <- sapply(t, find_se, bet_var, sig[idx,idx], func_covars)
       lower <- HR - 1.96*se
       upper <- HR+ 1.96*se
       if(set_ylim){
