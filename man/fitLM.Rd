@@ -9,7 +9,7 @@ fitLM(formula, LMdata, type = "coxph", method = "breslow", ...)
 \arguments{
 \item{formula}{The formula to be used, remember to include "+cluster(ID)" for the column that indicates the ID of the individual for robust estimates.}
 
-\item{LMdata}{An object of class "LM.data.frame", this can be created by running cutLMsuper and addLMtime}
+\item{LMdata}{An object of class "LMdataframe", this can be created by running cutLMsuper and addLMtime}
 
 \item{type}{"coxph" or "CSC"/"CauseSpecificCox"}
 

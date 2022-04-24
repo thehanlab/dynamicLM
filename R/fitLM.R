@@ -1,7 +1,7 @@
 #' fit a coxph or CSC model to a LM super dataset
 #'
 #' @param formula The formula to be used, remember to include "+cluster(ID)" for the column that indicates the ID of the individual for robust estimates.
-#' @param LMdata  An object of class "LM.data.frame", this can be created by running cutLMsuper and addLMtime
+#' @param LMdata  An object of class "LMdataframe", this can be created by running cutLMsuper and addLMtime
 #' @param type "coxph" or "CSC"/"CauseSpecificCox"
 #' @param method A character string specifying the method for tie handling. Default is "breslow". More information can be found in coxph.
 #' @param ... Arguments given to coxph or CSC.
@@ -13,6 +13,7 @@
 #' - LHS: the LHS of the input formula
 #' - linear.predictors: the vector of linear predictors, one per subject. Note that this vector has not been centered.
 #' - original.landmarks: the LM time point at which prediction was made, one per subject. This has the same order as linear.predictors.
+#' @import survival
 #' @export
 #'
 fitLM <- function(formula, LMdata, type="coxph", method="breslow", ...){
@@ -21,19 +22,23 @@ fitLM <- function(formula, LMdata, type="coxph", method="breslow", ...){
 
   LHS = Reduce(paste, deparse(formula[[2]]))
 
-  if(class(LMdata)!="LM.data.frame"){
-    stop("data must be of type LM.data.frame")
+  if(class(LMdata)!="LMdataframe"){
+    stop("data must be of type LMdataframe")
   }
   data=LMdata$LMdata
   num_preds <- nrow(data)
 
   if(type=="coxph"){
-    superfm <- survival::coxph(formula, data, method=method, ...)
+
+    superfm <- coxph(formula, data, method=method, ...)
     num_causes <- 1
     models <- list(superfm)
     cl <- "LMcoxph"
 
   } else if (type=="CauseSpecificCox" | type=="CSC"){
+    if (!requireNamespace("riskRegression", quietly = TRUE)) {
+      stop("Package \"riskRegression\" must be installed to use this function.", call. = FALSE)}
+
     superfm <- riskRegression::CSC(formula, data, method=method, ...)
     models <- superfm$models
     num_causes <- length(models)
