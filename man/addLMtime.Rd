@@ -7,7 +7,7 @@
 addLMtime(LMdata, LMcovars, func_covars, func_LMs, LM_col = "LM", keep = F)
 }
 \arguments{
-\item{LMdata}{An object of class "LM.data.frame".
+\item{LMdata}{An object of class "LMdataframe".
 This can be created by running cutLMsuper, or creating a stacked data set and storing it in a list with attributes outcome, w and end_time
 (see cutLMsuper for further description of outcome and w), end_time is the largest landmarking time.}
 
@@ -22,7 +22,7 @@ This can be created by running cutLMsuper, or creating a stacked data set and st
 \item{keep}{Boolean value to indicate whether or not to keep the columns given by LMcovars without the time interactions or not. Default=FALSE.}
 }
 \value{
-An object of class "LM.data.frame" which now also contains LM time-interactions.
+An object of class "LMdataframe" which now also contains LM time-interactions.
 For each variable "var" in LMcovars, new columns var_1,...,var_i (length(func_covars) == i) are added. One for each interaction given in func_covars
 Transformations of the LM column are added and labelled as LM_1,...,LM_j (length(func_LMs) == j). One column for each interaction given in func_LMs
 The object has the following components:

@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------
 #' Add landmarking time interations to a dataset
 #'
-#' @param LMdata An object of class "LM.data.frame".
+#' @param LMdata An object of class "LMdataframe".
 #' This can be created by running cutLMsuper, or creating a stacked data set and storing it in a list with attributes outcome, w and end_time
 #' (see cutLMsuper for further description of outcome and w), end_time is the largest landmarking time.
 #' @param LMcovars Vector of strings indicating the columns that are to have a LM interaction
@@ -10,7 +10,7 @@
 #' @param LM_col Character string specifying the column name that indicates the landmark time point for a row.
 #' @param keep Boolean value to indicate whether or not to keep the columns given by LMcovars without the time interactions or not. Default=FALSE.
 #'
-#' @return An object of class "LM.data.frame" which now also contains LM time-interactions.
+#' @return An object of class "LMdataframe" which now also contains LM time-interactions.
 #' For each variable "var" in LMcovars, new columns var_1,...,var_i (length(func_covars) == i) are added. One for each interaction given in func_covars
 #' Transformations of the LM column are added and labelled as LM_1,...,LM_j (length(func_LMs) == j). One column for each interaction given in func_LMs
 #' The object has the following components:
@@ -73,6 +73,3 @@ addLMtime <- function(LMdata, LMcovars, func_covars, func_LMs, LM_col="LM",keep=
 }
 
 
-head.LM.data.frame <- function(LMdata){
-  print(utils::head(LMdata$LMdata))
-}

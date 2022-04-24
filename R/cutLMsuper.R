@@ -56,6 +56,6 @@ cutLMsuper <- function(data, outcome, LMs, w, covs, format = c("wide", "long"), 
     }
   }
   out=list(LMdata=LMdata, outcome=outcome, w=w, end_time=LMs[length(LMs)])
-  class(out)="LM.data.frame"
+  class(out)="LMdataframe"
   return(out)
 }
