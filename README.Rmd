@@ -147,7 +147,7 @@ p1 = predLMrisk(supermodel)
 We can observe calibration. Entering a named list of prediction objects from `predLMrisk` in the first argument allows for comparison between models.  
 
 ```{r quantile-calib}
-method="quantile"
+method="quantile" 
 q=10 
 YLIM=XLIM=c(0,0.2)
 

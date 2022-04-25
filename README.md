@@ -15,10 +15,8 @@ competing risks and left and right censored data.
 You can install the development version of dynLM from
 [GitHub](https://github.com/) with:
 
-    ```R 
     # install.packages("devtools")
-    devtools::install_github("anyafries/dynLM") 
-    ```
+    devtools::install_github("anyafries/dynLM")
 
 ## Example
 
@@ -188,8 +186,8 @@ We can observe calibration. Entering a named list of prediction objects
 from `predLMrisk` in the first argument allows for comparison between
 models.
 
-    method="quantile"
-    q=10
+    method="quantile" 
+    q=10 
     YLIM=XLIM=c(0,0.2)
 
     par(mfrow=c(2,2),pty="s")
