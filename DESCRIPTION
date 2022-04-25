@@ -13,6 +13,7 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
 Depends: 
     prodlim,
+    R (>= 2.10),
     survival
 Imports: 
     data.table,
