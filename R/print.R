@@ -75,7 +75,7 @@ print.LMdataframe <- function(x, ...){
   if("func_covars" %in% names.LMdata){
     cat("$func_covars\n")
     names.fc = names(x$func_covars)
-    for (i in 1:length(x$outcome)){
+    for (i in 1:length(x$func_covars)){
       if (is.null(names.fc[i])) label <- paste0("[[",i,"]]")
       else paste0("$",names.fc[i])
       cat(paste0("$func_covars$",label,"\n"))
@@ -86,7 +86,7 @@ print.LMdataframe <- function(x, ...){
   if("func_LMs" %in% names.LMdata){
     cat("$func_LMs\n")
     names.fc = names(x$func_LMs)
-    for (i in 1:length(x$outcome)){
+    for (i in 1:length(x$func_LMs)){
       if (is.null(names.fc[i])) label <- paste0("[[",i,"]]")
       else paste0("$",names.fc[i])
       cat(paste0("$func_LMs$",label,"\n"))
