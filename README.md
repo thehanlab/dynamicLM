@@ -15,7 +15,7 @@ competing risks and left and right censored data.
 You can install the development version of dynLM from
 [GitHub](https://github.com/) with:
 
-    ``` R 
+    ```R 
     # install.packages("devtools")
     devtools::install_github("anyafries/dynLM") 
     ```
@@ -29,7 +29,6 @@ time-to-event of cancer relapse under 2 competing risks. 3 fixed patient
 bio-markers are given as well as the variable treatment which indicates
 the time at which the patient went off treatment.
 
-    ``` R 
     library(dynLM)
     #> Loading required package: prodlim
     #> Loading required package: survival
@@ -43,7 +42,6 @@ the time at which the patient went off treatment.
     #> 4  1.33150685     3 ID4 68.29863       0       0       0  1.33150685
     #> 5  2.74794521     2 ID5 52.45205       1       0       1  2.74794521
     #> 6  3.16438356     2 ID6 74.30411       0       0       0  3.16438356
-    ``` 
 
 *Note: data can also be input in long-form. The only change is that
 later, the format argument to cutLMsuper will be given as “long”.*

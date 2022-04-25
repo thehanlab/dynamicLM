@@ -148,7 +148,7 @@ We can observe calibration. Entering a named list of prediction objects from `pr
 
 ```{r quantile-calib}
 method="quantile"
-q=10
+q=10 
 YLIM=XLIM=c(0,0.2)
 
 par(mfrow=c(2,2),pty="s")
