@@ -59,7 +59,8 @@ plotRisk <- function(superfm, data, format, LM_col, id_col,
   ## Set up plot params
   if (missing(lwd))
     lwd <- rep(2, NF)
-  if (missing(col)) {col <- 1:NF}
+  if (missing(col))
+    col <- 1:NF
   if (missing(lty))
     lty <- rep(1, NF)
   if (missing(pch))

@@ -22,6 +22,7 @@ plotRisk(
   main,
   xlab,
   ylab,
+  xlim,
   ...
 )
 }
@@ -61,6 +62,8 @@ Default is FALSE. If set to TRUE, risks may be unreliable.}
 \item{xlab}{Label for x-axis}
 
 \item{ylab}{Label for y-axis}
+
+\item{xlim}{Limits for the x-axis}
 
 \item{...}{Additional arguments passed to plot}
 }
