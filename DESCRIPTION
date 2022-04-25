@@ -1,12 +1,11 @@
 Package: dynLM
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Dynamic w-year risk predictions from landmark time points
 Version: 0.1.0
 Authors@R: 
-    person("Jane", "Doe", , "jane@example.com", role = c("aut", "cre"))
+    person("Anya", "Fries", , "afries@stanford.edu", role = c("aut", "cre"))
 Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Description: The goal of dynLM is to provide a simple framework to make dynamic w-year risk predictions from landmark time points, allowing for competing risks and left and right censored data. 
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -25,3 +24,4 @@ Suggests:
     msm,
     pec,
     riskRegression
+LazyData: true
