@@ -19,6 +19,7 @@
 #' @param main Title for the plot
 #' @param xlab Label for x-axis
 #' @param ylab Label for y-axis
+#' @param xlim Limits for the x-axis
 #' @param ... Additional arguments passed to plot
 #'
 #' @return Single plot the absolute w-year risk of individuals
@@ -27,7 +28,7 @@
 plotRisk <- function(superfm, data, format, LM_col, id_col,
                      cause=1, varying,
                      end_time, extend=F, silence=F,
-                     pch,lty,lwd,col,main,xlab,ylab,...){
+                     pch,lty,lwd,col,main,xlab,ylab,xlim,...){
   # TODO: check that wide format works
   # NOTE: have removed a lot of arguments eg lwd
   # TODO: add w
@@ -77,6 +78,8 @@ plotRisk <- function(superfm, data, format, LM_col, id_col,
     xlab <- "LM prediction time"
   if(missing(ylab))
     ylab <- "Risk"
+  if(missing(xlim))
+    xlim <- c(0, end_time)
 
   ## Create plot
   if (format == "long") {
@@ -87,7 +90,9 @@ plotRisk <- function(superfm, data, format, LM_col, id_col,
       idx <- x <= end_time
       x <- x[idx]
       y <- predLMrisk(superfm, data_ind[idx,], x, cause, extend=extend, silence=T)$preds$risk
-      if(i==1) plot(stats::stepfun(x,c(y[1],y)), xlab=xlab, ylab=ylab,main=main,pch=pch[i],lty=lty[i],lwd=lwd[i],col=col[i],...)
+      if(i==1) plot(stats::stepfun(x,c(y[1],y)),
+                    xlab=xlab, ylab=ylab, main=main,
+                    pch=pch[i], lty=lty[i], lwd=lwd[i], col=col[i], xlim=xlim, ...)
       else graphics::lines(stats::stepfun(x,c(y[1],y)),pch=pch[i],lty=lty[i],lwd=lwd[i],col=col[i],...)
     }
     graphics::legend(x = "topright",
