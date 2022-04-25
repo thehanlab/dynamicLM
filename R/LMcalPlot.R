@@ -11,6 +11,7 @@
 #' @param ... Additional arguments to pass to calPlot
 #'
 #' @return List of plots of w-year risk, one entry per prediction/landmark time point
+#' @import prodlim
 #' @export
 #'
 LMcalPlot <- function(preds,cause,tLM,formula,plot=T,main,sub=T,...){
