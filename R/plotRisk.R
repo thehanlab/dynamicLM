@@ -12,6 +12,13 @@
 #' @param extend Argument to allow for risk to be plot at landmark times that are later than the LMs used in model fitting.
 #' Default is FALSE. If set to TRUE, risks may be unreliable.
 #' @param silence Silence the message when end_time > LMs used in fitting the model
+#' @param pch Passed to \code{\link[points]{points}}
+#' @param lty Vector with line style, passed to \code{\link[lines]{lines}}
+#' @param lwd Vector with line widths, passed to \code{\link[lines]{lines}}
+#' @param col Vector with colors, passed to \code{\link[lines]{lines}}
+#' @param main Title for the plot
+#' @param xlab Label for x-axis
+#' @param ylab Label for y-axis
 #' @param ... Additional arguments passed to plot
 #'
 #' @return Single plot the absolute w-year risk of individuals
@@ -20,7 +27,7 @@
 plotRisk <- function(superfm, data, format, LM_col, id_col,
                      cause=1, varying,
                      end_time, extend=F, silence=F,
-                     ...){
+                     pch,lty,lwd,col,main,xlab,ylab,...){
   # TODO: check that wide format works
   # NOTE: have removed a lot of arguments eg lwd
   # TODO: add w
