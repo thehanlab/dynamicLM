@@ -12,10 +12,10 @@
 #' @param extend Argument to allow for risk to be plot at landmark times that are later than the LMs used in model fitting.
 #' Default is FALSE. If set to TRUE, risks may be unreliable.
 #' @param silence Silence the message when end_time > LMs used in fitting the model
-#' @param pch Passed to \code{\link[points]{points}}
-#' @param lty Vector with line style, passed to \code{\link[lines]{lines}}
-#' @param lwd Vector with line widths, passed to \code{\link[lines]{lines}}
-#' @param col Vector with colors, passed to \code{\link[lines]{lines}}
+#' @param pch Passed to points
+#' @param lty Vector with line style
+#' @param lwd Vector with line widths
+#' @param col Vector with colors
 #' @param main Title for the plot
 #' @param xlab Label for x-axis
 #' @param ylab Label for y-axis

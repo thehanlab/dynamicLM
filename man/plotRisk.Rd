@@ -15,6 +15,13 @@ plotRisk(
   end_time,
   extend = F,
   silence = F,
+  pch,
+  lty,
+  lwd,
+  col,
+  main,
+  xlab,
+  ylab,
   ...
 )
 }
@@ -40,6 +47,20 @@ associated with the time-varying covariate(s); only needed if format="long"}
 Default is FALSE. If set to TRUE, risks may be unreliable.}
 
 \item{silence}{Silence the message when end_time > LMs used in fitting the model}
+
+\item{pch}{Passed to points}
+
+\item{lty}{Vector with line style}
+
+\item{lwd}{Vector with line widths}
+
+\item{col}{Vector with colors}
+
+\item{main}{Title for the plot}
+
+\item{xlab}{Label for x-axis}
+
+\item{ylab}{Label for y-axis}
 
 \item{...}{Additional arguments passed to plot}
 }
