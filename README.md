@@ -15,8 +15,10 @@ competing risks and left and right censored data.
 You can install the development version of dynLM from
 [GitHub](https://github.com/) with:
 
+    ``` R 
     # install.packages("devtools")
-    devtools::install_github("anyafries/dynLM")
+    devtools::install_github("anyafries/dynLM") 
+    ```
 
 ## Example
 
@@ -27,9 +29,7 @@ time-to-event of cancer relapse under 2 competing risks. 3 fixed patient
 bio-markers are given as well as the variable treatment which indicates
 the time at which the patient went off treatment.
 
-*Note: data can also be input in long-form. The only change is that
-later, the format argument to cutLMsuper will be given as “long”.*
-
+    ``` R 
     library(dynLM)
     #> Loading required package: prodlim
     #> Loading required package: survival
@@ -43,6 +43,10 @@ later, the format argument to cutLMsuper will be given as “long”.*
     #> 4  1.33150685     3 ID4 68.29863       0       0       0  1.33150685
     #> 5  2.74794521     2 ID5 52.45205       1       0       1  2.74794521
     #> 6  3.16438356     2 ID6 74.30411       0       0       0  3.16438356
+    ``` 
+
+*Note: data can also be input in long-form. The only change is that
+later, the format argument to cutLMsuper will be given as “long”.*
 
 ### Build a super data set
 
@@ -58,10 +62,10 @@ We will produce 5-year dynamic predictions of relapse (`w`). Landmark
 time points (`LMs`) are set as every year between 0 and 3 years to train
 the model.
 
-We will consider constant and linear landmark interactions
-(`func_covars`) with the covariates and linear effects from the
-landmarks themselves (`func_LMs`). The covariates that should have these
-landmark interactions are given in `LMcovars`.
+We will consider constant and linear landmark interactions with the
+covariates (given in `func_covars`) and linear effects from the
+landmarks (`func_LMs`). The covariates that should have these landmark
+interactions are given in `LMcovars`.
 
     w <- 5
     LMs <- seq(0,3,by=1)
@@ -81,12 +85,12 @@ model. We print intermediate steps for illustration. There are three
 steps:
 
 1.  `cutLMsuper`: stacks the landmark data sets
-2.  An optional additional update for more complex columns that vary
+2.  An **optional** additional update for more complex columns that vary
     with landmark-times: For example, here we update the value of age.
 3.  `addLMtime`: Landmark time interactions are added
 
-Note that these return an object of class `LMdataframe`. This has an
-item `LMdata` which contains the dataset itself.
+*Note that these return an object of class `LMdataframe`. This has an
+item `LMdata` which contains the dataset itself.*
 
     # Stack landmark datasets
     LMdata <- cutLMsuper(relapse, outcome, LMs, w, covs, format="wide")

@@ -33,14 +33,16 @@ devtools::install_github("anyafries/dynLM")
 
 This is a basic example which shows you how to use dynLM to make dynamic predictions and check calibration and discrimination metrics. First, we use the wide-form example data set given in the package. This gives the time-to-event of cancer relapse under 2 competing risks. 3 fixed patient bio-markers are given as well as the variable treatment which indicates the time at which the patient went off treatment.
 
-*Note: data can also be input in long-form. The only change is that later, the format argument to cutLMsuper will be given as "long".*
 
-```{r data}
+
+```{R}
 library(dynLM)
 
 data(relapse)
 head(relapse)
 ```
+
+*Note: data can also be input in long-form. The only change is that later, the format argument to cutLMsuper will be given as "long".*
 
 ### Build a super data set
 
@@ -54,7 +56,7 @@ covs = list(fixed=c("ID","age","marker1","marker2","marker3"),
 
 We will produce 5-year dynamic predictions of relapse (`w`). Landmark time points (`LMs`) are set as every year between 0 and 3 years to train the model. 
 
-We will consider constant and linear landmark interactions (`func_covars`) with the covariates and linear effects from the landmarks themselves (`func_LMs`). The covariates that should have these landmark interactions are given in `LMcovars`.
+We will consider constant and linear landmark interactions with the covariates (given in `func_covars`) and linear effects from the landmarks (`func_LMs`). The covariates that should have these landmark interactions are given in `LMcovars`.
 
 ```{r w}
 w <- 5
@@ -76,10 +78,10 @@ With this, we are ready to build the super data set that will train the model. W
 There are three steps: 
 
 1. `cutLMsuper`: stacks the landmark data sets
-2. An optional additional update for more complex columns that vary with landmark-times: For example, here we update the value of age. 
+2. An **optional** additional update for more complex columns that vary with landmark-times: For example, here we update the value of age. 
 3. `addLMtime`: Landmark time interactions are added 
 
-Note that these return an object of class `LMdataframe`. This has an item `LMdata` which contains the dataset itself. 
+*Note that these return an object of class `LMdataframe`. This has an item `LMdata` which contains the dataset itself.* 
 
 ```{r super-data-set}
 # Stack landmark datasets
@@ -189,3 +191,4 @@ plotRisk(supermodel, dat,
             format="long", LM_col = "LM", id_col="ID", cause=1, ylim=c(0, 0.2))
 
 ```
+
