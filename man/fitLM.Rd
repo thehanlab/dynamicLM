@@ -4,7 +4,19 @@
 \alias{fitLM}
 \title{fit a coxph or CSC model to a LM super dataset}
 \usage{
-fitLM(formula, LMdata, type = "coxph", method = "breslow", ...)
+fitLM(
+  formula,
+  LMdata,
+  type = "coxph",
+  method = "breslow",
+  func_covars,
+  func_LMs,
+  LM_col,
+  outcome,
+  w,
+  LMcovars,
+  ...
+)
 }
 \arguments{
 \item{formula}{The formula to be used, remember to include "+cluster(ID)" for the column that indicates the ID of the individual for robust estimates.}
@@ -14,6 +26,18 @@ fitLM(formula, LMdata, type = "coxph", method = "breslow", ...)
 \item{type}{"coxph" or "CSC"/"CauseSpecificCox"}
 
 \item{method}{A character string specifying the method for tie handling. Default is "breslow". More information can be found in coxph.}
+
+\item{func_covars}{A list of functions to use for interactions between LMs and covariates.}
+
+\item{func_LMs}{A list of functions to use for transformations of the landmark times.}
+
+\item{LM_col}{Character string specifying the column name that indicates the landmark time point for a row.}
+
+\item{outcome}{List with items time and status, containing character strings identifying the names of time and status variables, respectively, of the survival outcome}
+
+\item{w}{Scalar, the value of the prediction window (ie predict w-year/other time period risk from the LM points)}
+
+\item{LMcovars}{Vector of strings indicating the columns that are to have a LM interaction}
 
 \item{...}{Arguments given to coxph or CSC.}
 }
