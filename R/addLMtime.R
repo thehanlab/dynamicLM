@@ -22,7 +22,9 @@
 #' - LM_col: as the input
 #' @export
 addLMtime <- function(LMdata, LMcovars, func_covars, func_LMs, LM_col="LM",keep=F){
-  # TODO: check LM_col not in func_covars
+  if (LM_col %in% func_covars){
+    stop(paste0("arg LM_col (given as ",LM_col,") should not be in arg func_covars."))
+  }
   data <- LMdata$LMdata
   if (missing(func_covars)){
     # f gives covariate-time interactions

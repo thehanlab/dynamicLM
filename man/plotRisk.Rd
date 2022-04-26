@@ -38,7 +38,7 @@ associated with the time-varying covariate(s); only needed if format="long"}
 
 \item{id_col}{Character string specifying the column name in data containing the subject id; only needed if format="long"}
 
-\item{cause}{The cause we are looking at, only needed if considering competing risks}
+\item{cause}{The cause we are looking at if considering competing risks}
 
 \item{varying}{Character string specifying column name in the data containing time-varying covariates; only needed if format="wide"}
 
