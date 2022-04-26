@@ -16,6 +16,7 @@
 #'
 LMcalPlot <- function(preds,cause,tLM,formula,plot=T,main,sub=T,...){
   # TODO: Add option to show AUCt, Brier on plot
+  # TODO: check data+formula+times+w for all preds is the same
 
   if (!requireNamespace("pec", quietly = TRUE)) {
     stop("Package \"pec\" must be installed to use function LMcalPlot.", call. = FALSE)}

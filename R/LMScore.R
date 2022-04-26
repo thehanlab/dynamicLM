@@ -15,7 +15,7 @@
 #'
 LMScore <- function(preds,formula,metrics=c("auc","brier"),cause,tLM, ...){
   # TODO: check data+formula+times+w for all preds is the same
-  # TODO: check times option (like in LMcalPlot)
+
   if (!requireNamespace("data.table", quietly = TRUE)) {
     stop("Package \"data.table\" must be installed to use function LMScore.", call. = FALSE)}
   if (!requireNamespace("riskRegression", quietly = TRUE)) {

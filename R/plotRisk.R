@@ -31,6 +31,7 @@ plotRisk <- function(superfm, data, format, LM_col, id_col,
                      pch,lty,lwd,col,main,xlab,ylab,xlim,...){
   # TODO: check that wide format works
   # TODO: add w
+
   if(format=="long"){
     if(missing(id_col)) stop("argument 'id_col' should be specified for long format data")
     if(missing(LM_col)) stop("argument 'LM_col' should be specified for long format data")

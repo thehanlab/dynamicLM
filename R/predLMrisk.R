@@ -21,6 +21,8 @@ predLMrisk <- function(superfm, newdata, tLM, cause, extend=F, silence=F)
 {
   # TODO: allow for different prediction window than w (with a warning)
   # TODO: check superfm/args are correct = that newdata contains correct covars
+  # TODO: allow for inputting a fitted model with additional arguments (like fitLM)
+
   func_covars <- superfm$func_covars
   func_LM <- superfm$func_LM
   w <- superfm$w
