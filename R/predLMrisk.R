@@ -30,13 +30,15 @@ predLMrisk <- function(superfm, newdata, tLM, cause, extend=F, silence=F)
   if (type == "coxph") {
     models <- list(fm)
     num_causes <- 1
-    if (!missing(cause)){stop("No cause should be specified for a coxph model.")}
+    if (!missing(cause) ){
+      if(!is.null(cause)) stop("No cause should be specified for a coxph model.")}
 
   } else if (type == "CauseSpecificCox" | type =="CSC") {
     models <- fm$models
     num_causes <- length(models)
 
-    if (missing(cause)) cause <- as.numeric(fm$theCause)
+    if (missing(cause)) { cause <- as.numeric(fm$theCause)
+    } else if (is.null(cause)) { cause <- as.numeric(fm$theCause) }
     if (length(cause) > 1) stop(paste0("Can only predict one cause. Provided are: ", paste(cause, collapse = ", "), sep = ""))
     if (!(cause %in% fm$causes)) stop("Error in cause. Not one of the causes in the model.")
 

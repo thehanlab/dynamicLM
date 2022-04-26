@@ -6,7 +6,7 @@
 #' @param LM_col Character string specifying the column name in data containing the (running) time variable
 #' associated with the time-varying covariate(s); only needed if format="long"
 #' @param id_col Character string specifying the column name in data containing the subject id; only needed if format="long"
-#' @param cause The cause we are looking at, only needed if considering competing risks
+#' @param cause The cause we are looking at if considering competing risks
 #' @param varying Character string specifying column name in the data containing time-varying covariates; only needed if format="wide"
 #' @param end_time Final time point to plot risk
 #' @param extend Argument to allow for risk to be plot at landmark times that are later than the LMs used in model fitting.
@@ -26,11 +26,10 @@
 #' @export
 #'
 plotRisk <- function(superfm, data, format, LM_col, id_col,
-                     cause=1, varying,
+                     cause, varying,
                      end_time, extend=F, silence=F,
                      pch,lty,lwd,col,main,xlab,ylab,xlim,...){
   # TODO: check that wide format works
-  # NOTE: have removed a lot of arguments eg lwd
   # TODO: add w
   if(format=="long"){
     if(missing(id_col)) stop("argument 'id_col' should be specified for long format data")
@@ -54,6 +53,13 @@ plotRisk <- function(superfm, data, format, LM_col, id_col,
   else if (end_time > superfm$end_time & extend){
     if(!silence) warning(paste0("NOTE: arg end_time (=",end_time,") is later than the last LM used in model fitting (=",superfm$end_time,")",
                                 "\nResults after time ",superfm$end_time," may be unreliable."))
+  }
+  type <- superfm$type
+  if (type == "coxph") {
+    if (!missing(cause) ){ stop("No cause should be specified for a coxph model.")}
+    cause <- NULL
+  } else if (type == "CauseSpecificCox" | type =="CSC") {
+    if (missing(cause)) { cause <- NULL }
   }
 
   ## Set up plot params

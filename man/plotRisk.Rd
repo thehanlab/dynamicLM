@@ -10,7 +10,7 @@ plotRisk(
   format,
   LM_col,
   id_col,
-  cause = 1,
+  cause,
   varying,
   end_time,
   extend = F,
