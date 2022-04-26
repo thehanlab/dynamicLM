@@ -50,15 +50,17 @@ fitLM <- function(formula, LMdata, type="coxph", method="breslow", ...){
   func_LMs=LMdata$func_LMs
   original.landmarks=LMdata$LMdata[[LMdata$LM_col]]
 
-  linear.predictors <- sapply(1:num_preds, function(i){
-    sapply(1:num_causes, function(c) {
+  linear.predictors <-
+    t(sapply(1:num_causes, function(c) {
       coefs <- models[[c]]$coefficients
-      sum(
-        sapply(names(coefs),
-               function(coef_name){ coefs[coef_name] * data[i,coef_name] })
-      )
-    })
-  })
+      df <- data[,names(coefs)]
+      rowSums(
+        data.frame(mapply(`*`,df,coefs))
+        )
+      })
+    )
+
+
 
   out=list(superfm=superfm,
            type=type,
