@@ -59,6 +59,7 @@ fitLM <- function(formula, LMdata, type="coxph", method="breslow",
     LMcovars <- LMdata$LMcovars
     allLMcovars <- LMdata$allLMcovars
   }
+  LMcovars <- intersect(sub("_[^_]+$", "", all.vars(formula[[3]])), LMcovars)
 
   num_preds <- nrow(data)
 

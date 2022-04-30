@@ -65,10 +65,9 @@ plot_dynamic_HR <- function(superfm, covars, CI=T, cause, end_time, extend=F, si
   for (i in 1:length(covars)){
     idx <- startsWith(names(bet), covars[i])
     bet_var <- bet[idx]
-
     HR <- sapply(t, function(x){ # eval HR over times x in t
-      sum(sapply(1:length(bet_var), function(i){
-        bet_var[i] * func_covars[[i]](x)
+      sum(sapply(1:length(bet_var), function(j){
+        bet_var[j] * func_covars[[j]](x)
       })) # bet0 + bet1*x + bet2*x^2 + ...
     })
     if (set_ylim) ylim <- c(min(HR),max(HR))
