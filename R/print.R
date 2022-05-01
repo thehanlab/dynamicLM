@@ -167,3 +167,42 @@ print.LMScore <- function(x,digits=3,...){
     message(paste0("NOTE: Predictions are made at time tLM for ",x$w,"-year risk"))
   }
 }
+
+#' Print function for object of class LMCSC
+#'
+#' @param x Object of class LMCSC
+#' @param ... Arguments passed to print.
+#'
+#' @return Printed output.
+#' @export
+#'
+print.LMCSC <- function(x, ...) {
+  cat(paste0("Landmark cause-specific cox super model: \n* fit for dynamic ",x$w,"-year prediction\n\n"))
+  cat("$superfm\n")
+  num_causes <- length(x$superfm$causes)
+  for (i in 1:num_causes){
+    cat(paste0("----------> Cause: ",i,"\n"))
+    cox_model = x$superfm$models[[i]]
+    cox_model$call = NULL
+    print(cox_model)
+    cat("\n\n")
+  }
+}
+
+
+#' Print function for object of class LMcoxph
+#'
+#' @param x Object of class LMcoxph
+#' @param ... Arguments passed to print.
+#'
+#' @return Printed output.
+#' @export
+#'
+print.LMcoxph <- function(x, ...) {
+  cat(paste0("Landmark cox super model, fit for dynamic ",x$w,"-year prediction\n\n"))
+  cat("$superfm\n")
+
+  cox_model = x$superfm
+  cox_model$call = NULL
+  print(cox_model)
+}
