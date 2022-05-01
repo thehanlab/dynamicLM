@@ -1,6 +1,6 @@
 #' Plots the absolute w-year risk of individuals for different LM points for an event of interest within a window
 #'
-#' @param superfm Fitted LM super model
+#' @param supermodel Fitted LM super model
 #' @param data Data frame of individuals from which to plot risk
 #' @param format Character string specifying whether the data are in wide (default) or in long format
 #' @param LM_col Character string specifying the column name in data containing the (running) time variable
@@ -25,7 +25,7 @@
 #' @return Single plot the absolute w-year risk of individuals
 #' @export
 #'
-plotRisk <- function(superfm, data, format, LM_col, id_col,
+plotRisk <- function(supermodel, data, format, LM_col, id_col,
                      cause, varying,
                      end_time, extend=F, silence=F,
                      pch,lty,lwd,col,main,xlab,ylab,xlim,...){
@@ -44,18 +44,18 @@ plotRisk <- function(superfm, data, format, LM_col, id_col,
     NF <- nrow(data)
   } else {stop("format must be wide or long.")}
 
-  if (missing(end_time)) end_time <- superfm$end_time
-  else if (end_time > superfm$end_time & !extend){
-    if(!silence) message(paste0("NOTE: arg end_time (=",end_time,") is later than the last LM used in model fitting (=",superfm$end_time,")",
-                                "\nand has been set back to the last LM used in model fitting. (=",superfm$end_time,")",
-                                "\nIf you wish to still plot until ",end_time, ", set arg extend=T but note that results after time ",superfm$end_time," may be unreliable."))
-    end_time <- superfm$end_time
+  if (missing(end_time)) end_time <- supermodel$end_time
+  else if (end_time > supermodel$end_time & !extend){
+    if(!silence) message(paste0("NOTE: arg end_time (=",end_time,") is later than the last LM used in model fitting (=",supermodel$end_time,")",
+                                "\nand has been set back to the last LM used in model fitting. (=",supermodel$end_time,")",
+                                "\nIf you wish to still plot until ",end_time, ", set arg extend=T but note that results after time ",supermodel$end_time," may be unreliable."))
+    end_time <- supermodel$end_time
   }
-  else if (end_time > superfm$end_time & extend){
-    if(!silence) warning(paste0("NOTE: arg end_time (=",end_time,") is later than the last LM used in model fitting (=",superfm$end_time,")",
-                                "\nResults after time ",superfm$end_time," may be unreliable."))
+  else if (end_time > supermodel$end_time & extend){
+    if(!silence) warning(paste0("NOTE: arg end_time (=",end_time,") is later than the last LM used in model fitting (=",supermodel$end_time,")",
+                                "\nResults after time ",supermodel$end_time," may be unreliable."))
   }
-  type <- superfm$type
+  type <- supermodel$type
   if (type == "coxph") {
     if (!missing(cause) ){ stop("No cause should be specified for a coxph model.")}
     cause <- NULL
@@ -81,7 +81,7 @@ plotRisk <- function(superfm, data, format, LM_col, id_col,
   if (length(pch) < NF)
     pch <- rep(pch, NF)
   if(missing(main))
-    main <- paste0(superfm$w,"-year dynamic risk prediction")
+    main <- paste0(supermodel$w,"-year dynamic risk prediction")
   if(missing(xlab))
     xlab <- "LM prediction time"
   if(missing(ylab))
@@ -97,7 +97,7 @@ plotRisk <- function(superfm, data, format, LM_col, id_col,
       x <- data_ind[[LM_col]]
       idx <- x <= end_time
       x <- x[idx]
-      y <- predLMrisk(superfm, data_ind[idx,], x, cause, extend=extend, silence=T)$preds$risk
+      y <- predLMrisk(supermodel, data_ind[idx,], x, cause, extend=extend, silence=T)$preds$risk
       if(i==1) plot(stats::stepfun(x,c(y[1],y)),
                     xlab=xlab, ylab=ylab, main=main,
                     pch=pch[i], lty=lty[i], lwd=lwd[i], col=col[i], xlim=xlim, ...)
@@ -115,7 +115,7 @@ plotRisk <- function(superfm, data, format, LM_col, id_col,
     ## covs not defined... need to redo
 
     # if (is.null(end_time)) end_time = max(data[[outcome$time]])
-    # time_col=superfm$outcome$time
+    # time_col=supermodel$outcome$time
     #
     # for (row in 1:NF){
     #   ind = data[row,]
@@ -129,7 +129,7 @@ plotRisk <- function(superfm, data, format, LM_col, id_col,
     #   }
     #
     #   y <- sapply(1:nrow(ind), function(row) {
-    #     predLMrisk(superfm,  ind[row,], x[row], extend=extend, silence=T)
+    #     predLMrisk(supermodel,  ind[row,], x[row], extend=extend, silence=T)
     #   })
     #
     #   if (t1!=end_time){

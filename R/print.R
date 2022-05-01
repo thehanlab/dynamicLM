@@ -178,11 +178,11 @@ print.LMScore <- function(x,digits=3,...){
 #'
 print.LMCSC <- function(x, ...) {
   cat(paste0("Landmark cause-specific cox super model: \n* fit for dynamic ",x$w,"-year prediction\n\n"))
-  cat("$superfm\n")
-  num_causes <- length(x$superfm$causes)
+  cat("$model\n")
+  num_causes <- length(x$model$causes)
   for (i in 1:num_causes){
     cat(paste0("----------> Cause: ",i,"\n"))
-    cox_model = x$superfm$models[[i]]
+    cox_model = x$model$models[[i]]
     cox_model$call = NULL
     print(cox_model)
     cat("\n\n")
@@ -199,10 +199,10 @@ print.LMCSC <- function(x, ...) {
 #' @export
 #'
 print.LMcoxph <- function(x, ...) {
-  cat(paste0("Landmark cox super model, fit for dynamic ",x$w,"-year prediction\n\n"))
-  cat("$superfm\n")
+  cat(paste0("Landmark cox super model: \n* fit for dynamic ",x$w,"-year prediction\n\n"))
+  cat("$model\n")
 
-  cox_model = x$superfm
+  cox_model = x$model
   cox_model$call = NULL
   print(cox_model)
 }

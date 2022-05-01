@@ -1,6 +1,6 @@
 #' Plots the dynamic hazard ratio of a cox or CSC supermodel
 #'
-#' @param superfm An object of class "LMcoxph" or "LMCSC", i.e. a fitted supermodel
+#' @param supermodel An object of class "LMcoxph" or "LMCSC", i.e. a fitted supermodel
 #' @param covars Vector of strings indicating the variables to plot the HR of
 #' (note these must be given without time interaction label, for e.g., as in LMcovars)
 #' @param CI Include confidence intervals or not, default is TRUE
@@ -17,44 +17,44 @@
 #' @return Plots for each variable in covars showing the dynamic hazard ratio
 #' @export
 #'
-plot_dynamic_HR <- function(superfm, covars, CI=T, cause, end_time, extend=F, silence=F,
+plot_dynamic_HR <- function(supermodel, covars, CI=T, cause, end_time, extend=F, silence=F,
                             xlab="LM time", ylab="log HR", ylim, ...){
   # TODO: for non-binary variables allow for choice of value (instead of assumed=1)
-  fm = superfm$superfm
+  fm = supermodel$model
 
   if(CI){
     if (!requireNamespace("msm", quietly = TRUE)) {
       stop("Package \"msm\" must be installed to use this function.", call. = FALSE)}
   }
 
-  if (missing(covars)){ covars <- superfm$LMcovars }
+  if (missing(covars)){ covars <- supermodel$LMcovars }
 
   if (missing(end_time)){
-    end_time <- superfm$end_time
+    end_time <- supermodel$end_time
 
-  } else if (end_time > superfm$end_time & !extend){
-    if (!silence) message(paste0("NOTE: arg end_time (=",end_time,") is later than the last LM used in model fitting (=",superfm$end_time,")",
-                                 "\nand has been set back to the last LM used in model fitting. (=",superfm$end_time,")",
-                                 "\nIf you wish to still plot until ",end_time, ", set arg extend=T but note that results after time ",superfm$end_time," may be unreliable."))
-    end_time <- superfm$end_time
+  } else if (end_time > supermodel$end_time & !extend){
+    if (!silence) message(paste0("NOTE: arg end_time (=",end_time,") is later than the last LM used in model fitting (=",supermodel$end_time,")",
+                                 "\nand has been set back to the last LM used in model fitting. (=",supermodel$end_time,")",
+                                 "\nIf you wish to still plot until ",end_time, ", set arg extend=T but note that results after time ",supermodel$end_time," may be unreliable."))
+    end_time <- supermodel$end_time
 
-  } else if (end_time > superfm$end_time & extend){
-    if (!silence) warning(paste0("NOTE: arg end_time (=",end_time,") is later than the last LM used in model fitting (=",superfm$end_time,")",
-                                 "\nResults after time ",superfm$end_time," may be unreliable."))
+  } else if (end_time > supermodel$end_time & extend){
+    if (!silence) warning(paste0("NOTE: arg end_time (=",end_time,") is later than the last LM used in model fitting (=",supermodel$end_time,")",
+                                 "\nResults after time ",supermodel$end_time," may be unreliable."))
   }
 
-  if (superfm$type == "coxph") {
+  if (supermodel$type == "coxph") {
     if (!missing(cause)) {stop("no cause should be input for coxph supermodels.")}
     bet <- fm$coefficients
-    func_covars <- superfm$func_covars
+    func_covars <- supermodel$func_covars
     if(CI){ sig <- stats::vcov(fm) }
 
-  } else if (superfm$type == "CauseSpecificCox" | superfm$type == "CSC") {
+  } else if (supermodel$type == "CauseSpecificCox" | supermodel$type == "CSC") {
     if (missing(cause)) { cause <- as.numeric(fm$theCause) }
     if (length(cause) > 1) stop(paste0("Can only predict one cause. Provided are: ", paste(cause, collapse = ", "), sep = ""))
 
     bet <- fm$models[[cause]]$coefficients
-    func_covars <- superfm$func_covars
+    func_covars <- supermodel$func_covars
 
     if(CI){ sig <- stats::vcov(fm$models[[cause]]) }
   }

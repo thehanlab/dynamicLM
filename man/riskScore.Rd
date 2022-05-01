@@ -4,10 +4,10 @@
 \alias{riskScore}
 \title{Calcutes dynamic risk score at a time for an individual (helper to predLMrisk)}
 \usage{
-riskScore(fm, tLM, data, func_covars, func_LMs)
+riskScore(model, tLM, data, func_covars, func_LMs)
 }
 \arguments{
-\item{fm}{Fitted super model, of class "LMCSC" or "LMcox"}
+\item{model}{A coxph object}
 
 \item{tLM}{Landmarking time point at which to calculate risk score (time at which the prediction is made)}
 

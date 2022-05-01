@@ -13,7 +13,7 @@
 #' @param ... Arguments given to coxph or CSC.
 #'
 #' @return An object of class "LMcoxph" or "LMCSC" with components:
-#' - superfm: fitted model
+#' - model: fitted model
 #' - type: as input
 #' - w, func_covars, func_LMs, LMcovars, allLMcovars, outcome: as in LMdata
 #' - LHS: the LHS of the input formula
@@ -91,7 +91,7 @@ fitLM <- function(formula, LMdata, type="coxph", method="breslow",
       })
     )
 
-  out=list(superfm=superfm,
+  out=list(model=superfm,
            type=type,
            w=w,
            end_time=end_time,

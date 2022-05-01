@@ -44,7 +44,7 @@ fitLM(
 \value{
 An object of class "LMcoxph" or "LMCSC" with components:
 \itemize{
-\item superfm: fitted model
+\item model: fitted model
 \item type: as input
 \item w, func_covars, func_LMs, LMcovars, allLMcovars, outcome: as in LMdata
 \item LHS: the LHS of the input formula

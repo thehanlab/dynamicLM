@@ -5,7 +5,7 @@
 \title{Plots the dynamic hazard ratio of a cox or CSC supermodel}
 \usage{
 plot_dynamic_HR(
-  superfm,
+  supermodel,
   covars,
   CI = T,
   cause,
@@ -19,7 +19,7 @@ plot_dynamic_HR(
 )
 }
 \arguments{
-\item{superfm}{An object of class "LMcoxph" or "LMCSC", i.e. a fitted supermodel}
+\item{supermodel}{An object of class "LMcoxph" or "LMCSC", i.e. a fitted supermodel}
 
 \item{covars}{Vector of strings indicating the variables to plot the HR of
 (note these must be given without time interaction label, for e.g., as in LMcovars)}

@@ -1,6 +1,6 @@
 #' Calculate w-year risk from a landmark time point
 #'
-#' @param superfm fitted landmarking supermodel
+#' @param supermodel fitted landmarking supermodel
 #' @param newdata dataframe of individuals to make predictions for. Must contain the original covariates (i.e., without landmark interaction)
 #' @param tLM time points at which to predict risk of w more years
 #' Note tLM must be one value for newdata or must have the same length as the number of rows of newdata
@@ -18,17 +18,17 @@
 #' @import survival
 #' @export
 #'
-predLMrisk <- function(superfm, newdata, tLM, cause, extend=F, silence=F, complete=T)
+predLMrisk <- function(supermodel, newdata, tLM, cause, extend=F, silence=F, complete=T)
 {
   # TODO: allow for different prediction window than w (with a warning)
-  # TODO: check superfm/args are correct = that newdata contains correct covars => check that names of newdata incl. in LMcovars
+  # TODO: check supermodel/args are correct = that newdata contains correct covars => check that names of newdata incl. in LMcovars
   # TODO: allow for inputting a fitted model with additional arguments (like fitLM)
 
-  func_covars <- superfm$func_covars
-  func_LM <- superfm$func_LM
-  w <- superfm$w
-  fm <- superfm$superfm
-  type <- superfm$type
+  func_covars <- supermodel$func_covars
+  func_LM <- supermodel$func_LM
+  w <- supermodel$w
+  fm <- supermodel$model
+  type <- supermodel$type
 
   if (type == "coxph") {
     models <- list(fm)
@@ -63,14 +63,14 @@ predLMrisk <- function(superfm, newdata, tLM, cause, extend=F, silence=F, comple
     }
 
     ## Check prediction times match with LMs used in training
-    if (max(tLM) > superfm$end_time & !extend){
+    if (max(tLM) > supermodel$end_time & !extend){
       stop(paste0("Landmark/prediction time points tLM contains values later than the last LM used in model fitting
-                (last LM used in model fitting=",superfm$end_time," and max tLM value=",max(tLM),").
+                (last LM used in model fitting=",supermodel$end_time," and max tLM value=",max(tLM),").
                 If you wish to still make predictions at these times, set arg extend=T but note that results may be unreliable."))
     }
-    else if (max(tLM) > superfm$end_time & extend){
-      if (!silence) message(paste0("NOTE:landmark/prediction time points tLM contains values later (max value=",max(tLM),") than the last LM used in model fitting (=",superfm$end_time,").",
-                                   "\nPredictions at times after ",superfm$end_time," may be unreliable."))
+    else if (max(tLM) > supermodel$end_time & extend){
+      if (!silence) message(paste0("NOTE:landmark/prediction time points tLM contains values later (max value=",max(tLM),") than the last LM used in model fitting (=",supermodel$end_time,").",
+                                   "\nPredictions at times after ",supermodel$end_time," may be unreliable."))
     }
     ## Check prediction times & newdata given are coherent with each other
     num_preds <- nrow(newdata)
@@ -96,8 +96,8 @@ predLMrisk <- function(superfm, newdata, tLM, cause, extend=F, silence=F, comple
   } else {
     ## Get risk scores
     ## Note that linear predictors are centered, so need to un-center them for correct comparison.
-    tLM <- superfm$original.landmarks
-    risks <- superfm$linear.predictors
+    tLM <- supermodel$original.landmarks
+    risks <- supermodel$linear.predictors
     num_preds <- ncol(risks)
     # sanity check
     if (length(tLM) != num_preds){ stop("Error in newdata or tLM. Must have length(tLM) == nrow(newdata) or tLM be one landmarking point.") }
@@ -160,7 +160,7 @@ predLMrisk <- function(superfm, newdata, tLM, cause, extend=F, silence=F, comple
     data = data[idx,]
   }
 
-  out = list(preds=preds, w=w, type=type, LHS=superfm$LHS, data=data, cause=cause)
+  out = list(preds=preds, w=w, type=type, LHS=supermodel$LHS, data=data, cause=cause)
   class(out) = "LMpred"
   return(out)
 }

@@ -4,10 +4,18 @@
 \alias{predLMrisk}
 \title{Calculate w-year risk from a landmark time point}
 \usage{
-predLMrisk(superfm, newdata, tLM, cause, extend = F, silence = F, complete = T)
+predLMrisk(
+  supermodel,
+  newdata,
+  tLM,
+  cause,
+  extend = F,
+  silence = F,
+  complete = T
+)
 }
 \arguments{
-\item{superfm}{fitted landmarking supermodel}
+\item{supermodel}{fitted landmarking supermodel}
 
 \item{newdata}{dataframe of individuals to make predictions for. Must contain the original covariates (i.e., without landmark interaction)}
 
