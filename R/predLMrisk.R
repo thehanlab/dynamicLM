@@ -9,6 +9,7 @@
 #' @param extend Argument to allow for predictions at landmark times that are greater than those used in model fitting.
 #' Default is FALSE. If set to TRUE, predictions may be unreliable
 #' @param silence Silence the warning message when extend is set to TRUE
+#' @param complete Only make predictions for data entries with non-NA entries (i.e., non-NA predictions)
 #'
 #' @return An object of class "LMpred" with components:
 #' - preds: a dataframe with columns LM and risk, each entry corresponds to one individual and prediction time point (landmark)
@@ -17,10 +18,10 @@
 #' @import survival
 #' @export
 #'
-predLMrisk <- function(superfm, newdata, tLM, cause, extend=F, silence=F)
+predLMrisk <- function(superfm, newdata, tLM, cause, extend=F, silence=F, complete=T)
 {
   # TODO: allow for different prediction window than w (with a warning)
-  # TODO: check superfm/args are correct = that newdata contains correct covars
+  # TODO: check superfm/args are correct = that newdata contains correct covars => check that names of newdata incl. in LMcovars
   # TODO: allow for inputting a fitted model with additional arguments (like fitLM)
 
   func_covars <- superfm$func_covars
@@ -49,10 +50,11 @@ predLMrisk <- function(superfm, newdata, tLM, cause, extend=F, silence=F)
          \nOnly supported classes are CauseSpecificCox and coxph")
   }
 
-  if (missing(newdata) & !missing(tLM)) { ## ADD
+  if (missing(newdata) & !missing(tLM)) {
     stop("newdata must be specified")
   }
-  if (!missing(newdata)){ ## ADD
+
+  if (!missing(newdata)){
     if (missing(tLM)) {
       tLM = newdata$LM
       if (is.null(tLM)) {
@@ -79,7 +81,6 @@ predLMrisk <- function(superfm, newdata, tLM, cause, extend=F, silence=F)
         stop("Error in newdata or tLM. Must have length(tLM) == nrow(newdata) or tLM be one landmarking point.")
       }
     }
-
     ## Check newdata contains the correct covariates
     ## TODO
 
@@ -90,6 +91,8 @@ predLMrisk <- function(superfm, newdata, tLM, cause, extend=F, silence=F)
       sapply(1:num_causes, function(c) riskScore(models[[c]], tLMi, newdatai, func_covars, func_LM))
     })
 
+    data <- newdata
+
   } else {
     ## Get risk scores
     ## Note that linear predictors are centered, so need to un-center them for correct comparison.
@@ -98,6 +101,7 @@ predLMrisk <- function(superfm, newdata, tLM, cause, extend=F, silence=F)
     num_preds <- ncol(risks)
     # sanity check
     if (length(tLM) != num_preds){ stop("Error in newdata or tLM. Must have length(tLM) == nrow(newdata) or tLM be one landmarking point.") }
+    data <- fm$call$data
   }
 
   # Create a baseline individual for this cause
@@ -108,7 +112,7 @@ predLMrisk <- function(superfm, newdata, tLM, cause, extend=F, silence=F)
     data.frame(matrix(rep(0,num_covarsLM[i]),
                       ncol = num_covarsLM[i],
                       dimnames=list(c(""),names(bet[[i]]))))
-  })
+    })
 
   # Baseline hazards
   sf <- lapply(1:num_causes,function(i) survfit(models[[i]], newdata=base_data[[i]]))
@@ -117,40 +121,44 @@ predLMrisk <- function(superfm, newdata, tLM, cause, extend=F, silence=F)
 
   sf1 <-sf[[cause]]
   Fw <- rep(NA, num_preds)
-
   for(i in 1:num_preds) {
-    tLMi <- tLM[i]
-    pred_window <- (tLMi <= sf1$time & sf1$time <= tLMi+w)
-    n_times <- sum(pred_window)
+    if (is.na(risks[cause,i])){
+      Fw[i] <- NA
+    } else {
+      tLMi <- tLM[i]
+      pred_window <- (tLMi <= sf1$time & sf1$time <= tLMi+w)
+      n_times <- sum(pred_window)
 
-    haz <- sf1$Haz[pred_window] * exp(risks[cause,i])
-    instHaz <- haz[2:n_times]-haz[1:n_times-1]
-    idx <- (instHaz != 0)
-    instHaz <- instHaz[idx]
+      haz <- sf1$Haz[pred_window] * exp(risks[cause,i])
+      instHaz <- haz[2:n_times]-haz[1:n_times-1]
+      idx <- (instHaz != 0)
+      instHaz <- instHaz[idx]
 
-    times <- sf1$time[pred_window][2:n_times]
-    times <- times[idx]
+      times <- sf1$time[pred_window][2:n_times]
+      times <- times[idx]
 
-    w_adj <- times-tLMi
-    surv <- c()
-    for (j in 1:length(w_adj)){
-      s <- 0
-      wj<-w_adj[j]
-      for (c in 1:num_causes){
-        sfc <- sf[[c]]
-        sfc$Haz <- sfc$Haz * exp(risks[c,i])
-        f <- stats::stepfun(sfc$time, c(0,sfc$Haz), right=FALSE)
-        s <- s + (f(tLMi+wj)-f(tLMi))
+      w_adj <- times-tLMi
+      surv <- c()
+      for (j in 1:length(w_adj)){
+        s <- 0
+        wj<-w_adj[j]
+        for (c in 1:num_causes){
+          sfc <- sf[[c]]
+          sfc$Haz <- sfc$Haz * exp(risks[c,i])
+          f <- stats::stepfun(sfc$time, c(0,sfc$Haz), right=FALSE)
+          s <- s + (f(tLMi+wj)-f(tLMi))
+        }
+        surv <- c(surv,exp(-s))
       }
-      surv <- c(surv,exp(-s))
+      Fw[i] <- sum(instHaz*surv)
     }
-    Fw[i] <- sum(instHaz*surv)
   }
 
-  preds = data.frame(LM=tLM,risk=Fw)
-
-  if(!missing(newdata)) data <- newdata
-  else data <- fm$call$data
+  if(complete){
+    idx = !is.na(Fw)
+    preds = data.frame(LM=tLM[idx],risk=Fw[idx])
+    data = data[idx,]
+  }
 
   out = list(preds=preds, w=w, type=type, LHS=superfm$LHS, data=data, cause=cause)
   class(out) = "LMpred"

@@ -52,7 +52,7 @@ fitLM <- function(formula, LMdata, type="coxph", method="breslow",
     data <- LMdata$LMdata
     func_covars <- LMdata$func_covars
     func_LMs <- LMdata$func_LMs
-    original.landmarks <- LMdata$LMdata[[LMdata$LM_col]]
+    original.landmarks <- data[[LMdata$LM_col]]
     end_time <- LMdata$end_time
     outcome <- LMdata$outcome
     w <- LMdata$w
@@ -80,6 +80,7 @@ fitLM <- function(formula, LMdata, type="coxph", method="breslow",
     cl <- "LMCSC"
   }
 
+  data = data
   linear.predictors <-
     t(sapply(1:num_causes, function(c) {
       coefs <- models[[c]]$coefficients

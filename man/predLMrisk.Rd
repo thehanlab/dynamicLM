@@ -4,7 +4,7 @@
 \alias{predLMrisk}
 \title{Calculate w-year risk from a landmark time point}
 \usage{
-predLMrisk(superfm, newdata, tLM, cause, extend = F, silence = F)
+predLMrisk(superfm, newdata, tLM, cause, extend = F, silence = F, complete = T)
 }
 \arguments{
 \item{superfm}{fitted landmarking supermodel}
@@ -21,6 +21,8 @@ Note tLM must be one value for newdata or must have the same length as the numbe
 Default is FALSE. If set to TRUE, predictions may be unreliable}
 
 \item{silence}{Silence the warning message when extend is set to TRUE}
+
+\item{complete}{Only make predictions for data entries with non-NA entries (i.e., non-NA predictions)}
 }
 \value{
 An object of class "LMpred" with components:

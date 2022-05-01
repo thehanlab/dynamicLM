@@ -33,7 +33,7 @@ LMcalPlot <- function(preds,cause,tLM,formula,plot=T,main,sub=T,...){
   }
 
   w = preds[[1]]$w
-  data = eval(preds[[1]]$data)
+  data = preds[[1]]$data
   num_preds = nrow(preds[[1]]$preds)
 
   if (missing(cause)) cause <- preds[[1]]$cause
