@@ -6,7 +6,7 @@ find_se <- function(t, coefs, covar, func_covars){
   form <- "x1"
   if (length(coefs) > 1){
     for (i in 2:length(coefs)){
-      form <- paste(form, sprintf("%s * %f", paste("x",i,sep=""), func_covars[[i]](t)),sep=" + ")
+      form <- paste(form, sprintf("%s * %f", paste("x",i,sep=""), func_covars[[i-1]](t)),sep=" + ")
     }
   }
   form <- paste("~", form)

@@ -177,7 +177,7 @@ print.LMScore <- function(x,digits=3,...){
 #' @export
 #'
 print.LMCSC <- function(x, ...) {
-  cat(paste0("Landmark cause-specific cox super model: \n* fit for dynamic ",x$w,"-year prediction\n\n"))
+  cat(paste0("\nLandmark cause-specific cox super model: \n fit for dynamic ",x$w,"-year prediction\n\n"))
   cat("$model\n")
   num_causes <- length(x$model$causes)
   for (i in 1:num_causes){
@@ -187,6 +187,38 @@ print.LMCSC <- function(x, ...) {
     print(cox_model)
     cat("\n\n")
   }
+
+  cat("$func_covars\n")
+  names.fc = names(x$func_covars)
+  for (i in 1:length(x$func_covars)){
+    if (is.null(names.fc[i])) label <- paste0("[[",i,"]]")
+    else paste0("$",names.fc[i])
+    cat(paste0("$func_covars$",label,"\n"))
+    print(x$func_covars[[i]])
+    cat("\n")
+  }
+  cat("$func_LMs\n")
+  names.fc = names(x$func_LMs)
+  for (i in 1:length(x$func_LMs)){
+    if (is.null(names.fc[i])) label <- paste0("[[",i,"]]")
+    else paste0("$",names.fc[i])
+    cat(paste0("$func_LMs$",label,"\n"))
+    print(x$func_LMs[[i]])
+    cat("\n")
+  }
+
+  cat("$w\n")
+  print(x$w)
+  cat("\n")
+
+  cat("$end_time\n")
+  print(x$end_time)
+  cat("\n")
+
+  cat("$type\n")
+  print(x$type)
+  cat("\n")
+
 }
 
 
@@ -199,10 +231,42 @@ print.LMCSC <- function(x, ...) {
 #' @export
 #'
 print.LMcoxph <- function(x, ...) {
-  cat(paste0("Landmark cox super model: \n* fit for dynamic ",x$w,"-year prediction\n\n"))
+  cat(paste0("\nLandmark cox super model: \n fit for dynamic ",x$w,"-year prediction\n\n"))
   cat("$model\n")
 
   cox_model = x$model
   cox_model$call = NULL
   print(cox_model)
+
+  cat("$func_covars\n")
+  names.fc = names(x$func_covars)
+  for (i in 1:length(x$func_covars)){
+    if (is.null(names.fc[i])) label <- paste0("[[",i,"]]")
+    else paste0("$",names.fc[i])
+    cat(paste0("$func_covars$",label,"\n"))
+    print(x$func_covars[[i]])
+    cat("\n")
+  }
+  cat("$func_LMs\n")
+  names.fc = names(x$func_LMs)
+  for (i in 1:length(x$func_LMs)){
+    if (is.null(names.fc[i])) label <- paste0("[[",i,"]]")
+    else paste0("$",names.fc[i])
+    cat(paste0("$func_LMs$",label,"\n"))
+    print(x$func_LMs[[i]])
+    cat("\n")
+  }
+
+  cat("$w\n")
+  print(x$w)
+  cat("\n")
+
+  cat("$end_time\n")
+  print(x$end_time)
+  cat("\n")
+
+  cat("$type\n")
+  print(x$type)
+  cat("\n")
+
 }

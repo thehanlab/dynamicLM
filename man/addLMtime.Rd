@@ -4,7 +4,7 @@
 \alias{addLMtime}
 \title{Add landmarking time interations to a dataset}
 \usage{
-addLMtime(LMdata, LMcovars, func_covars, func_LMs, LM_col = "LM", keep = F)
+addLMtime(LMdata, LMcovars, func_covars, func_LMs, LM_col = "LM", keep = T)
 }
 \arguments{
 \item{LMdata}{An object of class "LMdataframe".

@@ -21,26 +21,25 @@
 #' - allLMcovars: a list of the new columns added
 #' - LM_col: as the input
 #' @export
-addLMtime <- function(LMdata, LMcovars, func_covars, func_LMs, LM_col="LM",keep=F){
+addLMtime <- function(LMdata, LMcovars, func_covars, func_LMs, LM_col="LM",keep=T){
   if (LM_col %in% func_covars){
     stop(paste0("arg LM_col (given as ",LM_col,") should not be in arg func_covars."))
   }
   data <- LMdata$LMdata
   if (missing(func_covars)){
     # f gives covariate-time interactions
-    f1 <- function(t) 1
-    f2 <- function(t) t
-    f3 <- function(t) t^2
-    func_covars <- list(f1,f2,f3)
+    f1 <- function(t) t
+    f2 <- function(t) t^2
+    func_covars <- list(f1,f2)
   }
   if (missing(func_LMs)){
     # g lets the hazard depend on time
-    g1 <- function(t) f2(t)
-    g2 <- function(t) f3(t)
+    g1 <- function(t) f1(t)
+    g2 <- function(t) f2(t)
     func_LMs <- list(g1,g2)
   }
 
-  allLMcovars <- c()
+  allLMcovars <- c(LMcovars)
   data_LM <- data[[LM_col]]
   # Add func_covarss: covariate LM interactions
   for(i in 1:length(LMcovars)){
@@ -68,7 +67,7 @@ addLMtime <- function(LMdata, LMcovars, func_covars, func_LMs, LM_col="LM",keep=
   LMdata$func_covars <- func_covars
   LMdata$func_LMs <- func_LMs
   LMdata$LMcovars <- LMcovars
-  LMdata$allLMcovars <- allLMcovars
+  LMdata$allLMcovars <- unique(allLMcovars)
   LMdata$LM_col <- LM_col
 
   return(LMdata)
