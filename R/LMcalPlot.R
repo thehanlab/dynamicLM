@@ -1,6 +1,7 @@
 #' Calibration plots for dynamic risk prediction landmark models
 #'
 #' @param preds A named list of prediction models, where allowed entries are outputs from predLMrisk
+#' @param unit The unit of w, i.e. w-unit prediction ("year","month", etc...). Used to label the plot.
 #' @param cause Cause of interest if considering competing risks
 #' @param tLM Landmark times for which calibration must be plot. These must be a subset of LM times used during the prediction
 #' @param formula A survival or event history formula. The left hand side is used to compute the expected event status.
@@ -14,7 +15,7 @@
 #' @import prodlim
 #' @export
 #'
-LMcalPlot <- function(preds,cause,tLM,formula,plot=T,main,sub=T,...){
+LMcalPlot <- function(preds,unit="year",cause,tLM,formula,plot=T,main,sub=T,...){
   # TODO: Add option to show AUCt, Brier on plot
   # TODO: check data+formula+times+w for all preds is the same
 
@@ -63,18 +64,26 @@ LMcalPlot <- function(preds,cause,tLM,formula,plot=T,main,sub=T,...){
     }
 
     x = NULL
+    # print(sum(is.na(risks_to_test)))
+    # print(sum(is.na(data_to_test$LM)))
+    # print(sum(is.na(data_to_test$Time)))
+    # print(sum(is.na(data_to_test$event)))
+    # print(head(data_to_test))
+    # print(sum(data_to_test$event == 1))
+    # print(all.vars(as.formula(formula)))
     x <- pec::calPlot(
       risks_to_test,
       time=tLM+w,
-      formula=stats::as.formula(formula),
+      formula=stats::as.formula("Hist(Time, event)~1"),
       data=data_to_test,
       cause=cause,
       plot=plot,
+      type="risk",
       ...
     )
 
     if (plot){
-      if(add_title){ graphics::title(main = paste0("Calibration of ",w, "-yr risk \n measured at LM time ",tLM)) }
+      if(add_title){ graphics::title(main = paste0("Calibration of ",w,"-",unit, " risk \n measured at LM time ",tLM)) }
       else { graphics::title(main=main) }
 
       if(sub){
