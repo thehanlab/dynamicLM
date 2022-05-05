@@ -28,15 +28,15 @@ riskScore <- function(model, tLM, data, func_covars, func_LMs)
   ) + sum(
     sapply(bet_covars, function(coef_name){
       # Get associated covariate info (remove _i from the name)
-      covar <- sub("_[^_]+$", "", coef_name)
-
+      covar <- sub("_\\d+$", "", coef_name)
       # Get associated function & multiply both by coef
       if (coef_name == covar) {
         return(coefs[coef_name] * data[,covar])
       }
       else {
         idx <- as.numeric(sub(".*\\D+", "\\1", coef_name))
-        return(func_covars[[idx]](tLM) * coefs[coef_name] * data[,covar])
+        f <- func_covars[[idx]]
+        return(f(tLM) * coefs[coef_name] * data[,covar])
       }
 
     })
