@@ -4,10 +4,22 @@
 \alias{LMcalPlot}
 \title{Calibration plots for dynamic risk prediction landmark models}
 \usage{
-LMcalPlot(preds, cause, tLM, formula, plot = T, main, sub = T, ...)
+LMcalPlot(
+  preds,
+  unit = "year",
+  cause,
+  tLM,
+  formula,
+  plot = T,
+  main,
+  sub = T,
+  ...
+)
 }
 \arguments{
 \item{preds}{A named list of prediction models, where allowed entries are outputs from predLMrisk}
+
+\item{unit}{The unit of w, i.e. w-unit prediction ("year","month", etc...). Used to label the plot.}
 
 \item{cause}{Cause of interest if considering competing risks}
 
