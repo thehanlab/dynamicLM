@@ -64,9 +64,10 @@ fitLM <- function(formula, LMdata, type="coxph", method="breslow",
   num_preds <- nrow(data)
 
   if(type=="coxph"){
-    superfm <- coxph(formula, data, method=method, ...)
-    num_causes <- 1
+    superfm <- survival::coxph(formula, data, method=method, ...)
     models <- list(superfm)
+    num_causes <- 1
+    superfm$call$data <- data
     cl <- "LMcoxph"
 
   } else if (type=="CauseSpecificCox" | type=="CSC"){
