@@ -34,12 +34,13 @@ predLMrisk <- function(supermodel, newdata, tLM, cause, extend=F, silence=F, com
     models <- list(fm)
     num_causes <- 1
     if (!missing(cause) ){
-      if(!is.null(cause)) stop("No cause should be specified for a coxph model.")}
+      if(!is.null(cause)) stop("No cause should be specified for a coxph model.")
+    }
+    cause<-1
 
   } else if (type == "CauseSpecificCox" | type =="CSC") {
     models <- fm$models
     num_causes <- length(models)
-
     if (missing(cause)) { cause <- as.numeric(fm$theCause)
     } else if (is.null(cause)) { cause <- as.numeric(fm$theCause) }
     if (length(cause) > 1) stop(paste0("Can only predict one cause. Provided are: ", paste(cause, collapse = ", "), sep = ""))
@@ -85,12 +86,11 @@ predLMrisk <- function(supermodel, newdata, tLM, cause, extend=F, silence=F, com
     ## TODO
 
     ## Get risk scores
-    risks <- sapply(1:num_preds, function(i){
+    risks <- matrix(sapply(1:num_preds, function(i){
       tLMi <- tLM[i]
       newdatai <- newdata[i,]
       sapply(1:num_causes, function(c) riskScore(models[[c]], tLMi, newdatai, func_covars, func_LM))
-    })
-
+    }),nrow=num_causes)
     data <- newdata
 
   } else {
@@ -104,19 +104,13 @@ predLMrisk <- function(supermodel, newdata, tLM, cause, extend=F, silence=F, com
     data <- fm$call$data
   }
 
-  # Create a baseline individual for this cause
-  bet <- lapply(models,function(model) model$coefficient)
-  num_covarsLM <- sapply(bet, length)
-  # Create a baseline individual for each cause
-  base_data <- lapply(1:num_causes, function(i){
-    data.frame(matrix(rep(0,num_covarsLM[i]),
-                      ncol = num_covarsLM[i],
-                      dimnames=list(c(""),names(bet[[i]]))))
-    })
-
   # Baseline hazards
-  sf <- lapply(1:num_causes,function(i) survfit(models[[i]], newdata=base_data[[i]]))
+  sf <- lapply(1:num_causes,function(i) {
+    base_data = 0 * models[[i]]$coefficients
+    survfit(models[[i]], newdata=base_data)
+    })
   sf <- lapply(sf, function(s) data.frame(time=s$time,surv=s$surv,Haz=-log(s$surv)))
+
   Fw <- rep(0, length(tLM))
 
   sf1 <-sf[[cause]]
