@@ -13,16 +13,18 @@ plot_dynamic_HR(
   extend = F,
   silence = F,
   xlab = "LM time",
-  ylab = "log HR",
+  ylab,
   ylim,
+  main,
+  logHR = T,
   ...
 )
 }
 \arguments{
 \item{supermodel}{An object of class "LMcoxph" or "LMCSC", i.e. a fitted supermodel}
 
-\item{covars}{Vector of strings indicating the variables to plot the HR of
-(note these must be given without time interaction label, for e.g., as in LMcovars)}
+\item{covars}{Vector or list of strings indicating the variables to plot the HR of
+(note these must be given without time interaction label, for e.g., as in LMcovars).}
 
 \item{CI}{Include confidence intervals or not, default is TRUE}
 
@@ -35,11 +37,15 @@ Default is FALSE. If set to TRUE, the HR may be unreliable.}
 
 \item{silence}{silence the warning message when end_time > LMs used in fitting the model}
 
-\item{xlab}{As in plot}
+\item{xlab}{x label for the plots}
 
-\item{ylab}{As in plot}
+\item{ylab}{y label for the plots}
 
-\item{ylim}{As in plot}
+\item{ylim}{y limit for the plots}
+
+\item{main}{Vector of strings indicating the title of each plot. Must be in the same order as covars.}
+
+\item{logHR}{Boolean, if true plots the log of the hazard ratio, if false plots the hazard ratio}
 
 \item{...}{Additional arguments passed to plot}
 }

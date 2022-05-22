@@ -1,24 +1,26 @@
 #' Plots the dynamic hazard ratio of a cox or CSC supermodel
 #'
 #' @param supermodel An object of class "LMcoxph" or "LMCSC", i.e. a fitted supermodel
-#' @param covars Vector of strings indicating the variables to plot the HR of
-#' (note these must be given without time interaction label, for e.g., as in LMcovars)
+#' @param covars Vector or list of strings indicating the variables to plot the HR of
+#' (note these must be given without time interaction label, for e.g., as in LMcovars).
 #' @param CI Include confidence intervals or not, default is TRUE
 #' @param cause Cause of interest if considering competing risks
 #' @param end_time Final time point to plot HR, defaults to the last landmark point used in model fitting.
 #' @param extend Argument to allow for HR to be plot at landmark times that are later than the LMs used in model fitting.
 #' Default is FALSE. If set to TRUE, the HR may be unreliable.
 #' @param silence silence the warning message when end_time > LMs used in fitting the model
-#' @param xlab As in plot
-#' @param ylab As in plot
-#' @param ylim As in plot
+#' @param xlab x label for the plots
+#' @param ylab y label for the plots
+#' @param ylim y limit for the plots
+#' @param main Vector of strings indicating the title of each plot. Must be in the same order as covars.
+#' @param logHR Boolean, if true plots the log of the hazard ratio, if false plots the hazard ratio
 #' @param ... Additional arguments passed to plot
 #'
 #' @return Plots for each variable in covars showing the dynamic hazard ratio
 #' @export
 #'
 plot_dynamic_HR <- function(supermodel, covars, CI=T, cause, end_time, extend=F, silence=F,
-                            xlab="LM time", ylab="log HR", ylim, ...){
+                            xlab="LM time", ylab, ylim, main, logHR=T, ...){
   # TODO: for non-binary variables allow for choice of value (instead of assumed=1)
   fm = supermodel$model
 
@@ -28,7 +30,16 @@ plot_dynamic_HR <- function(supermodel, covars, CI=T, cause, end_time, extend=F,
   }
 
   if (missing(covars)){ covars <- supermodel$LMcovars }
-
+  if(missing(main)){
+    if(is.null(names(covars))) { main <- covars }
+    else { main <- names(covars) }
+  } else {
+    if(length(main)!=length(covars)) stop("# of titles given must equal the # of covariates to plot")
+  }
+  if (missing(ylab)){
+    if(logHR){ylab <- "log HR"}
+    else {ylab <- "HR"}
+  }
   if (missing(end_time)){
     end_time <- supermodel$end_time
 
@@ -76,20 +87,25 @@ plot_dynamic_HR <- function(supermodel, covars, CI=T, cause, end_time, extend=F,
         }
       })) # bet0 + bet1*x + bet2*x^2 + ...
     })
+    if(!logHR){
+      HR <- exp(HR)
+    }
 
     if (set_ylim) ylim <- c(min(HR),max(HR))
     if(CI){
-      se <- sapply(t, find_se, bet_var, sig[idx,idx], func_covars)
+      if(logHR){ se <- sapply(t, find_se_log, bet_var, sig[idx,idx], func_covars) }
+      else{ se <- sapply(t, find_se, bet_var, sig[idx,idx], func_covars) }
       lower <- HR - 1.96*se
-      upper <- HR+ 1.96*se
+      upper <- HR + 1.96*se
       if(set_ylim){
         ylim[1] <- min(min(lower), ylim[1])
         ylim[2] <- max(max(upper), ylim[1])
       }
     }
 
-    plot(t, HR, xlab=xlab, ylab=ylab, main=covars[i], type="l", ylim=ylim, ...)
-    graphics::lines(t, rep(0,end_time/0.1+1), col="grey")
+    plot(t, HR, xlab=xlab, ylab=ylab, main=main[i], type="l", ylim=ylim, ...)
+    if(logHR){ graphics::lines(t, rep(0,end_time/0.1+1), col="grey") }
+    else { graphics::lines(t, rep(1,end_time/0.1+1), col="grey") }
     if(CI){
       graphics::lines(t, lower, lty=2)
       graphics::lines(t, upper, lty=2)
