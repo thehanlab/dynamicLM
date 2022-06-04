@@ -152,6 +152,9 @@ predLMrisk <- function(supermodel, newdata, tLM, cause, extend=F, silence=F, com
     idx = !is.na(Fw)
     preds = data.frame(LM=tLM[idx],risk=Fw[idx])
     data = data[idx,]
+  } else {
+    preds = data.frame(LM=tLM,risk=Fw)
+    data = data
   }
 
   out = list(preds=preds, w=w, type=type, LHS=supermodel$LHS, data=data, cause=cause)

@@ -20,6 +20,7 @@
 #' @param xlab Label for x-axis
 #' @param ylab Label for y-axis
 #' @param xlim Limits for the x-axis
+#' @param ylim Limits for the y-axis
 #' @param ... Additional arguments passed to plot
 #'
 #' @return Single plot the absolute w-year risk of individuals
@@ -28,7 +29,7 @@
 plotRisk <- function(supermodel, data, format, LM_col, id_col,
                      cause, varying,
                      end_time, extend=F, silence=F,
-                     pch,lty,lwd,col,main,xlab,ylab,xlim,...){
+                     pch,lty,lwd,col,main,xlab,ylab,xlim,ylim,...){
   # TODO: check that wide format works
   # TODO: add w
 
@@ -89,6 +90,9 @@ plotRisk <- function(supermodel, data, format, LM_col, id_col,
   if(missing(xlim))
     xlim <- c(0, end_time)
 
+  plotted=F
+  encountered_na=F
+  ids_na = c()
   ## Create plot
   if (format == "long") {
     for (i in 1:NF){
@@ -97,17 +101,52 @@ plotRisk <- function(supermodel, data, format, LM_col, id_col,
       x <- data_ind[[LM_col]]
       idx <- x <= end_time
       x <- x[idx]
-      y <- predLMrisk(supermodel, data_ind[idx,], x, cause, extend=extend, silence=T)$preds$risk
-      if(i==1) plot(stats::stepfun(x,c(y[1],y)),
-                    xlab=xlab, ylab=ylab, main=main,
-                    pch=pch[i], lty=lty[i], lwd=lwd[i], col=col[i], xlim=xlim, ...)
-      else graphics::lines(stats::stepfun(x,c(y[1],y)),pch=pch[i],lty=lty[i],lwd=lwd[i],col=col[i],...)
+      y <- predLMrisk(supermodel, data_ind[idx,], x, cause, extend=extend, silence=T, complete=F)$preds$risk
+
+      ## if some entries have missing values we want to replace them by the most recent score...
+      if (sum(is.na(y))!=0){
+        if(sum(is.na(y))==length(y)) y = F # cannot be used
+        else {
+          if (is.na(y[1])){ # find first non-NA index
+            firstNonNA <- min(which(!is.na(y)))
+            include = firstNonNA:length(y)
+            y = y[include]
+            x = x[include]
+            message(paste0("Individual with ID=",id," had a first entry with missing value. Replaced by 0."))
+          }
+          encountered_na = T
+          ids_na = c(ids_na,id)
+          y <- replace_na_with_last(y) # replace later NAs by the most recent score...
+        }
+      }
+
+      if (class(y)=="logical"){
+        message(paste0("Individual with ID=",id," could not be plotted as they have missing values"))
+      } else {
+        if(!plotted){
+          plot(stats::stepfun(x,c(y[1],y)),
+                      xlab=xlab, ylab=ylab, main=main,
+                      pch=pch[i], lty=lty[i], lwd=lwd[i], col=col[i], xlim=xlim,ylim=ylim, ...)
+          plotted=T
+        }
+        else{
+          graphics::lines(stats::stepfun(x,c(y[1],y)),pch=pch[i],lty=lty[i],lwd=lwd[i],col=col[i],...)
+        }
+      }
     }
-    graphics::legend(x = "topright",
+
+    if(plotted) {
+      graphics::legend(x = "topright",
            legend = unique_ids,
            lty = lty,
            col = col,
            lwd = lwd)
+      if(encountered_na) message("Note that individual(s) (",paste(ids_na,collapse=", "),") had entries with missing data.The most recent previous non-missing entry was used instead.")
+    }
+    else{
+      message("No users with non-missing data were provided. No plot could be produced.")
+      return(0) # exit
+    }
 
   } else if (format == "wide") {
 
