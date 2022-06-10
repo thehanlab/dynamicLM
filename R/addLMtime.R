@@ -1,9 +1,9 @@
 # -----------------------------------------------------------------------
-#' Add landmarking time interations to a dataset
+#' Add landmarking time interactions to a super dataset
 #'
 #' @param LMdata An object of class "LMdataframe".
-#' This can be created by running cutLMsuper, or creating a stacked data set and storing it in a list with attributes outcome, w and end_time
-#' (see cutLMsuper for further description of outcome and w), end_time is the largest landmarking time.
+#'   This can be created by running cutLMsuper, or creating a stacked data set and storing it in a list with attributes outcome, w and end_time
+#'   (see cutLMsuper for further description of outcome and w), end_time is the largest landmarking time.
 #' @param LMcovars Vector of strings indicating the columns that are to have a LM interaction
 #' @param func_covars A list of functions to use for interactions between LMs and covariates.
 #' @param func_LMs A list of functions to use for transformations of the landmark times.
@@ -11,15 +11,38 @@
 #' @param keep Boolean value to indicate whether or not to keep the columns given by LMcovars without the time interactions or not. Default=FALSE.
 #'
 #' @return An object of class "LMdataframe" which now also contains LM time-interactions.
-#' For each variable "var" in LMcovars, new columns var_1,...,var_i (length(func_covars) == i) are added. One for each interaction given in func_covars
-#' Transformations of the LM column are added and labelled as LM_1,...,LM_j (length(func_LMs) == j). One column for each interaction given in func_LMs
-#' The object has the following components:
-#' - w, outcome: as the input (obtained from LMdata)
-#' - func_covars: as the input
-#' - func_LMs: as the input
-#' - LMcovars: as the input
-#' - allLMcovars: a list of the new columns added
-#' - LM_col: as the input
+#'   The object has the following components:
+#'   - w, outcome: as the input (obtained from LMdata)
+#'   - func_covars: as the input
+#'   - func_LMs: as the input
+#'   - LMcovars: as the input
+#'   - allLMcovars: a list of the new columns added
+#'   - LM_col: as the input
+#'
+#' @details For each variable "var" in LMcovars, new columns var_1,...,var_i (length(func_covars) == i) are added; one column for each interaction given in func_covars is added
+#'   Transformations of the LM column are added and labelled as LM_1,...,LM_j (length(func_LMs) == j); one column for each interaction given in func_LMs is added
+#'
+#' @examples
+#' \dontrun{
+#' data(relapse)
+#' outcome = list(time="Time", status="event")
+#' covars = list(fixed=c("ID","age.at.time.0","male","stage","bmi"),
+#'               varying=c("treatment"))
+#' w = 60; LMs = c(0,12,24)
+#' # Covariate-landmark time interactions
+#' func.covars <- list( function(t) t, function(t) t^2)
+#' # let hazard depend on landmark time
+#' func.LMs <- list( function(t) t, function(t) t^2)
+#' # Choose covariates that will have time interaction
+#' pred.covars <- c("age","male","stage","bmi","treatment")
+#' # Stack landmark datasets
+#' LMdata <- cutLMsuper(relapse, outcome, LMs, w, covs, format="long", id="ID", rtime="fup_time", right=F)
+#' # Update complex LM-varying covariates
+#' LMdata$LMdata$age <- LMdata$LMdata$age.at.time.0 + LMdata$LMdata$LM/12 # age is in years and LM is in months
+#' # Add LM-time interactions
+#' LMdata <- addLMtime(LMdata, pred.covars, func.covars, func.LMs)
+#' }
+#'
 #' @export
 addLMtime <- function(LMdata, LMcovars, func_covars, func_LMs, LM_col="LM",keep=T){
   if (LM_col %in% func_covars){

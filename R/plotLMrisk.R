@@ -4,13 +4,13 @@
 #' @param data Data frame of individuals from which to plot risk
 #' @param format Character string specifying whether the data are in wide (default) or in long format
 #' @param LM_col Character string specifying the column name in data containing the (running) time variable
-#' associated with the time-varying covariate(s); only needed if format="long"
+#'   associated with the time-varying covariate(s); only needed if format="long"
 #' @param id_col Character string specifying the column name in data containing the subject id; only needed if format="long"
 #' @param cause The cause we are looking at if considering competing risks
 #' @param varying Character string specifying column name in the data containing time-varying covariates; only needed if format="wide"
 #' @param end_time Final time point to plot risk
 #' @param extend Argument to allow for risk to be plot at landmark times that are later than the LMs used in model fitting.
-#' Default is FALSE. If set to TRUE, risks may be unreliable.
+#'   Default is FALSE. If set to TRUE, risks may be unreliable.
 #' @param silence Silence the message when end_time > LMs used in fitting the model
 #' @param unit Time unit for window of prediction, e.g., "year", "month", etc. Used for printing results.
 #' @param pch Passed to points

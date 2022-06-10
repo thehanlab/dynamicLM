@@ -1,6 +1,6 @@
-#' fit a coxph or CSC model to a LM super dataset
+#' Fit a coxph or CSC model to a LM super dataset
 #'
-#' @param formula The formula to be used, remember to include "+cluster(ID)" for the column that indicates the ID of the individual for robust estimates.
+#' @param formula The formula to be used, remember to include "+cluster(ID)" for the column that indicates the ID of the individual for robust error estimates.
 #' @param LMdata  An object of class "LMdataframe", this can be created by running cutLMsuper and addLMtime
 #' @param type "coxph" or "CSC"/"CauseSpecificCox"
 #' @param method A character string specifying the method for tie handling. Default is "breslow". More information can be found in coxph.
@@ -13,20 +13,44 @@
 #' @param ... Arguments given to coxph or CSC.
 #'
 #' @return An object of class "LMcoxph" or "LMCSC" with components:
-#' - model: fitted model
-#' - type: as input
-#' - w, func_covars, func_LMs, LMcovars, allLMcovars, outcome: as in LMdata
-#' - LHS: the LHS of the input formula
-#' - linear.predictors: the vector of linear predictors, one per subject. Note that this vector has not been centered.
-#' - original.landmarks: the LM time point at which prediction was made, one per subject. This has the same order as linear.predictors.
+#'   - model: fitted model
+#'   - type: as input
+#'   - w, func_covars, func_LMs, LMcovars, allLMcovars, outcome: as in LMdata
+#'   - LHS: the LHS of the input formula
+#'   - linear.predictors: the vector of linear predictors, one per subject. Note that this vector has not been centered.
+#' @examples
+#' \dontrun{
+#' data(relapse)
+#' outcome = list(time="Time", status="event")
+#' covars = list(fixed=c("ID","age.at.time.0","male","stage","bmi"),
+#'               varying=c("treatment"))
+#' w = 60; LMs = c(0,12,24)
+#' # Covariate-landmark time interactions
+#' func.covars <- list( function(t) t, function(t) t^2)
+#' # let hazard depend on landmark time
+#' func.LMs <- list( function(t) t, function(t) t^2)
+#' # Choose covariates that will have time interaction
+#' pred.covars <- c("age","male","stage","bmi","treatment")
+#' # Stack landmark datasets
+#' LMdata <- cutLMsuper(relapse, outcome, LMs, w, covs, format="long", id="ID", rtime="fup_time", right=F)
+#' # Update complex LM-varying covariates
+#' LMdata$LMdata$age <- LMdata$LMdata$age.at.time.0 + LMdata$LMdata$LM/12 # age is in years and LM is in months
+#' # Add LM-time interactions
+#' LMdata <- addLMtime(LMdata, pred.covars, func.covars, func.LMs)
+#' formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment + age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 + bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
+#' supermodel <- fitLM(as.formula(formula), LMdata, "CSC")
+#' }
 #' @import survival
 #' @export
 #'
 fitLM <- function(formula, LMdata, type="coxph", method="breslow",
                   func_covars, func_LMs, LM_col, outcome, w, LMcovars, ...){
-  # TODO: add FGR?
 
   LHS = Reduce(paste, deparse(formula[[2]]))
+
+  if (!grepl("cluster", as.character(as.formula(formula))[3])){
+    message("Did you forget to add a '+ cluster(ID)' term for your ID variable in your formula? No cluster argument was specified in the formula. Standard errors may be estimated incorrectly.")
+  }
 
   if(class(LMdata)!="LMdataframe"){
     if(class(LMdata)!="data.frame"){stop("data must be of a data.frame or an object of class LMdataframe")}

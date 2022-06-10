@@ -48,5 +48,22 @@ An object of class "LM.data.frame". This the following components:
 Build a stacked super dataset from original dataset (wide or long format)
 }
 \details{
-This function calls cutLM from the library dynpred, more documentation can be found there.
+This function calls cutLM from the library dynpred, more documentation can be found there. Note that for every landmark tLM given in LMs, there must be at least one patient alive after tLM.
+}
+\examples{
+\dontrun{
+data(relapse)
+outcome = list(time="Time", status="event")
+covars = list(fixed=c("ID","age.at.time.0","male","stage","bmi"),
+              varying=c("treatment"))
+w = 60; LMs = c(0,12,24)
+# Covariate-landmark time interactions
+func.covars <- list( function(t) t, function(t) t^2)
+# let hazard depend on landmark time
+func.LMs <- list( function(t) t, function(t) t^2)
+# Choose covariates that will have time interaction
+pred.covars <- c("age","male","stage","bmi","treatment")
+# Stack landmark datasets
+LMdata <- cutLMsuper(relapse, outcome, LMs, w, covs, format="long", id="ID", rtime="fup_time", right=F)
+}
 }

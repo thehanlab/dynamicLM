@@ -2,12 +2,12 @@
 #'
 #' @param supermodel An object of class "LMcoxph" or "LMCSC", i.e. a fitted supermodel
 #' @param covars Vector or list of strings indicating the variables to plot the HR of
-#' (note these must be given without time interaction label, for e.g., as in LMcovars).
+#'   (note these must be given without time interaction label, for e.g., as in LMcovars).
 #' @param CI Include confidence intervals or not, default is TRUE
 #' @param cause Cause of interest if considering competing risks
 #' @param end_time Final time point to plot HR, defaults to the last landmark point used in model fitting.
 #' @param extend Argument to allow for HR to be plot at landmark times that are later than the LMs used in model fitting.
-#' Default is FALSE. If set to TRUE, the HR may be unreliable.
+#'   Default is FALSE. If set to TRUE, the HR may be unreliable.
 #' @param silence silence the warning message when end_time > LMs used in fitting the model
 #' @param xlab x label for the plots
 #' @param ylab y label for the plots

@@ -2,7 +2,7 @@
 #'
 #' @param preds A named list of prediction models, where allowed entries are outputs from predLMrisk
 #' @param formula A survival or event history formula. The left hand side is used to compute the expected event status.
-#' If none is given, it is obtained from the prediction object.
+#'   If none is given, it is obtained from the prediction object.
 #' @param metrics  Character vector specifying which metrics to apply. Choices are "auc" and "brier". Case matters.
 #' @param cause Cause of interest if considering competing risks
 #' @param tLM  Landmark times for which scores must be given. These must be a subset of LM times used during the prediction
@@ -10,8 +10,8 @@
 #' @param ... Additional arguments to pass to Score
 #'
 #' @return An object of class "LMScore", which has components:
-#' - auct: dataframe containing time-dependent auc information if "auc" was a metric
-#' - briert: dataframe containing time-dependent brier score if "brier" was a metric
+#'   - auct: dataframe containing time-dependent auc information if "auc" was a metric
+#'   - briert: dataframe containing time-dependent brier score if "brier" was a metric
 #' @details See the Github for example code
 #' @export
 #'

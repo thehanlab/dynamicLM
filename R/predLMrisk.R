@@ -3,18 +3,18 @@
 #' @param supermodel fitted landmarking supermodel
 #' @param newdata dataframe of individuals to make predictions for. Must contain the original covariates (i.e., without landmark interaction)
 #' @param tLM time points at which to predict risk of w more years
-#' Note tLM must be one value for newdata or must have the same length as the number of rows of newdata
-#' (i.e., each datapoint is associated with one LM/prediction time point)
+#'   Note tLM must be one value for newdata or must have the same length as the number of rows of newdata
+#'   (i.e., each datapoint is associated with one LM/prediction time point)
 #' @param cause Cause of interest if under competing risks
 #' @param extend Argument to allow for predictions at landmark times that are greater than those used in model fitting.
-#' Default is FALSE. If set to TRUE, predictions may be unreliable
+#'   Default is FALSE. If set to TRUE, predictions may be unreliable
 #' @param silence Silence the warning message when extend is set to TRUE
 #' @param complete Only make predictions for data entries with non-NA entries (i.e., non-NA predictions)
 #'
 #' @return An object of class "LMpred" with components:
-#' - preds: a dataframe with columns LM and risk, each entry corresponds to one individual and prediction time point (landmark)
-#' - w, type, LHS: as in the fitted super model
-#'- data: the newdata given in input
+#'   - preds: a dataframe with columns LM and risk, each entry corresponds to one individual and prediction time point (landmark)
+#'   - w, type, LHS: as in the fitted super model
+#'   - data: the newdata given in input
 #' @details See the Github for example code
 #' @import survival
 #' @export
@@ -22,7 +22,6 @@
 predLMrisk <- function(supermodel, newdata, tLM, cause, extend=F, silence=F, complete=T)
 {
   # TODO: allow for different prediction window than w (with a warning)
-  # TODO: check supermodel/args are correct = that newdata contains correct covars => check that names of newdata incl. in LMcovars
   # TODO: allow for inputting a fitted model with additional arguments (like fitLM)
 
   func_covars <- supermodel$func_covars
