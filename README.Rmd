@@ -1,5 +1,9 @@
 ---
-output: github_document
+title: "Table of Contents"
+output: 
+  github_document:
+    toc: true
+    toc_depth: 2
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -13,162 +17,216 @@ knitr::opts_chunk$set(
 )
 ```
 
-# dynLM
 
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of dynLM is to provide a simple framework to make dynamic w-year risk predictions from landmark time points, allowing for competing risks and left and right censored data. 
+# dynamicLM
 
-## Installation
+The goal of dynamicLM is to provide a simple framework to make dynamic $w$-year risk predictions, allowing for competing risks, time-dependent covariates, and censored data. 
 
-You can install the development version of dynLM from [GitHub](https://github.com/) with:
+# What is landmarking and when is it used?
+
+"Dynamic prediction" involves obtaining prediction probabilities at baseline and later points in time; it is essential for better-individualized treatment. Personalized risk is updated with new information and/or as time passes. 
+
+![illustration of dynamic w-year predictions](man/figures/README-descrip.png)
+
+An example is cancer treatment: we may want to predict a 5-year risk of recurrence whenever a patient's health information changes. For example, we can predict $w$-year risk of recurrence at baseline (time $=0$) given their initial covariates $Z(0)$ (e.g.,30 years old, on treatment), and we can then predict $w$-year risk at a later point $s$ given their current covariates $Z(s)$ (e.g., $30+s$ years old, off treatment). Note that here the predictions make use of the most recent covariate value of the patient.
+
+The landmark model for survival data is a simple and powerful approach to dynamic prediction for many reasons: 
+
+- **Time-varying effects** are captured by considering interaction terms between the prediction ("landmark") time and covariates
+- **Time-dependent covariates** can be used, in which case, for prediction at landmark time $s$, the most updated value $Z(s)$ will be used. Note that covariates do not have to be time-dependent because time-varying effects will be captured regardless. 
+- **Competing risks** analysis can be performed. Here, we consider the time-to-first-event ('time') and the event type ('cause'). 
+
+Putter and Houwelingen describe landmarking extensively [here](https://onlinelibrary.wiley.com/doi/10.1111/j.1467-9469.2006.00529.x) and [here](https://onlinelibrary.wiley.com/doi/full/10.1002/sim.5665). 
+
+The creation of the landmark model for survival data is built on the concept of risk assessment times (i.e., landmarks) that span risk prediction times of interest. In this approach, a training dataset of the study cohort is transformed into multiple censored datasets based on a prediction window of interest and the predefined landmarks. A model is fit on these stacked datasets (i.e., supermodel), and dynamic risk prediction is then performed by using the most up-to-date value of a patient's covariate values. 
+
+<!-- In order to fit a model, we select some landmarks  for training and build landmark data sets for each point $s$.  -->
+
+<!-- - A landmark dataset contains all individuals who live longer than the landmark time $s$, with censoring applied to anyone living longer than $s+w$.  -->
+<!-- - These landmark datasets are combined into a super dataset, used to train the model.  -->
+<!-- `cutLMsuper(...)` performs this process. Data can be brought in wide or long form and can be manually updated to allow for more complex time-dependent covariates. The example illustrates this in more detail. -->
+
+<!-- To account for time-varying (specifically landmark-varying) effects, landmark interactions are added to the training data. Usually, these are linear and quadratic, but they can be anything. This step is performed by `addLMtime(...)`. -->
+
+<!-- A cox or cause-specific cox model can then be fit to this super data set (using `fitLM(...)`), which can be used for prediction (`predLMrisk(...)`). -->
+
+
+# Installation
+
+You can install the development version of `dynamicLM` from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("anyafries/dynLM")
+devtools::install_github("anyafries/dynamicLM")
 ```
 
-## Example
+# Example
 
-This is a basic example which shows you how to use dynLM to make dynamic predictions and check calibration and discrimination metrics. First, we use the wide-form example data set given in the package. This gives the time-to-event of cancer relapse under 2 competing risks. 3 fixed patient bio-markers are given as well as the variable treatment which indicates the time at which the patient went off treatment.
+This is a basic example which shows you how to use `dynamicLM` to make dynamic 5-year predictions and check calibration and discrimination metrics. 
 
+First, we use the long-form example data set given in the package (note that wide-form data is appropriate too). This gives the time-to-event of cancer relapse under 2 competing risks. 3 fixed patient bio-markers are given as well (age at baseline, stage of initial cancer, bmi, male). A time-dependent covariate treatment indicates if the treatment is on or off treatment and fup_time gives the time at which this patient entry was created.
 
 
 ```{R}
-library(dynLM)
+library(dynamicLM)
 
 data(relapse)
 head(relapse)
+## check same as below
 ```
 
-*Note: data can also be input in long-form. The only change is that later, the format argument to cutLMsuper will be given as "long".*
+```{r}
+relapse = read.csv("../../RA-dynamic-landmarking/relapse3.csv")
 
-### Build a super data set
+relapse$treatment=1-relapse$treatment
+head(relapse)
+```
 
-We first note the outcome variables we are interested in, as well as which variables are fixed or landmark-varying. In case there are no landmark-varying variables, set `varying=NULL`.
+## Build a super data set
+
+We first note the outcome variables we are interested in, as well as which variables are fixed or landmark-varying. When there are no landmark-varying variables, set `varying=NULL`.
 
 ```{r vars}
 outcome = list(time="Time", status="event")
-covs = list(fixed=c("ID","age","marker1","marker2","marker3"),
-            varying=c("treatment"))
+covars = list(fixed=c("ID","age.at.time.0","male","stage","bmi"),
+              varying=c("treatment"))
 ```
 
-We will produce 5-year dynamic predictions of relapse (`w`). Landmark time points (`LMs`) are set as every year between 0 and 3 years to train the model. 
+We will produce 5-year dynamic predictions of relapse (`w`). Landmark time points (`LMs`) are set as every year between 0 and 3 years to train the model. This means we are only interested in prediction between 0 and 3 years.  
 
-We will consider constant and linear landmark interactions with the covariates (given in `func_covars`) and linear effects from the landmarks (`func_LMs`). The covariates that should have these landmark interactions are given in `LMcovars`.
+We will consider linear and quadratic landmark interactions with the covariates (given in `func_covars`) and the landmarks (`func_LMs`). The covariates that should have these landmark interactions are given in `pred.covars`.
 
 ```{r w}
-w <- 5
-LMs <- seq(0,3,by=1)
+w = 5*12                  # risk prediction window (risk within time w)
+LMs = seq(0,36,by=6)      # landmarks on which to build the model
 
-func_covars <- list(
-  function(t) 1,
-  function(t) t
-  )
-func_LMs <- list(
-  function(t) t
-)
-
-LMcovars <- c("age","marker1","marker2","marker3","treatment")
+# Covariate-landmark time interactions
+func.covars <- list( function(t) t, function(t) t^2)
+# let hazard depend on landmark time
+func.LMs <- list( function(t) t, function(t) t^2)
+# Choose covariates that will have time interaction
+pred.covars <- c("age","male","stage","bmi","treatment") 
 ```
 
 
 With this, we are ready to build the super data set that will train the model. We print intermediate steps for illustration.
+
 There are three steps: 
 
 1. `cutLMsuper`: stacks the landmark data sets
 2. An **optional** additional update for more complex columns that vary with landmark-times: For example, here we update the value of age. 
-3. `addLMtime`: Landmark time interactions are added 
+3. `addLMtime`: Landmark time interactions are added, note the additional columns created.
 
-*Note that these return an object of class `LMdataframe`. This has an item `LMdata` which contains the dataset itself.* 
+*Note that these return an object of class `LMdataframe`. This has a component `LMdata` which contains the dataset itself.* 
 
 ```{r super-data-set}
 # Stack landmark datasets
-LMdata <- cutLMsuper(relapse, outcome, LMs, w, covs, format="wide")
+LMdata <- cutLMsuper(relapse, outcome, LMs, w, covars, format="long", id="ID", rtime="fup_time", right=F)
 head(LMdata$LMdata)
 
 # Update complex LM-varying covariates 
-LMdata$LMdata$age <- LMdata$LMdata$age + LMdata$LMdata$LM
+LMdata$LMdata$age <- LMdata$LMdata$age.at.time.0 + LMdata$LMdata$LM/12 # age is in years and LM is in months
 head(LMdata$LMdata)
 
 # Add LM-time interactions
-LMdata <- addLMtime(LMdata, LMcovars, func_covars, func_LMs)
+LMdata <- addLMtime(LMdata, pred.covars, func.covars, func.LMs) # we use pred.covars here, defined in the previous chunk
 head(LMdata$LMdata)
 ```
 
-### Fit the super model
+## Fit the super model
 
-Now we can fit the model. We fit a model with all the covariates created. Note that `LMdata$allLMcovars` gives all the covariates with LM interaction
+Now we can fit the model. We fit a model with all the covariates created. Note that `LMdata$allLMcovars` returns a vector with all the covariates that have LM interactions and from `pred.covars`. The `_1` refers to the first interaction in `func.covars`, `_2` refers to the second interaction in `func.covars`, etc...
 
 ```{r fit-model}
-model_covars <- LMdata$allLMcovars
-print(model_covars)
+allLMcovars <- LMdata$allLMcovars
+print(allLMcovars)
 ```
+
+It is then easy to fit a landmark supermodel using `fitLM`. A formula, super dataset and method need to be provided. If the super dataset is not of class `LMdataframe` (i.e., is a self-created R dataframe), then additional parameters must be specified. In this case, see the details section of the documentation of `addLMtime(...)` for information on how the landmark interaction terms must be named.
 
 ```{r fit-super-model}
-formula <- paste("Hist(Time, event, LM)", "~", 
-                 paste(model_covars, collapse=" + "), "+ cluster(ID)")
+formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment + age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 + bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
 supermodel <- fitLM(as.formula(formula), LMdata, "CSC") 
-# supermodel
+supermodel
 ```
 
-Dynamic hazard ratios can be plotted: 
+Dynamic hazard ratios can be plotted, either log hazard ratio or hazard ratio using the argument `logHR`. Only certain plots can also be provided using the `covars` argument.
 
 ```{r plot-dyn-HR}
 par(mfrow=c(2,3))
 plot_dynamic_HR(supermodel)
 ```
 
-### Obtain predictions
-
-#### For new data
-
-A prediction is made for an individual at a specific prediction time (e.g., at baseline, at 2 years, etc). Thus both an individual and a prediction (landmark) time must be given.
-
-New data is given as a dataframe with individual covariates associated with a landmark time point (i.e., covariate values set at the landmark time-point). E.g., this can be an entry from the very original data frame.
-
-```{r}
-ind = relapse[1:3,]
-tLM = c(0,0,0)
-p0 = predLMrisk(supermodel, ind, tLM, cause=1)
-p0$preds
+```{r, eval=F}
+# To create only two plots:
+plot_dynamic_HR(supermodel, covars=c("age","male"))
 ```
 
+## Obtain predictions
 
-#### For the training data
+### For the training data
 
-Predictions for the training data can be obtained: 
+Predictions for the training data can easily be obtained. This provides $w$-year risk estimates for each individual at each of the training landmarks they are still alive. 
 
 ```{r}
 p1 = predLMrisk(supermodel)
 ```
 
-We can observe calibration. Entering a named list of prediction objects from `predLMrisk` in the first argument allows for comparison between models.  
+### For new data
 
-```{r quantile-calib}
-method="quantile" 
-q=10 
-YLIM=XLIM=c(0,0.2)
+A prediction is made for an individual at a specific prediction time. Thus both a prediction ("landmark") time (e.g., at baseline, at 2 years, etc) and an individual (i.e., covariate values set at the landmark time-point) must be given. Note that the model creates the landmark time-interactions; the new data has the same form as in your original dataset. For example, we can prediction $w$-year risk from baseline using an entry from the very original data frame.
 
-par(mfrow=c(2,2),pty="s")
-outlist = LMcalPlot(list("sm"=p1), cause=1, method=method, q=q, ylim=YLIM, xlim=XLIM) 
+```{r}
+# Prediction time
+landmark_times = c(0,0)
+# Individuals with covariate values at 0
+individuals = relapse[1:2,]
+individuals$age = individuals$age.at.time.0
+print(individuals)
 ```
 
-Obtain the time-dependent Brier score and AUC for w-year prediction from landmarks: 
+```{r}
+p0 = predLMrisk(supermodel, individuals, landmark_times, cause=1)
+p0$preds
+```
+
+## Model evaluation
+
+Calibration plots, which assess the agreement between predictions and observations in different percentiles of the predicted values, can be plotted for each of the landmarks used for prediction. Entering a named list of prediction objects from `predLMrisk` in the first argument allows for comparison between models.  
+
+```{r quantile-calib}
+par(mfrow=c(2,2),pty="s")
+outlist = LMcalPlot(list("Model1"=p1), 
+                    unit="month",            # for the titles
+                    tLM=c(6,12,18,24),       # landmarks at which to provide calibration plots
+                    method="quantile", q=10, # method for calibration plot
+                    ylim=c(0,0.4), xlim=c(0,0.4))
+```
+
+Predictive performance can also be assessed using time-dependent dynamic area under the receiving operator curve (AUCt) or time-dependent dynamic Brier score (BSt). 
+
+- AUCt is defined as the percentage of correctly ordered markers when comparing a case and a control – i.e., those who incur the primary event within the window w after prediction and those who do not. 
+- BSt provides the average squared difference between the primary event markers at time w after prediction and the absolute risk estimates by that time point.
+
 
 ```{r LMScore}
-scores = LMScore(list("LM"=p1), cause=1)
+scores = LMScore(list("Model1"=p1),
+                 tLM=c(6,12,18,24), # landmarks at which to provide calibration plots
+                 unit="month")      # for the print out
 scores
 ```
 
 ### Visualize individual dynamic risk trajectories
 
-Individual risk score trajectories can be plotted. As with `predLMrisk`, the data input is in the form of the original data. For example:
+Individual risk score trajectories can be plotted. As with `predLMrisk`, the data input is in the form of the original data. For example, we can consider two individuals of similar age, bmi, and treatment status at baseline, but of different gender.
 
 ```{r}
-idx <- c(1,15,294)
+idx <- relapse$ID %in% c("ID2412","ID1007")
 relapse[idx,]
+
 ```
 
 We turn our data into long-form data to plot. 
@@ -177,18 +235,22 @@ We turn our data into long-form data to plot.
 
 ```{r prep-long-data}
 # Prediction time points
-x = seq(0,3,by=0.05)
+x = seq(0,36,by=6)
 
-# Create long-form data to plot individual trajetory
-dat = cutLMsuper(relapse[idx,],outcome, x, w, covs, format="wide")$LMdata
-dat$age = dat$age+dat$LM
+# Stack landmark datasets
+dat <- cutLMsuper(relapse[idx,], outcome, x, w, covars, format="long", id="ID", rtime="fup_time", right=F)$LMdata
+dat$age <- dat$age.at.time.0 + dat$LM/12 # age is in years and LM is in months
 
 head(dat)
 ```
 
 ```{r plotRisk}
-plotRisk(supermodel, dat,
-            format="long", LM_col = "LM", id_col="ID", cause=1, ylim=c(0, 0.2))
-
+plotLMrisk(supermodel, dat,
+            format="long", LM_col = "LM", id_col="ID", ylim=c(0, 0.7), x.legend="bottom", unit="month")
 ```
+
+We can see that the male has a much higher and increasing 5-year risk of recurrence that peaks around 1 year, and then rapidly decreases. This can be explained by the dynamic hazard rate of being male. In comparison, the 5-year risk of recurrent for the female remains relatively constant. 
+
+
+
 
