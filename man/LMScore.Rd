@@ -4,7 +4,15 @@
 \alias{LMScore}
 \title{Methods (AUCt, Brier) to score the predictive performance of dynamic risk markers from LM super models}
 \usage{
-LMScore(preds, formula, metrics = c("auc", "brier"), cause, tLM, ...)
+LMScore(
+  preds,
+  formula,
+  metrics = c("auc", "brier"),
+  cause,
+  tLM,
+  unit = "year",
+  ...
+)
 }
 \arguments{
 \item{preds}{A named list of prediction models, where allowed entries are outputs from predLMrisk}
@@ -17,6 +25,8 @@ If none is given, it is obtained from the prediction object.}
 \item{cause}{Cause of interest if considering competing risks}
 
 \item{tLM}{Landmark times for which scores must be given. These must be a subset of LM times used during the prediction}
+
+\item{unit}{Time unit for window of prediction, e.g., "year", "month", etc. Used for plotting}
 
 \item{...}{Additional arguments to pass to Score}
 }

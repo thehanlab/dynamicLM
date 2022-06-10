@@ -6,20 +6,23 @@
 #' @param metrics  Character vector specifying which metrics to apply. Choices are "auc" and "brier". Case matters.
 #' @param cause Cause of interest if considering competing risks
 #' @param tLM  Landmark times for which scores must be given. These must be a subset of LM times used during the prediction
+#' @param unit Time unit for window of prediction, e.g., "year", "month", etc. Used for printing results.
 #' @param ... Additional arguments to pass to Score
 #'
 #' @return An object of class "LMScore", which has components:
 #' - auct: dataframe containing time-dependent auc information if "auc" was a metric
 #' - briert: dataframe containing time-dependent brier score if "brier" was a metric
+#' @details See the Github for example code
 #' @export
 #'
-LMScore <- function(preds,formula,metrics=c("auc","brier"),cause,tLM, ...){
+LMScore <- function(preds,formula,metrics=c("auc","brier"),cause,tLM, unit,...){
   # TODO: check data+formula+times+w for all preds is the same
 
   if (!requireNamespace("data.table", quietly = TRUE)) {
     stop("Package \"data.table\" must be installed to use function LMScore.", call. = FALSE)}
   if (!requireNamespace("riskRegression", quietly = TRUE)) {
     stop("Package \"riskRegression\" must be installed to use function LMScore.", call. = FALSE)}
+  if(missing(unit)) unit = "year"
 
   pred_LMs <- unique(preds[[1]]$preds$LM)
   if(missing(tLM)) times <- pred_LMs
@@ -72,7 +75,7 @@ LMScore <- function(preds,formula,metrics=c("auc","brier"),cause,tLM, ...){
     if ("brier" %in% metrics) briert <- rbind(briert, cbind(tLM,score_t$Brier$score))
 
   }
-  outlist = list(auct=auct,briert=briert,w=w)
+  outlist = list(auct=auct,briert=briert,w=w,unit=unit)
   class(outlist) = "LMScore"
   return(outlist)
 }
