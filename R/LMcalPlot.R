@@ -5,21 +5,21 @@
 #' @param cause Cause of interest if considering competing risks
 #' @param tLM Landmark times for which calibration must be plot. These must be a subset of LM times used during the prediction
 #' @param formula A survival or event history formula. The left hand side is used to compute the expected event status.
-#'   If none is given, it is obtained from the prediction object.
-#' @param plot If FALSE, do not plot the results, just return a plottable object.
+#'   It is recommended to give a formula. If none is given, it is obtained from the prediction object.
+#' @param plot If FALSE, do not plot the results, just return a plottable object.Default is TRUE.
 #' @param main Optional title to override default.
-#' @param sub If TRUE, add a subheading with the number of individuals at risk, and the number that under the event of interest
-#' @param ... Additional arguments to pass to calPlot
+#' @param sub If TRUE, add a subheading with the number of individuals at risk, and the number that under the event of interest.
+#'   Default is TRUE.
+#' @param ... Additional arguments to pass to calPlot (pec package)
 #'
 #' @return List of plots of w-year risk, one entry per prediction/landmark time point
-#' @details See the Github for example code
+#' @details Most errors in plotting occur when a formula is not given. Formulas can look like `Surv(LM,Time,event)~1` / `Surv(LM,Time,event==1)~1` / `Hist(Time,event,LM)~1` / similar...
+#'
+#'  See the Github for example code on using LMcalPlot in general.
 #' @import prodlim
 #' @export
 #'
 LMcalPlot <- function(preds,unit="year",cause,tLM,formula,plot=T,main,sub=T,...){
-  # TODO: check data+formula+times+w for all preds is the same
-  # TODO: fix for cox model
-
   if (!requireNamespace("pec", quietly = TRUE)) {
     stop("Package \"pec\" must be installed to use function LMcalPlot.", call. = FALSE)}
 

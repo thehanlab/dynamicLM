@@ -43,5 +43,7 @@ List of plots of w-year risk, one entry per prediction/landmark time point
 Calibration plots for dynamic risk prediction landmark models
 }
 \details{
-See the Github for example code
+Most errors in plotting occur when a formula is not given. Formulas can look like \code{Surv(LM,Time,event)~1} / \code{Surv(LM,Time,event==1)~1} / \code{Hist(Time,event,LM)~1} / similar...
+
+See the Github for example code on using LMcalPlot in general.
 }
