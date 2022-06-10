@@ -1,9 +1,6 @@
 Table of Contents
 ================
 
--   [dynamicLM](#dynamiclm)
--   [What is landmarking and when is it
-    used?](#what-is-landmarking-and-when-is-it-used)
 - [Table of Contents](#table-of-contents)
 - [dynamicLM](#dynamiclm)
 - [What is landmarking and when is it used?](#what-is-landmarking-and-when-is-it-used)
