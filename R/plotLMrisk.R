@@ -12,6 +12,7 @@
 #' @param extend Argument to allow for risk to be plot at landmark times that are later than the LMs used in model fitting.
 #' Default is FALSE. If set to TRUE, risks may be unreliable.
 #' @param silence Silence the message when end_time > LMs used in fitting the model
+#' @param unit Time unit for window of prediction, e.g., "year", "month", etc. Used for printing results.
 #' @param pch Passed to points
 #' @param lty Vector with line style
 #' @param lwd Vector with line widths
@@ -21,18 +22,20 @@
 #' @param ylab Label for y-axis
 #' @param xlim Limits for the x-axis
 #' @param ylim Limits for the y-axis
+#' @param x.legend,y.legend The x and y co-ordinates to be used to position the legend. They can be specified by keyword or in any way which is accepted by xy.coords.
 #' @param ... Additional arguments passed to plot
 #'
 #' @return Single plot the absolute w-year risk of individuals
+#' @details See the Github for example code
 #' @export
 #'
-plotRisk <- function(supermodel, data, format, LM_col, id_col,
+plotLMrisk <- function(supermodel, data, format, LM_col, id_col,
                      cause, varying,
                      end_time, extend=F, silence=F,
-                     pch,lty,lwd,col,main,xlab,ylab,xlim,ylim,...){
-  # TODO: check that wide format works
+                     unit,
+                     pch,lty,lwd,col,main,xlab,ylab,xlim,ylim,x.legend,y.legend,...){
   # TODO: add w
-
+  if (missing(unit)){unit="year"}
   if(format=="long"){
     if(missing(id_col)) stop("argument 'id_col' should be specified for long format data")
     if(missing(LM_col)) stop("argument 'LM_col' should be specified for long format data")
@@ -82,13 +85,15 @@ plotRisk <- function(supermodel, data, format, LM_col, id_col,
   if (length(pch) < NF)
     pch <- rep(pch, NF)
   if(missing(main))
-    main <- paste0(supermodel$w,"-year dynamic risk prediction")
+    main <- paste0(supermodel$w,"-",unit," dynamic risk prediction")
   if(missing(xlab))
     xlab <- "LM prediction time"
   if(missing(ylab))
     ylab <- "Risk"
   if(missing(xlim))
     xlim <- c(0, end_time)
+  if (missing(x.legend)){x.legend="topright"}
+  if (missing(y.legend)){y.legend=NULL}
 
   plotted=F
   encountered_na=F
@@ -123,20 +128,25 @@ plotRisk <- function(supermodel, data, format, LM_col, id_col,
       if (class(y)=="logical"){
         message(paste0("Individual with ID=",id," could not be plotted as they have missing values"))
       } else {
+        y <- c(y[1],y)
+        if (max(x) < end_time){
+          x <- c(x, end_time)
+          y <- c(y, y[length(y)])
+        }
         if(!plotted){
-          plot(stats::stepfun(x,c(y[1],y)),
+          plot(stats::stepfun(x,y),
                       xlab=xlab, ylab=ylab, main=main,
                       pch=pch[i], lty=lty[i], lwd=lwd[i], col=col[i], xlim=xlim,ylim=ylim, ...)
           plotted=T
         }
         else{
-          graphics::lines(stats::stepfun(x,c(y[1],y)),pch=pch[i],lty=lty[i],lwd=lwd[i],col=col[i],...)
+          graphics::lines(stats::stepfun(x,y),pch=pch[i],lty=lty[i],lwd=lwd[i],col=col[i],...)
         }
       }
     }
 
     if(plotted) {
-      graphics::legend(x = "topright",
+      graphics::legend(x = x.legend, y =y.legend,
            legend = unique_ids,
            lty = lty,
            col = col,
@@ -150,34 +160,31 @@ plotRisk <- function(supermodel, data, format, LM_col, id_col,
 
   } else if (format == "wide") {
 
-    ## TODO !!
-    ## covs not defined... need to redo
+    idx = data[[varying]] < end_time
 
-    # if (is.null(end_time)) end_time = max(data[[outcome$time]])
-    # time_col=supermodel$outcome$time
-    #
-    # for (row in 1:NF){
-    #   ind = data[row,]
-    #   t1 = ind[[covs$varying]]
-    #   if(t1 != ind[[time_col]] & t1 <= end_time){
-    #     x <- c(0, t1)
-    #     ind = cutLMsuper(ind, outcome, x, end_time, covs, format="wide")
-    #   } else {
-    #     x <- c(0)
-    #     ind = dynpred::cutLM(ind, outcome, 0, end_time, covs, format="wide")
-    #   }
-    #
-    #   y <- sapply(1:nrow(ind), function(row) {
-    #     predLMrisk(supermodel,  ind[row,], x[row], extend=extend, silence=T)
-    #   })
-    #
-    #   if (t1!=end_time){
-    #     x <- c(x, end_time)
-    #     y <- c(y, y[length(y)])
-    #   }
-    #   if(i==1) plot(stats::stepfun(x,c(y[1],y)), xlab=xlab, ylab=ylab,main=main,pch=pch[i],lty=lty[i],lwd=lwd[i],col=col[i],...)
-    #   else graphics::lines(stats::stepfun(x,c(y[1],y)),pch=pch[i],lty=lty[i],lwd=lwd[i],col=col[i],...)
-    # }
+    no_change = data[!idx,]
+    if (nrow(no_change)>0){
+      no_change$LM = 0
+      no_change[[varying]] = 0
+    }
+    change1 = data[idx,]
+    if (nrow(change1)>0){
+      change1$LM = 0
+      change1[[varying]] = 0
+    }
+    change2 = data[idx,]
+    if (nrow(change2)>0){
+      change2$LM = change2[[varying]]
+      change2[[varying]] = 1
+    }
+
+    long_form = rbind(no_change, change1, change2)
+
+    plotLMrisk(supermodel, long_form, format="long", LM_col="LM", id_col,
+                           cause, varying,
+                           end_time, extend, silence,
+                           unit, pch,lty,lwd,col,main,xlab,ylab,xlim,ylim,x.legend,y.legend,...)
+
 
   }
 }
