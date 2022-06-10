@@ -15,6 +15,7 @@ plotLMrisk(
   end_time,
   extend = F,
   silence = F,
+  unit,
   pch,
   lty,
   lwd,
@@ -24,6 +25,8 @@ plotLMrisk(
   ylab,
   xlim,
   ylim,
+  x.legend,
+  y.legend,
   ...
 )
 }
@@ -50,6 +53,8 @@ Default is FALSE. If set to TRUE, risks may be unreliable.}
 
 \item{silence}{Silence the message when end_time > LMs used in fitting the model}
 
+\item{unit}{Time unit for window of prediction, e.g., "year", "month", etc. Used for printing results.}
+
 \item{pch}{Passed to points}
 
 \item{lty}{Vector with line style}
@@ -68,6 +73,8 @@ Default is FALSE. If set to TRUE, risks may be unreliable.}
 
 \item{ylim}{Limits for the y-axis}
 
+\item{x.legend, y.legend}{The x and y co-ordinates to be used to position the legend. They can be specified by keyword or in any way which is accepted by xy.coords.}
+
 \item{...}{Additional arguments passed to plot}
 }
 \value{
@@ -75,4 +82,7 @@ Single plot the absolute w-year risk of individuals
 }
 \description{
 Plots the absolute w-year risk of individuals for different LM points for an event of interest within a window
+}
+\details{
+See the Github for example code
 }

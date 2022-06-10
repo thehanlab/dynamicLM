@@ -55,3 +55,6 @@ Plots for each variable in covars showing the dynamic hazard ratio
 \description{
 Plots the dynamic hazard ratio of a cox or CSC supermodel
 }
+\details{
+See the Github for example code
+}

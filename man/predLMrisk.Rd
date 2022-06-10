@@ -43,3 +43,6 @@ An object of class "LMpred" with components:
 \description{
 Calculate w-year risk from a landmark time point
 }
+\details{
+See the Github for example code
+}

@@ -42,3 +42,6 @@ List of plots of w-year risk, one entry per prediction/landmark time point
 \description{
 Calibration plots for dynamic risk prediction landmark models
 }
+\details{
+See the Github for example code
+}
