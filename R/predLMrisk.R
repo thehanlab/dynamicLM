@@ -15,6 +15,7 @@
 #' - preds: a dataframe with columns LM and risk, each entry corresponds to one individual and prediction time point (landmark)
 #' - w, type, LHS: as in the fitted super model
 #'- data: the newdata given in input
+#' @details See the Github for example code
 #' @import survival
 #' @export
 #'
@@ -100,6 +101,7 @@ predLMrisk <- function(supermodel, newdata, tLM, cause, extend=F, silence=F, com
     risks <- supermodel$linear.predictors
     num_preds <- ncol(risks)
     # sanity check
+    if (num_preds == 0){stop("Newdata must be specified.")}
     if (length(tLM) != num_preds){ stop("Error in newdata or tLM. Must have length(tLM) == nrow(newdata) or tLM be one landmarking point.") }
     data <- fm$call$data
   }
