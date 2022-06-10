@@ -112,19 +112,6 @@ was created.
     #> 4 ID1010  8.6575342     2      62.70320    0     0 28.7         1     7.68
     #> 5 ID1024 32.7013699     0      53.25479    0     1 23.9         0     0.00
     #> 6 ID1026 18.6739726     2      65.31507    0     0 23.8         0     0.00
-    ## check same as below
-
-    relapse = read.csv("../../RA-dynamic-landmarking/relapse3.csv")
-
-    relapse$treatment=1-relapse$treatment
-    head(relapse)
-    #>       ID       Time event age.at.time.0 male stage  bmi treatment fup_time
-    #> 1 ID1007 62.6849315     0      60.25936    0     1 25.9         0     0.00
-    #> 2  ID101  0.6575342     1      59.97808    0     0 29.3         0     0.00
-    #> 3 ID1010  8.6575342     2      62.70320    0     0 28.7         0     0.00
-    #> 4 ID1010  8.6575342     2      62.70320    0     0 28.7         1     7.68
-    #> 5 ID1024 32.7013699     0      53.25479    0     1 23.9         0     0.00
-    #> 6 ID1026 18.6739726     2      65.31507    0     0 23.8         0     0.00
 ```
 
 ## Build a super data set
@@ -409,6 +396,7 @@ allows for comparison between models.
     outlist = LMcalPlot(list("Model1"=p1), 
                         unit="month",            # for the titles
                         tLM=c(6,12,18,24),       # landmarks at which to provide calibration plots
+                        formula="Hist(event,Time,LM)~1",
                         method="quantile", q=10, # method for calibration plot
                         ylim=c(0,0.4), xlim=c(0,0.4))
 ```
