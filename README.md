@@ -12,7 +12,6 @@ Table of Contents
     - [For the training data](#for-the-training-data)
     - [For new data](#for-new-data)
   - [Model evaluation](#model-evaluation)
-    - [Visualize individual dynamic risk trajectories](#visualize-individual-dynamic-risk-trajectories)
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 <!-- badges: start -->
@@ -398,7 +397,7 @@ using an entry from the very original data frame.
 ```
 
 ## Model evaluation
-
+### Calibration plots
 Calibration plots, which assess the agreement between predictions and
 observations in different percentiles of the predicted values, can be
 plotted for each of the landmarks used for prediction. Entering a named
@@ -416,6 +415,7 @@ allows for comparison between models.
 
 <img src="man/figures/README-quantile-calib-1.png" width="100%" />
 
+### Time-dependent AUC and Brier Score
 Predictive performance can also be assessed using time-dependent dynamic
 area under the receiving operator curve (AUCt) or time-dependent dynamic
 Brier score (BSt).
