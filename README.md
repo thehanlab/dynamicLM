@@ -396,6 +396,7 @@ allows for comparison between models.
     outlist = LMcalPlot(list("Model1"=p1), 
                         unit="month",            # for the titles
                         tLM=c(6,12,18,24),       # landmarks at which to provide calibration plots
+                        formula="Hist(event,Time,LM)~1",
                         method="quantile", q=10, # method for calibration plot
                         ylim=c(0,0.4), xlim=c(0,0.4))
 ```
