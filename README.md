@@ -12,7 +12,6 @@ Table of Contents
     - [For the training data](#for-the-training-data)
     - [For new data](#for-new-data)
   - [Model evaluation](#model-evaluation)
-    - [Visualize individual dynamic risk trajectories](#visualize-individual-dynamic-risk-trajectories)
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 <!-- badges: start -->
