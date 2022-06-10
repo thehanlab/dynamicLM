@@ -25,8 +25,6 @@
 #'
 predLMrisk <- function(supermodel, newdata, tLM, cause, w, extend=F, silence=F, complete=T)
 {
-  # TODO: allow for inputting a fitted model with additional arguments (like fitLM)
-
   func_covars <- supermodel$func_covars
   func_LM <- supermodel$func_LM
   model_w <- supermodel$w
@@ -94,8 +92,6 @@ predLMrisk <- function(supermodel, newdata, tLM, cause, w, extend=F, silence=F, 
         stop("Error in newdata or tLM. Must have length(tLM) == nrow(newdata) or tLM be one landmarking point.")
       }
     }
-    ## Check newdata contains the correct covariates
-    ## TODO
 
     ## Get risk scores
     risks <- matrix(sapply(1:num_preds, function(i){
