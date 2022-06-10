@@ -7,7 +7,7 @@
 #' @param cause Cause of interest if considering competing risks
 #' @param tLM  Landmark times for which scores must be given. These must be a subset of LM times used during the prediction
 #' @param unit Time unit for window of prediction, e.g., "year", "month", etc. Used for printing results.
-#' @param ... Additional arguments to pass to Score
+#' @param ... Additional arguments to pass to Score (riskRegression package)
 #'
 #' @return An object of class "LMScore", which has components:
 #'   - auct: dataframe containing time-dependent auc information if "auc" was a metric
@@ -16,7 +16,6 @@
 #' @export
 #'
 LMScore <- function(preds,formula,metrics=c("auc","brier"),cause,tLM, unit,...){
-  # TODO: check data+formula+times+w for all preds is the same
 
   if (!requireNamespace("data.table", quietly = TRUE)) {
     stop("Package \"data.table\" must be installed to use function LMScore.", call. = FALSE)}
