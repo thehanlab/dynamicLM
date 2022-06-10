@@ -125,7 +125,7 @@ print.LMdataframe <- function(x, ...){
 print.LMScore <- function(x,digits=3,...){
 
   if(nrow(x$auct)>0){
-    cat(paste0("\nMetric: Time-dependent AUC for ",x$w,"-year risk prediction\n"))
+    cat(paste0("\nMetric: Time-dependent AUC for ",x$w,"-",x$unit," risk prediction\n"))
     cat("\nResults by model:\n")
 
     AUC=se=times=lower=upper=NULL
@@ -146,7 +146,7 @@ print.LMScore <- function(x,digits=3,...){
     message(paste0("NOTE: Predictions are made at time tLM for ",x$w,"-year risk"))
   }
   if(nrow(x$briert)>0){
-    cat(paste0("\nMetric: Brier Score for ",x$w,"-year risk prediction\n"))
+    cat(paste0("\nMetric: Brier Score for ",x$w,"-",x$unit," risk prediction\n"))
     cat("\nResults by model:\n")
 
     Brier=se=times=se.conservative=lower=upper=NULL
