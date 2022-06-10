@@ -10,12 +10,22 @@
 #' @param main Optional title to override default.
 #' @param sub If TRUE, add a subheading with the number of individuals at risk, and the number that under the event of interest.
 #'   Default is TRUE.
-#' @param ... Additional arguments to pass to calPlot (pec package)
+#' @param ... Additional arguments to pass to calPlot
 #'
 #' @return List of plots of w-year risk, one entry per prediction/landmark time point
 #' @details Most errors in plotting occur when a formula is not given. Formulas can look like `Surv(LM,Time,event)~1` / `Surv(LM,Time,event==1)~1` / `Hist(Time,event,LM)~1` / similar...
 #'
 #'  See the Github for example code on using LMcalPlot in general.
+#' @example
+#' \notrun{
+#' par(mfrow=c(2,2),pty="s")
+#' outlist = LMcalPlot(list("Model1"=p1),
+#'                     unit="month",            # for the title
+#'                     tLM=c(6,12,18,24),       # landmarks at which to provide calibration plots
+#'                     formula="Hist(event,Time,LM)~1",
+#'                     method="quantile", q=10, # method for calibration plot
+#'                     ylim=c(0,0.4), xlim=c(0,0.4))
+#' }
 #' @import prodlim
 #' @export
 #'
