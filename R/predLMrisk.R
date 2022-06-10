@@ -2,14 +2,18 @@
 #'
 #' @param supermodel fitted landmarking supermodel
 #' @param newdata dataframe of individuals to make predictions for. Must contain the original covariates (i.e., without landmark interaction)
-#' @param tLM time points at which to predict risk of w more years
+#' @param tLM time points at which to predict risk of w more years.
 #'   Note tLM must be one value for newdata or must have the same length as the number of rows of newdata
-#'   (i.e., each datapoint is associated with one LM/prediction time point)
-#' @param cause Cause of interest if under competing risks
-#' @param extend Argument to allow for predictions at landmark times that are greater than those used in model fitting.
-#'   Default is FALSE. If set to TRUE, predictions may be unreliable
-#' @param silence Silence the warning message when extend is set to TRUE
-#' @param complete Only make predictions for data entries with non-NA entries (i.e., non-NA predictions)
+#'   (i.e., each datapoint is associated with one LM/prediction time point).
+#' @param cause Cause of interest if under competing risks.
+#' @param w Prediction window, i.e., predict w-year (/month/..) risk from each of the tLMs.
+#'   Defaults to the w used in model fitting.
+#'   If w > than that used in model fitting, results are unreliable, but can be produced by setting extend=T.
+#' @param extend Argument to allow for predictions at landmark times that are greater than those used in model fitting,
+#'   or prediction windows greater than the one used in model fitting.
+#'   Default is FALSE. If set to TRUE, predictions may be unreliable.
+#' @param silence Silence the warning message when extend is set to TRUE.
+#' @param complete Only make predictions for data entries with non-NA entries (i.e., non-NA predictions). Default is TRUE.
 #'
 #' @return An object of class "LMpred" with components:
 #'   - preds: a dataframe with columns LM and risk, each entry corresponds to one individual and prediction time point (landmark)
@@ -19,14 +23,22 @@
 #' @import survival
 #' @export
 #'
-predLMrisk <- function(supermodel, newdata, tLM, cause, extend=F, silence=F, complete=T)
+predLMrisk <- function(supermodel, newdata, tLM, cause, w, extend=F, silence=F, complete=T)
 {
-  # TODO: allow for different prediction window than w (with a warning)
   # TODO: allow for inputting a fitted model with additional arguments (like fitLM)
 
   func_covars <- supermodel$func_covars
   func_LM <- supermodel$func_LM
-  w <- supermodel$w
+  model_w <- supermodel$w
+  if(missing(w)){w <- model_w}
+  else{
+    if(w > model_w && !extend) stop(paste0("Prediction window w (=",w,") is larger than the window used in model fitting (=",model_w,").",
+                "\nIf you wish to still make predictions at these times, set arg extend=T but note that results may be unreliable."))
+    else if (w > model_w & extend) {
+      if (!silence) message(paste0("NOTE: Prediction window w (=",w,") is larger than the window used in model fitting (=",model_w,"). ",
+                "\nPredictions may be unreliable."))
+      }
+  }
   fm <- supermodel$model
   type <- supermodel$type
 

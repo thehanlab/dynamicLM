@@ -10,6 +10,7 @@ plotLMrisk(
   format,
   LM_col,
   id_col,
+  w,
   cause,
   varying,
   end_time,
@@ -41,6 +42,10 @@ plotLMrisk(
 associated with the time-varying covariate(s); only needed if format="long"}
 
 \item{id_col}{Character string specifying the column name in data containing the subject id; only needed if format="long"}
+
+\item{w}{Prediction window, i.e., predict w-year (/month/..) risk from each of the tLMs.
+Defaults to the w used in model fitting.
+If w > than that used in model fitting, results are unreliable, but can be produced by setting extend=T.}
 
 \item{cause}{The cause we are looking at if considering competing risks}
 

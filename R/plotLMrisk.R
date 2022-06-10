@@ -6,6 +6,9 @@
 #' @param LM_col Character string specifying the column name in data containing the (running) time variable
 #'   associated with the time-varying covariate(s); only needed if format="long"
 #' @param id_col Character string specifying the column name in data containing the subject id; only needed if format="long"
+#' @param w Prediction window, i.e., predict w-year (/month/..) risk from each of the tLMs.
+#'   Defaults to the w used in model fitting.
+#'   If w > than that used in model fitting, results are unreliable, but can be produced by setting extend=T.
 #' @param cause The cause we are looking at if considering competing risks
 #' @param varying Character string specifying column name in the data containing time-varying covariates; only needed if format="wide"
 #' @param end_time Final time point to plot risk
@@ -29,12 +32,23 @@
 #' @details See the Github for example code
 #' @export
 #'
-plotLMrisk <- function(supermodel, data, format, LM_col, id_col,
+plotLMrisk <- function(supermodel, data, format, LM_col, id_col, w,
                      cause, varying,
                      end_time, extend=F, silence=F,
                      unit,
                      pch,lty,lwd,col,main,xlab,ylab,xlim,ylim,x.legend,y.legend,...){
-  # TODO: add w
+
+  model_w <- supermodel$w
+  if(missing(w)){w <- model_w}
+  else{
+    if(w > model_w && !extend) stop(paste0("Prediction window w (=",w,") is larger than the window used in model fitting (=",model_w,").",
+                                           "\nIf you wish to still make predictions at these times, set arg extend=T but note that results may be unreliable."))
+    else if (w > model_w & extend) {
+      if (!silence) message(paste0("NOTE: Prediction window w (=",w,") is larger than the window used in model fitting (=",model_w,"). ",
+                                   "\nPredictions may be unreliable."))
+    }
+  }
+
   if (missing(unit)){unit="year"}
   if(format=="long"){
     if(missing(id_col)) stop("argument 'id_col' should be specified for long format data")

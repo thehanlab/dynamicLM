@@ -9,6 +9,7 @@ predLMrisk(
   newdata,
   tLM,
   cause,
+  w,
   extend = F,
   silence = F,
   complete = T
@@ -19,18 +20,23 @@ predLMrisk(
 
 \item{newdata}{dataframe of individuals to make predictions for. Must contain the original covariates (i.e., without landmark interaction)}
 
-\item{tLM}{time points at which to predict risk of w more years
+\item{tLM}{time points at which to predict risk of w more years.
 Note tLM must be one value for newdata or must have the same length as the number of rows of newdata
-(i.e., each datapoint is associated with one LM/prediction time point)}
+(i.e., each datapoint is associated with one LM/prediction time point).}
 
-\item{cause}{Cause of interest if under competing risks}
+\item{cause}{Cause of interest if under competing risks.}
 
-\item{extend}{Argument to allow for predictions at landmark times that are greater than those used in model fitting.
-Default is FALSE. If set to TRUE, predictions may be unreliable}
+\item{w}{Prediction window, i.e., predict w-year (/month/..) risk from each of the tLMs.
+Defaults to the w used in model fitting.
+If w > than that used in model fitting, results are unreliable, but can be produced by setting extend=T.}
 
-\item{silence}{Silence the warning message when extend is set to TRUE}
+\item{extend}{Argument to allow for predictions at landmark times that are greater than those used in model fitting,
+or prediction windows greater than the one used in model fitting.
+Default is FALSE. If set to TRUE, predictions may be unreliable.}
 
-\item{complete}{Only make predictions for data entries with non-NA entries (i.e., non-NA predictions)}
+\item{silence}{Silence the warning message when extend is set to TRUE.}
+
+\item{complete}{Only make predictions for data entries with non-NA entries (i.e., non-NA predictions). Default is TRUE.}
 }
 \value{
 An object of class "LMpred" with components:
