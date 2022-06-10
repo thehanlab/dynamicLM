@@ -17,11 +17,11 @@
 #' @param ... Additional arguments passed to plot
 #'
 #' @return Plots for each variable in covars showing the dynamic hazard ratio
+#' @details See the Github for example code
 #' @export
 #'
 plot_dynamic_HR <- function(supermodel, covars, CI=T, cause, end_time, extend=F, silence=F,
                             xlab="LM time", ylab, ylim, main, logHR=T, ...){
-  # TODO: for non-binary variables allow for choice of value (instead of assumed=1)
   fm = supermodel$model
 
   if(CI){
