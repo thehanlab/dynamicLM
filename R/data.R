@@ -1,6 +1,6 @@
 #' Time-to-event data of cancer relapse
 #'
-#' A dataset containing the time-to-event of cancer relapse (event=1) with the competing risk death (event=2) in long-form with patient information.
+#' Synthetic dataset containing the time-to-event of cancer relapse (event=1) with the competing risk death (event=2) in long-form with patient information.
 #'
 #' @format A data frame with 989 rows and 9 columns:
 #' \describe{
@@ -14,5 +14,4 @@
 #'   \item{treatment}{Patient's treatment status, treatment=1=on treatment, treament=0=patient is off treatment}
 #'   \item{fup_time}{Follow-up time, i.e., time at which this patient entry was created.}
 #' }
-#' @source \url{TODO}
 "relapse"
