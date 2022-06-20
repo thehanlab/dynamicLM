@@ -129,9 +129,9 @@ There are three steps:
 We illustrate the process in detail by printing the entries at each step for one individual, ID1029.
 
 ```{r super-data-set}
-relapse[relapse$ID == "ID1029",]  
+relapse[relapse$ID == "ID1029",]   
 ```
-We first stack the datasets over the landmarks (see the new column 'LM') and update the treatment covariate. Note that one row is created for each landmark that the individual is still alive at. In this row, if time is greater time than the landmark time plus the window, it is censored at this value (this occurs in the first row, for example, censored at 0+60), and the most recent value all covariates is used (in our case, only treatment varies).
+We first stack the datasets over the landmarks (see the new column 'LM') and update the treatment covariate. Note that one row is created for each landmark that the individual is still alive at. In this row, if time is greater time than the landmark time plus the window, it is censored at this value (this occurs in the first row, for example, censored at 0+60), and the most recent value all covariates is used (in our case, only treatment varies). 
 
 ```{r}
 # Stack landmark datasets
