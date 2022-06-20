@@ -67,22 +67,27 @@ devtools::install_github("anyafries/dynamicLM")
 
 This is a basic example which shows you how to use `dynamicLM` to make dynamic 5-year predictions and check calibration and discrimination metrics. 
 
-First, we use the long-form example data set given in the package (note that wide-form data is appropriate too). This gives the time-to-event of cancer relapse under 2 competing risks. 3 fixed patient bio-markers are given as well (age at baseline, stage of initial cancer, bmi, male). A time-dependent covariate treatment indicates if the treatment is on or off treatment and fup_time gives the time at which this patient entry was created.
+## Data
+
+Data can come in various forms, with or without time-dependent covariates:
+
+- Static data, with one entry per patient. Here, landmark time-varying effects are still considered for dynamic risk prediction.
+- Longitudinal (long-form) data, with multiple entries for each patient with updated covariate information.
+- Wide-form data, with a column containing the time at which the covariate changes from 0 to 1. 
+
+We illustrate the package using the long-form example data set given in the package. This gives the time-to-event of cancer relapse under 2 competing risks. 3 fixed patient bio-markers are given as well (age at baseline, stage of initial cancer, bmi, male). A time-dependent covariate treatment indicates if the treatment is on or off treatment and fup_time gives the time at which this patient entry was created.
 
 
 ```{R}
 library(dynamicLM)
 
 data(relapse)
-head(relapse)
-## check same as below
 ```
 
 ```{r}
-relapse = read.csv("../../RA-dynamic-landmarking/relapse3.csv")
+dim(relapse)
 
-relapse$treatment=1-relapse$treatment
-head(relapse)
+length(unique(relapse$ID)) # There are 171 patients with two entries, i.e., one after time 0
 ```
 
 ## Build a super data set
@@ -121,24 +126,40 @@ There are three steps:
 3. `addLMtime`: Landmark time interactions are added, note the additional columns created.
 
 *Note that these return an object of class `LMdataframe`. This has a component `LMdata` which contains the dataset itself.* 
+We illustrate the process in detail by printing the entries at each step for one individual, ID1029.
 
 ```{r super-data-set}
+relapse[relapse$ID == "ID1029",]  
+```
+We first stack the datasets over the landmarks (see the new column 'LM') and update the treatment covariate. Note that one row is created for each landmark that the individual is still alive at. In this row, if time is greater time than the landmark time plus the window, it is censored at this value (this occurs in the first row, for example, censored at 0+60), and the most recent value all covariates is used (in our case, only treatment varies).
+
+```{r}
 # Stack landmark datasets
 LMdata <- cutLMsuper(relapse, outcome, LMs, w, covars, format="long", id="ID", rtime="fup_time", right=F)
-head(LMdata$LMdata)
-
-# Update complex LM-varying covariates 
-LMdata$LMdata$age <- LMdata$LMdata$age.at.time.0 + LMdata$LMdata$LM/12 # age is in years and LM is in months
-head(LMdata$LMdata)
-
-# Add LM-time interactions
-LMdata <- addLMtime(LMdata, pred.covars, func.covars, func.LMs) # we use pred.covars here, defined in the previous chunk
-head(LMdata$LMdata)
+data = LMdata$LMdata
+print(data[data$ID == "ID1029",] )
 ```
+
+We then (optionally) update more complex LM-varying covariates. Here we create an age covariate, based on age at time 0.
+
+```{r}
+LMdata$LMdata$age <- LMdata$LMdata$age.at.time.0 + LMdata$LMdata$LM/12 # age is in years and LM is in months
+data = LMdata$LMdata
+print(data[data$ID == "ID1029",] )
+```
+
+Lastly, we add landmark time-interactions. The `_1` refers to the first interaction in `func.covars`, `_2` refers to the second interaction in `func.covars`, etc... Similarly, `LM_1` and `LM_2` are created from `func.LM`.
+
+```{r}
+LMdata <- addLMtime(LMdata, pred.covars, func.covars, func.LMs) # we use pred.covars here, defined in the previous chunk
+data = LMdata$LMdata
+print(data[data$ID == "ID1029",] )
+```
+
 
 ## Fit the super model
 
-Now we can fit the model. We fit a model with all the covariates created. Note that `LMdata$allLMcovars` returns a vector with all the covariates that have LM interactions and from `pred.covars`. The `_1` refers to the first interaction in `func.covars`, `_2` refers to the second interaction in `func.covars`, etc...
+Now we can fit the model. We fit a model with all the covariates created. Note that `LMdata$allLMcovars` returns a vector with all the covariates that have LM interactions and from `pred.covars`. Again, the `_1` refers to the first interaction in `func.covars`, `_2` refers to the second interaction in `func.covars`, etc... `LM_1` and `LM_2` are created from `func.LM`.
 
 ```{r fit-model}
 allLMcovars <- LMdata$allLMcovars

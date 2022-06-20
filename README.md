@@ -1,17 +1,16 @@
 Table of Contents
 ================
 
-- [Table of Contents](#table-of-contents)
-- [dynamicLM](#dynamiclm)
-- [What is landmarking and when is it used?](#what-is-landmarking-and-when-is-it-used)
-- [Installation](#installation)
-- [Example](#example)
-  - [Build a super data set](#build-a-super-data-set)
-  - [Fit the super model](#fit-the-super-model)
-  - [Obtain predictions](#obtain-predictions)
-    - [For the training data](#for-the-training-data)
-    - [For new data](#for-new-data)
-  - [Model evaluation](#model-evaluation)
+-   [dynamicLM](#dynamiclm)
+-   [What is landmarking and when is it
+    used?](#what-is-landmarking-and-when-is-it-used)
+-   [Installation](#installation)
+-   [Example](#example)
+    -   [Data](#data)
+    -   [Build a super data set](#build-a-super-data-set)
+    -   [Fit the super model](#fit-the-super-model)
+    -   [Obtain predictions](#obtain-predictions)
+    -   [Model evaluation](#model-evaluation)
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 <!-- badges: start -->
@@ -79,10 +78,8 @@ patient’s covariate values.
 You can install the development version of `dynamicLM` from
 [GitHub](https://github.com/) with:
 
-```R
     # install.packages("devtools")
     devtools::install_github("anyafries/dynamicLM")
-```
 
 # Example
 
@@ -90,29 +87,36 @@ This is a basic example which shows you how to use `dynamicLM` to make
 dynamic 5-year predictions and check calibration and discrimination
 metrics.
 
-First, we use the long-form example data set given in the package (note
-that wide-form data is appropriate too). This gives the time-to-event of
-cancer relapse under 2 competing risks. 3 fixed patient bio-markers are
-given as well (age at baseline, stage of initial cancer, bmi, male). A
-time-dependent covariate treatment indicates if the treatment is on or
-off treatment and fup\_time gives the time at which this patient entry
-was created.
+## Data
 
-```R
+Data can come in various forms, with or without time-dependent
+covariates:
+
+-   Static data, with one entry per patient. Here, landmark time-varying
+    effects are still considered for dynamic risk prediction.
+-   Longitudinal (long-form) data, with multiple entries for each
+    patient with updated covariate information.
+-   Wide-form data, with a column containing the time at which the
+    covariate changes from 0 to 1.
+
+We illustrate the package using the long-form example data set given in
+the package. This gives the time-to-event of cancer relapse under 2
+competing risks. 3 fixed patient bio-markers are given as well (age at
+baseline, stage of initial cancer, bmi, male). A time-dependent
+covariate treatment indicates if the treatment is on or off treatment
+and fup\_time gives the time at which this patient entry was created.
+
     library(dynamicLM)
     #> Loading required package: prodlim
     #> Loading required package: survival
 
     data(relapse)
-    head(relapse)
-    #>       ID       Time event age.at.time.0 male stage  bmi treatment fup_time
-    #> 1 ID1007 62.6849315     0      60.25936    0     1 25.9         0     0.00
-    #> 2  ID101  0.6575342     1      59.97808    0     0 29.3         0     0.00
-    #> 3 ID1010  8.6575342     2      62.70320    0     0 28.7         0     0.00
-    #> 4 ID1010  8.6575342     2      62.70320    0     0 28.7         1     7.68
-    #> 5 ID1024 32.7013699     0      53.25479    0     1 23.9         0     0.00
-    #> 6 ID1026 18.6739726     2      65.31507    0     0 23.8         0     0.00
-```
+
+    dim(relapse)
+    #> [1] 989   9
+
+    length(unique(relapse$ID)) # There are 171 patients with two entries, i.e., one after time 0
+    #> [1] 818
 
 ## Build a super data set
 
@@ -120,11 +124,9 @@ We first note the outcome variables we are interested in, as well as
 which variables are fixed or landmark-varying. When there are no
 landmark-varying variables, set `varying=NULL`.
 
-```R
     outcome = list(time="Time", status="event")
     covars = list(fixed=c("ID","age.at.time.0","male","stage","bmi"),
                   varying=c("treatment"))
-```
 
 We will produce 5-year dynamic predictions of relapse (`w`). Landmark
 time points (`LMs`) are set as every year between 0 and 3 years to train
@@ -136,7 +138,6 @@ covariates (given in `func_covars`) and the landmarks (`func_LMs`). The
 covariates that should have these landmark interactions are given in
 `pred.covars`.
 
-```R
     w = 5*12                  # risk prediction window (risk within time w)
     LMs = seq(0,36,by=6)      # landmarks on which to build the model
 
@@ -146,7 +147,6 @@ covariates that should have these landmark interactions are given in
     func.LMs <- list( function(t) t, function(t) t^2)
     # Choose covariates that will have time interaction
     pred.covars <- c("age","male","stage","bmi","treatment") 
-```
 
 With this, we are ready to build the super data set that will train the
 model. We print intermediate steps for illustration.
@@ -160,73 +160,115 @@ There are three steps:
     additional columns created.
 
 *Note that these return an object of class `LMdataframe`. This has a
-component `LMdata` which contains the dataset itself.*
+component `LMdata` which contains the dataset itself.* We illustrate the
+process in detail by printing the entries at each step for one
+individual, ID1029.
 
-```R
+    relapse[relapse$ID == "ID1029",]  
+    #>       ID     Time event age.at.time.0 male stage  bmi treatment fup_time
+    #> 7 ID1029 60.03288     0      62.25753    0     0 26.8         0     0.00
+    #> 8 ID1029 60.03288     0      62.25753    0     0 26.8         1    12.96
+
+We first stack the datasets over the landmarks (see the new column ‘LM’)
+and update the treatment covariate. Note that one row is created for
+each landmark that the individual is still alive at. In this row, if
+time is greater time than the landmark time plus the window, it is
+censored at this value (this occurs in the first row, for example,
+censored at 0+60), and the most recent value all covariates is used (in
+our case, only treatment varies).
+
     # Stack landmark datasets
     LMdata <- cutLMsuper(relapse, outcome, LMs, w, covars, format="long", id="ID", rtime="fup_time", right=F)
-    head(LMdata$LMdata)
-    #>       ID       Time event   ID.1 age.at.time.0 male stage  bmi treatment fup_time LM
-    #> 1 ID1007 60.0000000     0 ID1007      60.25936    0     1 25.9         0        0  0
-    #> 2  ID101  0.6575342     1  ID101      59.97808    0     0 29.3         0        0  0
-    #> 3 ID1010  8.6575342     2 ID1010      62.70320    0     0 28.7         0        0  0
-    #> 5 ID1024 32.7013699     0 ID1024      53.25479    0     1 23.9         0        0  0
-    #> 6 ID1026 18.6739726     2 ID1026      65.31507    0     0 23.8         0        0  0
-    #> 7 ID1029 60.0000000     0 ID1029      62.25753    0     0 26.8         0        0  0
- 
-    # Update complex LM-varying covariates 
-    LMdata$LMdata$age <- LMdata$LMdata$age.at.time.0 + LMdata$LMdata$LM/12 # age is in years and LM is in months
-    head(LMdata$LMdata)
-    #>       ID       Time event   ID.1 age.at.time.0 male stage  bmi treatment fup_time LM      age
-    #> 1 ID1007 60.0000000     0 ID1007      60.25936    0     1 25.9         0        0  0 60.25936
-    #> 2  ID101  0.6575342     1  ID101      59.97808    0     0 29.3         0        0  0 59.97808
-    #> 3 ID1010  8.6575342     2 ID1010      62.70320    0     0 28.7         0        0  0 62.70320
-    #> 5 ID1024 32.7013699     0 ID1024      53.25479    0     1 23.9         0        0  0 53.25479
-    #> 6 ID1026 18.6739726     2 ID1026      65.31507    0     0 23.8         0        0  0 65.31507
-    #> 7 ID1029 60.0000000     0 ID1029      62.25753    0     0 26.8         0        0  0 62.25753
+    data = LMdata$LMdata
+    print(data[data$ID == "ID1029",] )
+    #>         ID     Time event   ID.1 age.at.time.0 male stage  bmi treatment
+    #> 7   ID1029 60.00000     0 ID1029      62.25753    0     0 26.8         0
+    #> 73  ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         0
+    #> 733 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         0
+    #> 736 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
+    #> 751 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
+    #> 786 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
+    #> 788 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
+    #>     fup_time LM
+    #> 7       0.00  0
+    #> 73      0.00  6
+    #> 733     0.00 12
+    #> 736    12.96 18
+    #> 751    12.96 24
+    #> 786    12.96 30
+    #> 788    12.96 36
 
-    # Add LM-time interactions
+We then (optionally) update more complex LM-varying covariates. Here we
+create an age covariate, based on age at time 0.
+
+    LMdata$LMdata$age <- LMdata$LMdata$age.at.time.0 + LMdata$LMdata$LM/12 # age is in years and LM is in months
+    data = LMdata$LMdata
+    print(data[data$ID == "ID1029",] )
+    #>         ID     Time event   ID.1 age.at.time.0 male stage  bmi treatment
+    #> 7   ID1029 60.00000     0 ID1029      62.25753    0     0 26.8         0
+    #> 73  ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         0
+    #> 733 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         0
+    #> 736 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
+    #> 751 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
+    #> 786 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
+    #> 788 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
+    #>     fup_time LM      age
+    #> 7       0.00  0 62.25753
+    #> 73      0.00  6 62.75753
+    #> 733     0.00 12 63.25753
+    #> 736    12.96 18 63.75753
+    #> 751    12.96 24 64.25753
+    #> 786    12.96 30 64.75753
+    #> 788    12.96 36 65.25753
+
+Lastly, we add landmark time-interactions. The `_1` refers to the first
+interaction in `func.covars`, `_2` refers to the second interaction in
+`func.covars`, etc… Similarly, `LM_1` and `LM_2` are created from
+`func.LM`.
+
     LMdata <- addLMtime(LMdata, pred.covars, func.covars, func.LMs) # we use pred.covars here, defined in the previous chunk
-    head(LMdata$LMdata)
-    #>       ID       Time event   ID.1 age.at.time.0 male stage  bmi treatment
-    #> 1 ID1007 60.0000000     0 ID1007      60.25936    0     1 25.9         0
-    #> 2  ID101  0.6575342     1  ID101      59.97808    0     0 29.3         0
-    #> 3 ID1010  8.6575342     2 ID1010      62.70320    0     0 28.7         0
-    #> 5 ID1024 32.7013699     0 ID1024      53.25479    0     1 23.9         0
-    #> 6 ID1026 18.6739726     2 ID1026      65.31507    0     0 23.8         0
-    #> 7 ID1029 60.0000000     0 ID1029      62.25753    0     0 26.8         0
-    #>   fup_time LM      age age_1 age_2 male_1 male_2 stage_1 stage_2 bmi_1 bmi_2
-    #> 1        0  0 60.25936     0     0      0      0       0       0     0     0
-    #> 2        0  0 59.97808     0     0      0      0       0       0     0     0
-    #> 3        0  0 62.70320     0     0      0      0       0       0     0     0
-    #> 5        0  0 53.25479     0     0      0      0       0       0     0     0
-    #> 6        0  0 65.31507     0     0      0      0       0       0     0     0
-    #> 7        0  0 62.25753     0     0      0      0       0       0     0     0
-    #>   treatment_1 treatment_2 LM_1 LM_2
-    #> 1           0           0    0    0
-    #> 2           0           0    0    0
-    #> 3           0           0    0    0
-    #> 5           0           0    0    0
-    #> 6           0           0    0    0
-    #> 7           0           0    0    0
-```
+    data = LMdata$LMdata
+    print(data[data$ID == "ID1029",] )
+    #>         ID     Time event   ID.1 age.at.time.0 male stage  bmi treatment
+    #> 7   ID1029 60.00000     0 ID1029      62.25753    0     0 26.8         0
+    #> 73  ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         0
+    #> 733 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         0
+    #> 736 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
+    #> 751 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
+    #> 786 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
+    #> 788 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
+    #>     fup_time LM      age     age_1     age_2 male_1 male_2 stage_1 stage_2
+    #> 7       0.00  0 62.25753    0.0000     0.000      0      0       0       0
+    #> 73      0.00  6 62.75753  376.5452  2259.271      0      0       0       0
+    #> 733     0.00 12 63.25753  759.0904  9109.085      0      0       0       0
+    #> 736    12.96 18 63.75753 1147.6356 20657.441      0      0       0       0
+    #> 751    12.96 24 64.25753 1542.1808 37012.340      0      0       0       0
+    #> 786    12.96 30 64.75753 1942.7260 58281.781      0      0       0       0
+    #> 788    12.96 36 65.25753 2349.2712 84573.764      0      0       0       0
+    #>     bmi_1   bmi_2 treatment_1 treatment_2 LM_1 LM_2
+    #> 7     0.0     0.0           0           0    0    0
+    #> 73  160.8   964.8           0           0    6   36
+    #> 733 321.6  3859.2           0           0   12  144
+    #> 736 482.4  8683.2          18         324   18  324
+    #> 751 643.2 15436.8          24         576   24  576
+    #> 786 804.0 24120.0          30         900   30  900
+    #> 788 964.8 34732.8          36        1296   36 1296
 
 ## Fit the super model
 
 Now we can fit the model. We fit a model with all the covariates
 created. Note that `LMdata$allLMcovars` returns a vector with all the
-covariates that have LM interactions and from `pred.covars`. The `_1`
-refers to the first interaction in `func.covars`, `_2` refers to the
-second interaction in `func.covars`, etc…
+covariates that have LM interactions and from `pred.covars`. Again, the
+`_1` refers to the first interaction in `func.covars`, `_2` refers to
+the second interaction in `func.covars`, etc… `LM_1` and `LM_2` are
+created from `func.LM`.
 
-```R
     allLMcovars <- LMdata$allLMcovars
     print(allLMcovars)
     #>  [1] "age"         "male"        "stage"       "bmi"         "treatment"  
     #>  [6] "age_1"       "age_2"       "male_1"      "male_2"      "stage_1"    
     #> [11] "stage_2"     "bmi_1"       "bmi_2"       "treatment_1" "treatment_2"
     #> [16] "LM_1"        "LM_2"
-```
 
 It is then easy to fit a landmark supermodel using `fitLM`. A formula,
 super dataset and method need to be provided. If the super dataset is
@@ -235,7 +277,6 @@ additional parameters must be specified. In this case, see the details
 section of the documentation of `addLMtime(...)` for information on how
 the landmark interaction terms must be named.
 
-```R
     formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment + age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 + bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
     supermodel <- fitLM(as.formula(formula), LMdata, "CSC") 
     #> Warning in .recacheSubclasses(def@className, def, env): undefined subclass
@@ -298,20 +339,20 @@ the landmark interaction terms must be named.
     #> $func_covars
     #> $func_covars$[[1]]
     #> function(t) t
-    #> <environment: 0x7f9ea4d179d8>
+    #> <environment: 0x7fe63ca4c9d8>
     #> 
     #> $func_covars$[[2]]
     #> function(t) t^2
-    #> <environment: 0x7f9ea4d179d8>
+    #> <environment: 0x7fe63ca4c9d8>
     #> 
     #> $func_LMs
     #> $func_LMs$[[1]]
     #> function(t) t
-    #> <environment: 0x7f9ea4d179d8>
+    #> <environment: 0x7fe63ca4c9d8>
     #> 
     #> $func_LMs$[[2]]
     #> function(t) t^2
-    #> <environment: 0x7f9ea4d179d8>
+    #> <environment: 0x7fe63ca4c9d8>
     #> 
     #> $w
     #> [1] 60
@@ -321,23 +362,18 @@ the landmark interaction terms must be named.
     #> 
     #> $type
     #> [1] "CSC"
-```
 
 Dynamic hazard ratios can be plotted, either log hazard ratio or hazard
 ratio using the argument `logHR`. Only certain plots can also be
 provided using the `covars` argument.
 
-```R
     par(mfrow=c(2,3))
     plot_dynamic_HR(supermodel)
-```
 
 <img src="man/figures/README-plot-dyn-HR-1.png" width="100%" />
 
-```R
     # To create only two plots:
     plot_dynamic_HR(supermodel, covars=c("age","male"))
-```
 
 ## Obtain predictions
 
@@ -347,9 +383,7 @@ Predictions for the training data can easily be obtained. This provides
 *w*-year risk estimates for each individual at each of the training
 landmarks they are still alive.
 
-```R
     p1 = predLMrisk(supermodel)
-```
 
 ### For new data
 
@@ -361,7 +395,6 @@ time-interactions; the new data has the same form as in your original
 dataset. For example, we can prediction *w*-year risk from baseline
 using an entry from the very original data frame.
 
-```R
     # Prediction time
     landmark_times = c(0,0)
     # Individuals with covariate values at 0
@@ -374,36 +407,30 @@ using an entry from the very original data frame.
     #>        age
     #> 1 60.25936
     #> 2 59.97808
-```
-```R
+
     p0 = predLMrisk(supermodel, individuals, landmark_times, cause=1)
     p0$preds
     #>   LM       risk
     #> 1  0 0.11514265
     #> 2  0 0.04641678
-```
 
 ## Model evaluation
-### Calibration plots
+
 Calibration plots, which assess the agreement between predictions and
 observations in different percentiles of the predicted values, can be
 plotted for each of the landmarks used for prediction. Entering a named
 list of prediction objects from `predLMrisk` in the first argument
 allows for comparison between models.
 
-```R
     par(mfrow=c(2,2),pty="s")
     outlist = LMcalPlot(list("Model1"=p1), 
                         unit="month",            # for the titles
                         tLM=c(6,12,18,24),       # landmarks at which to provide calibration plots
-                        formula="Hist(event,Time,LM)~1",
                         method="quantile", q=10, # method for calibration plot
                         ylim=c(0,0.4), xlim=c(0,0.4))
-```
 
 <img src="man/figures/README-quantile-calib-1.png" width="100%" />
 
-### Time-dependent AUC and Brier Score
 Predictive performance can also be assessed using time-dependent dynamic
 area under the receiving operator curve (AUCt) or time-dependent dynamic
 Brier score (BSt).
@@ -416,7 +443,7 @@ Brier score (BSt).
     estimates by that time point.
 
 <!-- -->
-```R
+
     scores = LMScore(list("Model1"=p1),
                      tLM=c(6,12,18,24), # landmarks at which to provide calibration plots
                      unit="month")      # for the print out
@@ -449,7 +476,6 @@ Brier score (BSt).
     #> NOTE: Values are multiplied by 100 and given in %.
     #> NOTE: The lower Brier the better.
     #> NOTE: Predictions are made at time tLM for 60-year risk
-```
 
 ### Visualize individual dynamic risk trajectories
 
@@ -458,21 +484,18 @@ the data input is in the form of the original data. For example, we can
 consider two individuals of similar age, bmi, and treatment status at
 baseline, but of different gender.
 
-```R
     idx <- relapse$ID %in% c("ID2412","ID1007")
     relapse[idx,]
     #>         ID     Time event age.at.time.0 male stage  bmi treatment fup_time
     #> 1   ID1007 62.68493     0      60.25936    0     1 25.9         0     0.00
     #> 442 ID2412 43.35342     0      60.09132    1     0 24.1         0     0.00
     #> 443 ID2412 43.35342     0      60.09132    1     0 24.1         1    39.04
-```
 
 We turn our data into long-form data to plot.
 
 *Note: we convert to long-form because of the age variable, wide-form
 data can be used too if there are no complex variables involved.*
 
-```R
     # Prediction time points
     x = seq(0,36,by=6)
 
@@ -498,7 +521,6 @@ data can be used too if there are no complex variables involved.*
 
     plotLMrisk(supermodel, dat,
                 format="long", LM_col = "LM", id_col="ID", ylim=c(0, 0.7), x.legend="bottom", unit="month")
-```
 
 <img src="man/figures/README-plotRisk-1.png" width="100%" />
 
