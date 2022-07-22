@@ -80,7 +80,7 @@ You can install the development version of `dynamicLM` from
 
 ```R
     # install.packages("devtools")
-    devtools::install_github("anyafries/dynamicLM")
+    devtools::install_github("thehanlab/dynamicLM")
 ```
 
 # Example
