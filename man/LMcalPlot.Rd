@@ -13,6 +13,8 @@ LMcalPlot(
   plot = T,
   main,
   sub = T,
+  splitMethod = "none",
+  B = 1,
   ...
 )
 }
@@ -26,13 +28,18 @@ LMcalPlot(
 \item{tLM}{Landmark times for which calibration must be plot. These must be a subset of LM times used during the prediction}
 
 \item{formula}{A survival or event history formula. The left hand side is used to compute the expected event status.
-If none is given, it is obtained from the prediction object.}
+It is recommended to give a formula. If none is given, it is obtained from the prediction object.}
 
-\item{plot}{If FALSE, do not plot the results, just return a plottable object.}
+\item{plot}{If FALSE, do not plot the results, just return a plottable object. Default is TRUE.}
 
 \item{main}{Optional title to override default.}
 
-\item{sub}{If TRUE, add a subheading with the number of individuals at risk, and the number that under the event of interest}
+\item{sub}{If TRUE, add a subheading with the number of individuals at risk, and the number that under the event of interest.
+Default is TRUE.}
+
+\item{splitMethod}{Defines the internal validation design as in pec::calPlot. Options are none/noPlan or BootCv.}
+
+\item{B}{The number of cross-validation steps.}
 
 \item{...}{Additional arguments to pass to calPlot}
 }

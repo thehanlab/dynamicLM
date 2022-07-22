@@ -7,6 +7,8 @@
 #' @param cause Cause of interest if considering competing risks
 #' @param tLM  Landmark times for which scores must be given. These must be a subset of LM times used during the prediction
 #' @param unit Time unit for window of prediction, e.g., "year", "month", etc. Used for printing results.
+#' @param split.method Method for cross-validation. Right now, as in riskRegression, the only option is bootcv.
+#' @param B The number of bootstap steps for cross-validation.
 #' @param ... Additional arguments to pass to Score (riskRegression package)
 #'
 #' @return An object of class "LMScore", which has components:
@@ -15,7 +17,7 @@
 #' @details See the Github for example code
 #' @export
 #'
-LMScore <- function(preds,formula,metrics=c("auc","brier"),cause,tLM, unit,...){
+LMScore <- function(preds,formula,metrics=c("auc","brier"),cause,tLM, unit, split.method, B,...){
 
   if (!requireNamespace("data.table", quietly = TRUE)) {
     stop("Package \"data.table\" must be installed to use function LMScore.", call. = FALSE)}
@@ -68,6 +70,8 @@ LMScore <- function(preds,formula,metrics=c("auc","brier"),cause,tLM, unit,...){
                      metrics=metrics,
                      cause=cause,
                      times=c(tLM+w),
+                     split.method=split.method,
+                     B=B,
                      ...)
 
     if ("auc" %in% metrics) auct <- rbind(auct, cbind(tLM,score_t$AUC$score))

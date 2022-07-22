@@ -4,7 +4,17 @@
 \alias{LMScore}
 \title{Methods (AUCt, Brier) to score the predictive performance of dynamic risk markers from LM super models}
 \usage{
-LMScore(preds, formula, metrics = c("auc", "brier"), cause, tLM, unit, ...)
+LMScore(
+  preds,
+  formula,
+  metrics = c("auc", "brier"),
+  cause,
+  tLM,
+  unit,
+  split.method,
+  B,
+  ...
+)
 }
 \arguments{
 \item{preds}{A named list of prediction models, where allowed entries are outputs from predLMrisk}
@@ -20,7 +30,11 @@ If none is given, it is obtained from the prediction object.}
 
 \item{unit}{Time unit for window of prediction, e.g., "year", "month", etc. Used for printing results.}
 
-\item{...}{Additional arguments to pass to Score}
+\item{split.method}{Method for cross-validation. Right now, as in riskRegression, the only option is bootcv.}
+
+\item{B}{The number of bootstap steps for cross-validation.}
+
+\item{...}{Additional arguments to pass to Score (riskRegression package)}
 }
 \value{
 An object of class "LMScore", which has components:

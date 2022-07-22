@@ -6,10 +6,12 @@
 #' @param tLM Landmark times for which calibration must be plot. These must be a subset of LM times used during the prediction
 #' @param formula A survival or event history formula. The left hand side is used to compute the expected event status.
 #'   It is recommended to give a formula. If none is given, it is obtained from the prediction object.
-#' @param plot If FALSE, do not plot the results, just return a plottable object.Default is TRUE.
+#' @param plot If FALSE, do not plot the results, just return a plottable object. Default is TRUE.
 #' @param main Optional title to override default.
 #' @param sub If TRUE, add a subheading with the number of individuals at risk, and the number that under the event of interest.
 #'   Default is TRUE.
+#' @param splitMethod Defines the internal validation design as in pec::calPlot. Options are none/noPlan or BootCv.
+#' @param B The number of cross-validation steps.
 #' @param ... Additional arguments to pass to calPlot
 #'
 #' @return List of plots of w-year risk, one entry per prediction/landmark time point
@@ -29,7 +31,7 @@
 #' @import prodlim
 #' @export
 #'
-LMcalPlot <- function(preds,unit="year",cause,tLM,formula,plot=T,main,sub=T,...){
+LMcalPlot <- function(preds,unit="year",cause,tLM,formula,plot=T,main,sub=T,splitMethod = "none",B=1,...){
   if (!requireNamespace("pec", quietly = TRUE)) {
     stop("Package \"pec\" must be installed to use function LMcalPlot.", call. = FALSE)}
 
@@ -75,13 +77,6 @@ LMcalPlot <- function(preds,unit="year",cause,tLM,formula,plot=T,main,sub=T,...)
     }
 
     x = NULL
-    # print(sum(is.na(risks_to_test)))
-    # print(sum(is.na(data_to_test$LM)))
-    # print(sum(is.na(data_to_test$Time)))
-    # print(sum(is.na(data_to_test$event)))
-    # print(head(data_to_test))
-    # print(sum(data_to_test$event == 1))
-    # print(all.vars(as.formula(formula)))
     x <- pec::calPlot(
       risks_to_test,
       time=tLM+w,
@@ -90,6 +85,8 @@ LMcalPlot <- function(preds,unit="year",cause,tLM,formula,plot=T,main,sub=T,...)
       cause=cause,
       plot=plot,
       type="risk",
+      B=B,
+      splitMethod=splitMethod,
       ...
     )
 
