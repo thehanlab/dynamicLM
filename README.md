@@ -106,7 +106,7 @@ the package. This gives the time-to-event of cancer relapse under two
 competing risks. Three fixed patient bio-markers are given as well (age at
 baseline, stage of initial cancer, bmi, male). A time-dependent
 covariate treatment indicates if the treatment is on or off treatment
-and `T\_txgiven` gives the time at which this patient entry was created.
+and `T_txgiven` gives the time at which this patient entry was created.
 ```R
     library(dynamicLM)
     #> Loading required package: prodlim
