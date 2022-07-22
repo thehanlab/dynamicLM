@@ -12,6 +12,6 @@
 #'   \item{stage}{Cancer stage at diagnosis}
 #'   \item{bmi}{Patient's body mass index at diagnosis}
 #'   \item{treatment}{Patient's treatment status, treatment=1=on treatment, treament=0=patient is off treatment}
-#'   \item{fup_time}{Follow-up time, i.e., time at which this patient entry was created.}
+#'   \item{T_txgiven}{Follow-up time, i.e., time at which updated treatment (tx) information was provided, which is equivalent to the time point at which the patient entry was created.}
 #' }
 "relapse"
