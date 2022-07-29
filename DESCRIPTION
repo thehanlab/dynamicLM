@@ -13,6 +13,7 @@ RoxygenNote: 7.1.2
 Depends: 
     prodlim,
     R (>= 2.10),
+    riskRegression,
     survival
 Imports: 
     data.table,
@@ -22,6 +23,5 @@ Imports:
     utils
 Suggests:
     msm,
-    pec,
-    riskRegression
+    pec
 LazyData: true

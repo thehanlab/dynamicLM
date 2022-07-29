@@ -15,14 +15,13 @@
 #'   - auct: dataframe containing time-dependent auc information if "auc" was a metric
 #'   - briert: dataframe containing time-dependent brier score if "brier" was a metric
 #' @details See the Github for example code
+#' @import riskRegression
 #' @export
 #'
 LMScore <- function(preds,formula,metrics=c("auc","brier"),cause,tLM, unit, split.method, B,...){
 
   if (!requireNamespace("data.table", quietly = TRUE)) {
     stop("Package \"data.table\" must be installed to use function LMScore.", call. = FALSE)}
-  if (!requireNamespace("riskRegression", quietly = TRUE)) {
-    stop("Package \"riskRegression\" must be installed to use function LMScore.", call. = FALSE)}
   if(missing(unit)) unit = "year"
 
   pred_LMs <- unique(preds[[1]]$preds$LM)
