@@ -102,11 +102,11 @@ covariates:
     covariate changes from 0 to 1.
 
 We illustrate the package using the long-form example data set given in
-the package. This gives the time-to-event of cancer relapse under 2
-competing risks. 3 fixed patient bio-markers are given as well (age at
+the package. This gives the time-to-event of cancer relapse under two
+competing risks. Three fixed patient bio-markers are given as well (age at
 baseline, stage of initial cancer, bmi, male). A time-dependent
 covariate treatment indicates if the treatment is on or off treatment
-and fup\_time gives the time at which this patient entry was created.
+and `T_txgiven` gives the time at which this patient entry was created.
 ```R
     library(dynamicLM)
     #> Loading required package: prodlim
@@ -173,9 +173,9 @@ individual, ID1029.
 
 ```R
     relapse[relapse$ID == "ID1029",]  
-    #>       ID     Time event age.at.time.0 male stage  bmi treatment fup_time
-    #> 7 ID1029 60.03288     0      62.25753    0     0 26.8         0     0.00
-    #> 8 ID1029 60.03288     0      62.25753    0     0 26.8         1    12.96
+    #>       ID     Time event age.at.time.0 male stage  bmi treatment T_txgiven
+    #> 7 ID1029 60.03288     0      62.25753    0     0 26.8         0      0.00
+    #> 8 ID1029 60.03288     0      62.25753    0     0 26.8         1     12.96
 ```
 
 We first stack the datasets over the landmarks (see the new column ‘LM’)
@@ -188,7 +188,7 @@ our case, only treatment varies).
 
 ```R
     # Stack landmark datasets
-    LMdata <- cutLMsuper(relapse, outcome, LMs, w, covars, format="long", id="ID", rtime="fup_time", right=F)
+    LMdata <- cutLMsuper(relapse, outcome, LMs, w, covars, format="long", id="ID", rtime="T_txgiven", right=F)
     data = LMdata$LMdata
     print(data[data$ID == "ID1029",] )
     #>         ID     Time event   ID.1 age.at.time.0 male stage  bmi treatment
@@ -199,7 +199,7 @@ our case, only treatment varies).
     #> 751 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
     #> 786 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
     #> 788 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
-    #>     fup_time LM
+    #>    T_txgiven LM
     #> 7       0.00  0
     #> 73      0.00  6
     #> 733     0.00 12
@@ -224,7 +224,7 @@ create an age covariate, based on age at time 0.
     #> 751 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
     #> 786 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
     #> 788 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
-    #>     fup_time LM      age
+    #>    T_txgiven LM      age
     #> 7       0.00  0 62.25753
     #> 73      0.00  6 62.75753
     #> 733     0.00 12 63.25753
@@ -251,7 +251,7 @@ interaction in `func.covars`, `_2` refers to the second interaction in
     #> 751 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
     #> 786 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
     #> 788 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
-    #>     fup_time LM      age     age_1     age_2 male_1 male_2 stage_1 stage_2
+    #>    T_txgiven LM      age     age_1     age_2 male_1 male_2 stage_1 stage_2
     #> 7       0.00  0 62.25753    0.0000     0.000      0      0       0       0
     #> 73      0.00  6 62.75753  376.5452  2259.271      0      0       0       0
     #> 733     0.00 12 63.25753  759.0904  9109.085      0      0       0       0
@@ -427,9 +427,9 @@ using an entry from the very original data frame.
     individuals = relapse[1:2,]
     individuals$age = individuals$age.at.time.0
     print(individuals)
-    #>       ID       Time event age.at.time.0 male stage  bmi treatment fup_time
-    #> 1 ID1007 62.6849315     0      60.25936    0     1 25.9         0        0
-    #> 2  ID101  0.6575342     1      59.97808    0     0 29.3         0        0
+    #>       ID       Time event age.at.time.0 male stage  bmi treatment T_txgiven
+    #> 1 ID1007 62.6849315     0      60.25936    0     1 25.9         0         0
+    #> 2  ID101  0.6575342     1      59.97808    0     0 29.3         0         0
     #>        age
     #> 1 60.25936
     #> 2 59.97808
@@ -518,10 +518,10 @@ baseline, but of different gender.
 ```R
     idx <- relapse$ID %in% c("ID2412","ID1007")
     relapse[idx,]
-    #>         ID     Time event age.at.time.0 male stage  bmi treatment fup_time
-    #> 1   ID1007 62.68493     0      60.25936    0     1 25.9         0     0.00
-    #> 442 ID2412 43.35342     0      60.09132    1     0 24.1         0     0.00
-    #> 443 ID2412 43.35342     0      60.09132    1     0 24.1         1    39.04
+    #>         ID     Time event age.at.time.0 male stage  bmi treatment T_txgiven
+    #> 1   ID1007 62.68493     0      60.25936    0     1 25.9         0      0.00
+    #> 442 ID2412 43.35342     0      60.09132    1     0 24.1         0      0.00
+    #> 443 ID2412 43.35342     0      60.09132    1     0 24.1         1     39.04
 ```
 
 We turn our data into long-form data to plot.
@@ -534,7 +534,7 @@ data can be used too if there are no complex variables involved.*
     x = seq(0,36,by=6)
 
     # Stack landmark datasets
-    dat <- cutLMsuper(relapse[idx,], outcome, x, w, covars, format="long", id="ID", rtime="fup_time", right=F)$LMdata
+    dat <- cutLMsuper(relapse[idx,], outcome, x, w, covars, format="long", id="ID", rtime="T_txgiven", right=F)$LMdata
     dat$age <- dat$age.at.time.0 + dat$LM/12 # age is in years and LM is in months
 
     head(dat)
@@ -545,7 +545,7 @@ data can be used too if there are no complex variables involved.*
     #> 4421 ID2412 43.35342     0 ID2412      60.09132    1     0 24.1         0
     #> 12   ID1007 62.68493     0 ID1007      60.25936    0     1 25.9         0
     #> 4422 ID2412 43.35342     0 ID2412      60.09132    1     0 24.1         0
-    #>      fup_time LM      age
+    #>     T_txgiven LM      age
     #> 1           0  0 60.25936
     #> 442         0  0 60.09132
     #> 11          0  6 60.75936
