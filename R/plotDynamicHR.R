@@ -20,7 +20,7 @@
 #' @details See the Github for example code
 #' @export
 #'
-plot_dynamic_HR <- function(supermodel, covars, CI=T, cause, end_time, extend=F, silence=F,
+plotDynamicHR <- function(supermodel, covars, CI=T, cause, end_time, extend=F, silence=F,
                             xlab="LM time", ylab, ylim, main, logHR=T, ...){
   fm = supermodel$model
 

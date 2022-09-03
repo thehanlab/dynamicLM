@@ -83,6 +83,8 @@ You can install the development version of `dynamicLM` from
     devtools::install_github("thehanlab/dynamicLM")
 ```
 
+Requirements for the package can be found in the description file.
+
 # Example
 
 This is a basic example which shows you how to use `dynamicLM` to make
@@ -167,9 +169,10 @@ There are three steps:
     additional columns created.
 
 *Note that these return an object of class `LMdataframe`. This has a
-component `LMdata` which contains the dataset itself.* We illustrate the
-process in detail by printing the entries at each step for one
-individual, ID1029.
+component `LMdata` which contains the dataset itself.* 
+
+We illustrate the process in detail by printing the entries at each step 
+for one individual, ID1029.
 
 ```R
     relapse[relapse$ID == "ID1029",]  
@@ -297,13 +300,8 @@ the landmark interaction terms must be named.
 ```R
     formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment + age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 + bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
     supermodel <- fitLM(as.formula(formula), LMdata, "CSC") 
-    #> Warning in .recacheSubclasses(def@className, def, env): undefined subclass
-    #> "numericVector" of class "Mnumeric"; definition not updated
-    #> Warning in agreg.fit(X, Y, istrat, offset, init, control, weights = weights, :
-    #> Loglik converged before variable 8,9 ; beta may be infinite.
-    supermodel
-    #> 
-    #> Landmark cause-specific cox super model fit for dynamic 60-year prediction:
+    print(supermodel)
+    #> Landmark cause-specific cox super model fit for dynamic prediction of window size 60:
     #> 
     #> $model
     #> ----------> Cause: 1
@@ -388,14 +386,14 @@ provided using the `covars` argument.
 
 ```R
     par(mfrow=c(2,3))
-    plot_dynamic_HR(supermodel)
+    plotDynamicHR(supermodel)
 ```
 
 <img src="man/figures/README-plot-dyn-HR-1.png" width="100%" />
 
 ```R
     # To create only two plots:
-    plot_dynamic_HR(supermodel, covars=c("age","male"))
+    plotDynamicHR(supermodel, covars=c("age","male"))
 ```
 
 ## Obtain predictions
