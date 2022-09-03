@@ -36,9 +36,10 @@
 #' # Choose covariates that will have time interaction
 #' pred.covars <- c("age","male","stage","bmi","treatment")
 #' # Stack landmark datasets
-#' LMdata <- cutLMsuper(relapse, outcome, LMs, w, covs, format="long", id="ID", rtime="fup_time", right=F)
-#' # Update complex LM-varying covariates
-#' LMdata$LMdata$age <- LMdata$LMdata$age.at.time.0 + LMdata$LMdata$LM/12 # age is in years and LM is in months
+#' LMdata <- cutLMsuper(relapse, outcome, LMs, w, covs, format="long",
+#'                      id="ID", rtime="fup_time", right=F)
+#' # Update complex LM-varying covariates, note age is in years and LM is in months
+#' LMdata$LMdata$age <- LMdata$LMdata$age.at.time.0 + LMdata$LMdata$LM/12
 #' # Add LM-time interactions
 #' LMdata <- addLMtime(LMdata, pred.covars, func.covars, func.LMs)
 #' }

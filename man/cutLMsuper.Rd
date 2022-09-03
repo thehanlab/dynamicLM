@@ -64,6 +64,7 @@ func.LMs <- list( function(t) t, function(t) t^2)
 # Choose covariates that will have time interaction
 pred.covars <- c("age","male","stage","bmi","treatment")
 # Stack landmark datasets
-LMdata <- cutLMsuper(relapse, outcome, LMs, w, covs, format="long", id="ID", rtime="fup_time", right=F)
+LMdata <- cutLMsuper(relapse, outcome, LMs, w, covs, format="long",
+                     id="ID", rtime="fup_time", right=F)
 }
 }

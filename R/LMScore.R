@@ -6,7 +6,7 @@
 #' @param metrics  Character vector specifying which metrics to apply. Choices are "auc" and "brier". Case matters.
 #' @param cause Cause of interest if considering competing risks
 #' @param tLM  Landmark times for which scores must be given. These must be a subset of LM times used during the prediction
-#' @param unit Time unit for window of prediction, e.g., "year", "month", etc. Used for printing results.
+#' @param unit Time unit for window of prediction, e.g., "year", "month", etc. Only used for printing results.
 #' @param split.method Method for cross-validation. Right now, as in riskRegression, the only option is bootcv.
 #' @param B The number of bootstap steps for cross-validation.
 #' @param ... Additional arguments to pass to Score (riskRegression package)

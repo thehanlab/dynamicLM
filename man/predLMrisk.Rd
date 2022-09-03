@@ -52,3 +52,7 @@ Calculate w-year risk from a landmark time point
 \details{
 See the Github for example code
 }
+\references{
+van Houwelingen HC, Putter H (2012). Dynamic Prediction in Clinical Survival
+Analysis. Chapman & Hall.
+}

@@ -30,8 +30,10 @@
 #' # Choose covariates that will have time interaction
 #' pred.covars <- c("age","male","stage","bmi","treatment")
 #' # Stack landmark datasets
-#' LMdata <- cutLMsuper(relapse, outcome, LMs, w, covs, format="long", id="ID", rtime="fup_time", right=F)
+#' LMdata <- cutLMsuper(relapse, outcome, LMs, w, covs, format="long",
+#'                      id="ID", rtime="fup_time", right=F)
 #' }
+#' @import dynpred
 #' @export
 #'
 cutLMsuper <- function(data, outcome, LMs, w, covs, format = c("wide", "long"), id, rtime, right=T){

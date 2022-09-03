@@ -21,7 +21,7 @@ LMcalPlot(
 \arguments{
 \item{preds}{A named list of prediction models, where allowed entries are outputs from predLMrisk}
 
-\item{unit}{The unit of w, i.e. w-unit prediction ("year","month", etc...). Used to label the plot.}
+\item{unit}{The unit of w, i.e. w-unit prediction ("year","month", etc...). Only used to label the plot.}
 
 \item{cause}{Cause of interest if considering competing risks}
 
@@ -53,4 +53,15 @@ Calibration plots for dynamic risk prediction landmark models
 Most errors in plotting occur when a formula is not given. Formulas can look like \code{Surv(LM,Time,event)~1} / \code{Surv(LM,Time,event==1)~1} / \code{Hist(Time,event,LM)~1} / similar...
 
 See the Github for example code on using LMcalPlot in general.
+}
+\examples{
+\dontrun{
+par(mfrow=c(2,2),pty="s")
+outlist = LMcalPlot(list("Model1"=p1),
+                    unit="month",            # for the title
+                    tLM=c(6,12,18,24),       # landmarks at which to provide calibration plots
+                    formula="Hist(event,Time,LM)~1",
+                    method="quantile", q=10, # method for calibration plot
+                    ylim=c(0,0.4), xlim=c(0,0.4))
+}
 }

@@ -32,12 +32,15 @@
 #' # Choose covariates that will have time interaction
 #' pred.covars <- c("age","male","stage","bmi","treatment")
 #' # Stack landmark datasets
-#' LMdata <- cutLMsuper(relapse, outcome, LMs, w, covs, format="long", id="ID", rtime="fup_time", right=F)
-#' # Update complex LM-varying covariates
-#' LMdata$LMdata$age <- LMdata$LMdata$age.at.time.0 + LMdata$LMdata$LM/12 # age is in years and LM is in months
+#' LMdata <- cutLMsuper(relapse, outcome, LMs, w, covs, format="long",
+#'                      id="ID", rtime="fup_time", right=F)
+#' # Update complex LM-varying covariates, note age is in years and LM is in months
+#' LMdata$LMdata$age <- LMdata$LMdata$age.at.time.0 + LMdata$LMdata$LM/12
 #' # Add LM-time interactions
 #' LMdata <- addLMtime(LMdata, pred.covars, func.covars, func.LMs)
-#' formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment + age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 + bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
+#' formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment +
+#'            age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 +
+#'            bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
 #' supermodel <- fitLM(as.formula(formula), LMdata, "CSC")
 #' }
 #' @import survival
@@ -48,7 +51,7 @@ fitLM <- function(formula, LMdata, type="coxph", method="breslow",
 
   LHS = Reduce(paste, deparse(formula[[2]]))
 
-  if (!grepl("cluster", as.character(as.formula(formula))[3])){
+  if (!grepl("cluster", as.character(stats::as.formula(formula))[3])){
     message("Did you forget to add a '+ cluster(ID)' term for your ID variable in your formula? No cluster argument was specified in the formula. Standard errors may be estimated incorrectly.")
   }
 

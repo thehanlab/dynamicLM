@@ -1,7 +1,7 @@
 #' Calibration plots for dynamic risk prediction landmark models
 #'
 #' @param preds A named list of prediction models, where allowed entries are outputs from predLMrisk
-#' @param unit The unit of w, i.e. w-unit prediction ("year","month", etc...). Used to label the plot.
+#' @param unit The unit of w, i.e. w-unit prediction ("year","month", etc...). Only used to label the plot.
 #' @param cause Cause of interest if considering competing risks
 #' @param tLM Landmark times for which calibration must be plot. These must be a subset of LM times used during the prediction
 #' @param formula A survival or event history formula. The left hand side is used to compute the expected event status.
@@ -18,8 +18,8 @@
 #' @details Most errors in plotting occur when a formula is not given. Formulas can look like `Surv(LM,Time,event)~1` / `Surv(LM,Time,event==1)~1` / `Hist(Time,event,LM)~1` / similar...
 #'
 #'  See the Github for example code on using LMcalPlot in general.
-#' @example
-#' \notrun{
+#' @examples
+#' \dontrun{
 #' par(mfrow=c(2,2),pty="s")
 #' outlist = LMcalPlot(list("Model1"=p1),
 #'                     unit="month",            # for the title

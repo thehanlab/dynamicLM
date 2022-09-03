@@ -28,7 +28,7 @@ If none is given, it is obtained from the prediction object.}
 
 \item{tLM}{Landmark times for which scores must be given. These must be a subset of LM times used during the prediction}
 
-\item{unit}{Time unit for window of prediction, e.g., "year", "month", etc. Used for printing results.}
+\item{unit}{Time unit for window of prediction, e.g., "year", "month", etc. Only used for printing results.}
 
 \item{split.method}{Method for cross-validation. Right now, as in riskRegression, the only option is bootcv.}
 

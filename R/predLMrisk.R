@@ -19,6 +19,8 @@
 #'   - preds: a dataframe with columns LM and risk, each entry corresponds to one individual and prediction time point (landmark)
 #'   - w, type, LHS: as in the fitted super model
 #'   - data: the newdata given in input
+#' @references van Houwelingen HC, Putter H (2012). Dynamic Prediction in Clinical Survival
+#' Analysis. Chapman & Hall.
 #' @details See the Github for example code
 #' @import survival
 #' @export
