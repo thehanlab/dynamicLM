@@ -2,9 +2,10 @@ Package: dynamicLM
 Type: Package
 Title: Dynamic w-year risk predictions from landmark time points
 Version: 0.2.0
-Authors@R: 
-    person("Anya", "Fries", , "afries@stanford.edu", role = c("aut", "cre"))
-Maintainer: The package maintainer <yourself@somewhere.net>
+Authors@R: c(person("Anya", "Fries", , "afries@stanford.edu", role = c("aut", "cre"))
+    person("Summer", "Han", role = "ctb"),
+    person("Eunji", "Choi", role = "ctb"))
+Maintainer: Anya Fries <afries@stanford.edu>
 Description: The goal of dynamicLM is to provide a simple framework to make dynamic w-year risk predictions from landmark time points, allowing for competing risks and left and right censored data. 
 License: MIT + file LICENSE
 Encoding: UTF-8
