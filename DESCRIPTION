@@ -2,7 +2,7 @@ Package: dynamicLM
 Type: Package
 Title: Dynamic w-year risk predictions from landmark time points
 Version: 0.2.0
-Authors@R: c(person("Anya", "Fries", , "afries@stanford.edu", role = c("aut", "cre"))
+Authors@R: c(person("Anya", "Fries", , "afries@stanford.edu", role = c("aut", "cre")),
     person("Summer", "Han", role = "ctb"),
     person("Eunji", "Choi", role = "ctb"))
 Maintainer: Anya Fries <afries@stanford.edu>
