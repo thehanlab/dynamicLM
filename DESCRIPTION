@@ -1,7 +1,7 @@
 Package: dynamicLM
 Type: Package
 Title: Dynamic w-year risk predictions from landmark time points
-Version: 0.1.0
+Version: 0.2.0
 Authors@R: 
     person("Anya", "Fries", , "afries@stanford.edu", role = c("aut", "cre"))
 Maintainer: The package maintainer <yourself@somewhere.net>
