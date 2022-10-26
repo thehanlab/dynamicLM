@@ -54,6 +54,7 @@ fitLM <- function(formula, LMdata, type="coxph", method="breslow",
   if (!grepl("cluster", as.character(stats::as.formula(formula))[3])){
     message("Did you forget to add a '+ cluster(ID)' term for your ID variable in your formula? No cluster argument was specified in the formula. Standard errors may be estimated incorrectly.")
   }
+  if(!(type %in% c("coxph","CSC","CauseSpecificCox"))) stop("type must be coxph or CSC/CauseSpecificCox")
 
   if(class(LMdata)!="LMdataframe"){
     if(class(LMdata)!="data.frame"){stop("data must be of a data.frame or an object of class LMdataframe")}
