@@ -87,7 +87,7 @@ fitLM <- function(...) {
 fitLM.LMdataframe <- function(LMdata, formula, type="coxph", reg=FALSE, method="breslow",
                   func_covars, func_LMs, LM_col, outcome, w, LMcovars, ...){
 
-  LHS = Reduce(paste, deparse(formula[[2]]))
+  LHS = getLHS(formula)
 
   if (!grepl("cluster", as.character(stats::as.formula(formula))[3])){
     message("Did you forget to add a '+ cluster(ID)' term for your ID variable in your formula? No cluster argument was specified in the formula. Standard errors may be estimated incorrectly.")

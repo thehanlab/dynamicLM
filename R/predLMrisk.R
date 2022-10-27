@@ -168,7 +168,15 @@ predLMrisk <- function(supermodel, newdata, tLM, cause, w, extend=F, silence=F, 
     data = data
   }
 
-  out = list(preds=preds, w=w, type=type, LHS=supermodel$LHS, data=data, cause=cause)
+  out = list(
+    preds = preds,
+    w = w,
+    type = type,
+    LHS = supermodel$LHS,
+    data = data,
+    cause = cause,
+    outcome = supermodel$outcome
+  )
   class(out) = "LMpred"
   return(out)
 }
