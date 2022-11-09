@@ -91,11 +91,28 @@ fitLM <- function(formula, LMdata, type="coxph", method="breslow",
   num_preds <- nrow(data)
 
   if(type=="coxph"){
-    superfm <- survival::coxph(formula, data, method=method, ...)
-    models <- list(superfm)
-    num_causes <- 1
-    superfm$call$data <- data
-    cl <- "LMcoxph"
+    if (reg == TRUE){
+      # nfolds is supplied
+      # can supply foldid
+
+      # include: x, y, alpha, lambda
+      # include: exclude
+      # to decide: nlambda?? -> how to store?
+      # exclude (for now): weights, offset
+
+      # superfm <- survival::coxph(formula, data, method=method, ...)
+      # models <- list(superfm)
+      # num_causes <- 1
+      # superfm$call$data <- data
+      # cl <- "LMcoxph"
+
+    } else {
+      superfm <- survival::coxph(formula, data, method=method, ...)
+      models <- list(superfm)
+      num_causes <- 1
+      superfm$call$data <- data
+      cl <- "LMcoxph"
+    }
 
   } else if (type=="CauseSpecificCox" | type=="CSC"){
     if (!requireNamespace("riskRegression", quietly = TRUE)) {
