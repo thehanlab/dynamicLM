@@ -49,6 +49,7 @@ An object of class "LMcoxph" or "LMCSC" with components:
 \item w, func_covars, func_LMs, LMcovars, allLMcovars, outcome: as in LMdata
 \item LHS: the LHS of the input formula
 \item linear.predictors: the vector of linear predictors, one per subject. Note that this vector has not been centered.
+\item args: arguments used to call model fitting
 }
 }
 \description{
