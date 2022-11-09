@@ -43,7 +43,7 @@ or a single value if all patient entries were obtained at the same landmark time
 
 \item{B}{Number of times bootstrapping is performed.}
 
-\item{M}{Subsample size for cross-validation.}
+\item{M}{Subsample size for training in cross-validation. Entries not sampled in the M subsamples are used for validation.}
 
 \item{unit}{The unit of w, i.e. w-unit prediction ("year","month", etc...). Only used to label the plot.}
 

@@ -12,7 +12,7 @@
 #' @param ID_col Column name that identifies individuals in data. Only required if bootstrapping.
 #' @param split.method Defines the internal validation design as in pec::calPlot. Options are currently none or bootcv
 #' @param B Number of times bootstrapping is performed.
-#' @param M Subsample size for cross-validation.
+#' @param M Subsample size for training in cross-validation. Entries not sampled in the M subsamples are used for validation.
 #' @param unit The unit of w, i.e. w-unit prediction ("year","month", etc...). Only used to label the plot.
 #' @param cause Cause of interest if considering competing risks
 #' @param plot If FALSE, do not plot the results, just return a plottable object. Default is TRUE.
@@ -195,15 +195,16 @@ LMcalPlot <-
 
       pred.list <- parallel::mclapply(1:B,function(b){
         outcome <- object[[1]]$outcome
-        id_val_b <- split.method$index[,b]
 
-        idx_val_b <- data[[ID_col]] %in% id_val_b
-        data_val_b <- data[idx_val_b, ]
+        id_train_b <- split.method$index[,b]
+        id_train_b <- data[[ID_col]] %in% id_train_b
+
+        data_val_b <- data[!id_train_b, ]
         tLMs_b <- data_val_b[[LM_col]]
-        data_train_b <- LMdata
-        data_train_b$LMdata <- data[!idx_val_b, ]
-
         outcomes_val_b <- data_val_b[c(outcome$time, outcome$status, LM_col)]
+
+        data_train_b <- LMdata
+        data_train_b$LMdata <- data[id_train_b, ]
 
         preds.b <- do.call("cbind",lapply(1:NF,function(f){
           original_model <- object[[f]]
