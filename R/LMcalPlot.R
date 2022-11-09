@@ -178,6 +178,8 @@ LMcalPlot <-
 
     else if (!perform.boot) {
       # TODO: consider including w, extend, silence, complete as args to predLMrisk
+      # TODO: consider allowing not LMdata
+      # TODO: test what happens if data is a dataframe
       preds = lapply(object, function(o) predLMrisk(o, data, tLM, cause))
       args = match.call()
       args$data = NULL
@@ -212,6 +214,7 @@ LMcalPlot <-
           pred.b <- try(
             # TODO: consider including w, extend, silence, complete as args to predLMrisk
             # TODO: use complete=T
+            # TODO: consider allowing not LMdata
             predLMrisk(model.b,newdata=data_val_b,tLM=tLMs_b,cause=model.b$cause, complete=F),
             silent = F
           )
