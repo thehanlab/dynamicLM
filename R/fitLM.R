@@ -10,6 +10,8 @@
 #' @param outcome List with items time and status, containing character strings identifying the names of time and status variables, respectively, of the survival outcome
 #' @param w Scalar, the value of the prediction window (ie predict w-year/other time period risk from the LM points)
 #' @param LMcovars Vector of strings indicating the columns that are to have a LM interaction
+#' @param cluster Variable which clusters the observations (for e.g., identifies repeated patient IDs), for the purposes of a robust variance.
+#' @param x Logical value. If set to true, the LMdata is stored in the returned object. This is required for internal validation.
 #' @param ... Arguments given to coxph or CSC.
 #'
 #' @return An object of class "LMcoxph" or "LMCSC" with components:
@@ -19,6 +21,8 @@
 #'   - LHS: the LHS of the input formula
 #'   - linear.predictors: the vector of linear predictors, one per subject. Note that this vector has not been centered.
 #'   - args: arguments used to call model fitting
+#'   - ID_col: the cluster argument, usually specifies the column with patient ID
+#'
 #' @examples
 #' \dontrun{
 #' data(relapse)
@@ -47,8 +51,19 @@
 #' @import survival
 #' @export
 #'
-fitLM <- function(formula, LMdata, type="coxph", method="breslow",
-                  func_covars, func_LMs, LM_col, outcome, w, LMcovars, ...){
+fitLM <- function(formula,
+                  LMdata,
+                  type = "coxph",
+                  method = "breslow",
+                  func_covars,
+                  func_LMs,
+                  LM_col,
+                  outcome,
+                  w,
+                  LMcovars,
+                  cluster,
+                  x = FALSE,
+                  ...) {
 
   # store arguments but not the data (heavy)
   args = match.call()
@@ -57,9 +72,16 @@ fitLM <- function(formula, LMdata, type="coxph", method="breslow",
   # extra LHS of formula
   LHS = getLHS(formula)
 
-  if (!grepl("cluster", as.character(stats::as.formula(formula))[3])){
-    message("Did you forget to add a '+ cluster(ID)' term for your ID variable in your formula? No cluster argument was specified in the formula. Standard errors may be estimated incorrectly.")
+  # check if we have a cluster term and extract it
+  cluster_check <- as.character(stats::as.formula(formula))[3]
+  if (!grepl("cluster", cluster_check)){
+    if (missing(cluster)){
+      message("Did you forget to specify a cluster argument or add a '+ cluster(ID)' term for your ID variable in your formula? No cluster argument was specified in the formula. Standard errors may be estimated incorrectly.")
+    }
+  } else {
+    cluster <- regmatches(cluster_check, gregexpr("(?<=cluster\\().*?(?=\\))", cluster_check, perl=T))[[1]]
   }
+  ID_col <- cluster
 
   if(class(LMdata)!="LMdataframe"){
     if(class(LMdata)!="data.frame"){stop("data must be of a data.frame or an object of class LMdataframe")}
@@ -135,10 +157,12 @@ fitLM <- function(formula, LMdata, type="coxph", method="breslow",
            allLMcovars=allLMcovars,
            outcome=outcome,
            LHS=LHS,
+           ID_col = ID_col,
            linear.predictors=linear.predictors,
            original.landmarks=original.landmarks,
            args=args
   )
+  if (x == TRUE) out$LMdata = LMdata
   class(out)=cl
 
   return(out)
