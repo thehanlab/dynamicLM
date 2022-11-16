@@ -55,7 +55,7 @@ or a single value if all patient entries were obtained at the same landmark time
 
 \item{seed}{Optional, integer passed to set.seed. If not given or NA, no seed is set.}
 
-\item{regression_values}{Default is FALSE. If set to TRUE, the returned list contains a list \code{regression_values},
+\item{regression_values}{Default is FALSE. If set to TRUE, the returned list is appended by a list \code{regression_values},
 which contains the intercept and slope of a linear regression of each model for each landmark time (i.e., each calibration plot).
 Note that perfect calibration has a slope of 1 and an intercept of 0.}
 
