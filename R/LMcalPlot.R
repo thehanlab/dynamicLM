@@ -26,7 +26,7 @@
 #' @param M Subsample size for training in cross-validation. Entries not sampled in the M subsamples are used for validation.
 #' @param cores To perform parallel computing, specifies the number of cores.
 #' @param seed Optional, integer passed to set.seed. If not given or NA, no seed is set.
-#' @param regression_values Default is FALSE. If set to TRUE, the returned list contains a list `regression_values`,
+#' @param regression_values Default is FALSE. If set to TRUE, the returned list is appended by a list `regression_values`,
 #'   which contains the intercept and slope of a linear regression of each model for each landmark time (i.e., each calibration plot).
 #'   Note that perfect calibration has a slope of 1 and an intercept of 0.
 #' @param unit The unit of w, i.e. w-unit prediction ("year","month", etc...). Only used to label the plot.
