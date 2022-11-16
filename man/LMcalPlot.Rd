@@ -2,7 +2,7 @@
 % Please edit documentation in R/LMcalPlot.R
 \name{LMcalPlot}
 \alias{LMcalPlot}
-\title{Calibration plots for dynamic risk prediction landmark models}
+\title{Calibration plots for dynamic risk prediction landmark models.}
 \usage{
 LMcalPlot(
   object,
@@ -14,6 +14,9 @@ LMcalPlot(
   split.method = "none",
   B = 1,
   M,
+  cores = 1,
+  seed,
+  regression_values = FALSE,
   unit = "year",
   cause,
   plot = T,
@@ -23,27 +26,38 @@ LMcalPlot(
 )
 }
 \arguments{
-\item{object}{A named list of prediction models, where allowed entries are outputs from predLMrisk or supermodels from fitLM}
+\item{object}{A named list of prediction models, where allowed entries are outputs from \code{predLMrisk} or supermodels from \code{fitLM} depending on the type of calibration.}
 
 \item{times}{Landmark times for which calibration must be plot. These must be a subset of LM times used during the prediction}
 
-\item{formula}{A survival or event history formula (Hist(..)). The left hand side is used to compute the expected event status.
+\item{formula}{A survival or event history formula (\code{Hist(...)}). The left hand side is used to compute the expected event status.
 If none is given, it is obtained from the prediction object.}
 
-\item{data}{Data on which to predict if the object is a fitted model. If bootstrapping, must be an object
-of class LMdataframe. If not bootstrapping, it can be a dataframe.}
+\item{data}{Data for external validation.}
 
 \item{tLM}{Landmark times corresponding to the patient entries in data. Only required if data is a dataframe.
 tLM can be a string (indicating a column in data), a vector of length nrow(data),
 or a single value if all patient entries were obtained at the same landmark time.}
 
-\item{ID_col}{Column name that identifies individuals in data. Only required if bootstrapping.}
+\item{ID_col}{Column name that identifies individuals in data. If omitted, it is obtained from the prediction object.}
 
-\item{split.method}{Defines the internal validation design as in pec::calPlot. Options are currently none or bootcv}
+\item{split.method}{Defines the internal validation design as in \code{pec::calPlot}. Options are currently "none" or "bootcv".
+
+"none": assess the model in the test data (\code{data} argument)/data it was trained on.
+
+"bootcv": \code{B} models are trained on boostrap samples either drawn with replacement of the same size as the original data or without replacement of size \code{M}. Models are then assessed in observations not in the sample.}
 
 \item{B}{Number of times bootstrapping is performed.}
 
 \item{M}{Subsample size for training in cross-validation. Entries not sampled in the M subsamples are used for validation.}
+
+\item{cores}{To perform parallel computing, specifies the number of cores.}
+
+\item{seed}{Optional, integer passed to set.seed. If not given or NA, no seed is set.}
+
+\item{regression_values}{Default is FALSE. If set to TRUE, the returned list contains a list \code{regression_values},
+which contains the intercept and slope of a linear regression of each model for each landmark time (i.e., each calibration plot).
+Note that perfect calibration has a slope of 1 and an intercept of 0.}
 
 \item{unit}{The unit of w, i.e. w-unit prediction ("year","month", etc...). Only used to label the plot.}
 
@@ -62,19 +76,29 @@ Default is TRUE. Set to FALSE for bootstrapping.}
 List of plots of w-year risk, one entry per prediction/landmark time point
 }
 \description{
-Calibration plots for dynamic risk prediction landmark models
+There are three ways to perform calibration: apparent/internal, bootstrapped, and external. Accordingly, the named list of prediction models must be as follows:
+\itemize{
+\item For both apparent/internal calbration, objects output from \code{predLMrisk} or supermodels fit with \code{fitLM} (with argument \code{x=TRUE}) may be used as input.
+\item In order to bootstrap, supermodels fit with \code{fitLM} (with argument \code{x=TRUE}) may be used as input.
+\item For external calibration, supermodels fit with \code{fitLM} are input along with new data in the \code{data} argument. This data can be a LMdataframe or a dataframe (in which case \code{tLM} must be specified).
+}
 }
 \details{
-Most errors in plotting occur when a formula is not given. Formulas can look like \code{Surv(LM,Time,event)~1} / \code{Surv(LM,Time,event==1)~1} / \code{Hist(Time,event,LM)~1} / similar...
+For both internal calibration and bootstrapping, it is assumed that all models in \code{object} are fit on the same data.
 
-See the Github for example code on using LMcalPlot in general.
+When collecting bootstrap samples, the same individuals are considered across landmarks.
+I.e., sample \code{M} unique individuals, train on the super dataset formed by these individuals, and validate on the individuals not sampled at the landmarks they remain alive (or that are given in \code{times}).
+
+Note that only complete cases of data are considered (whatever type of calibration is performed). Furthermore, most errors in plotting occur when a formula is not given. Formulas can look like \code{Hist(Time,event,LM)~1} / similar...
+
+See the \href{https://github.com/thehanlab/dynamicLM}{github} for detailed example code.
 }
 \examples{
 \dontrun{
 par(mfrow=c(2,2),pty="s")
 outlist = LMcalPlot(list("Model1"=p1),
                     unit="month",            # for the title
-                    times=c(6,12,18,24),       # landmarks at which to provide calibration plots
+                    times=c(6,12,18,24),     # landmarks at which to provide calibration plots
                     formula="Hist(event,Time,LM)~1",
                     method="quantile", q=10, # method for calibration plot
                     ylim=c(0,0.4), xlim=c(0,0.4))
