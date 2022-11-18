@@ -1,8 +1,8 @@
 #' Calibration plots for dynamic risk prediction landmark models.
 #'
 #' There are three ways to perform calibration: apparent/internal, bootstrapped, and external. Accordingly, the named list of prediction models must be as follows:
-#' * For both apparent/internal calbration, objects output from `predLMrisk` or supermodels fit with `fitLM` (with argument `x=TRUE`) may be used as input.
-#' * In order to bootstrap, supermodels fit with `fitLM` (with argument `x=TRUE`) may be used as input.
+#' * For both apparent/internal calbration, objects output from `predLMrisk` or supermodels fit with `fitLM` may be used as input.
+#' * In order to bootstrap, supermodels fit with `fitLM` may be used as input (note that the argument `x=TRUE` must be specified when fitting the model in `fitLM`).
 #' * For external calibration, supermodels fit with `fitLM` are input along with new data in the `data` argument. This data can be a LMdataframe or a dataframe (in which case `tLM` must be specified).
 #'
 #' For both internal calibration and bootstrapping, it is assumed that all models in `object` are fit on the same data.

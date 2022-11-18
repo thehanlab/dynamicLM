@@ -78,8 +78,8 @@ List of plots of w-year risk, one entry per prediction/landmark time point
 \description{
 There are three ways to perform calibration: apparent/internal, bootstrapped, and external. Accordingly, the named list of prediction models must be as follows:
 \itemize{
-\item For both apparent/internal calbration, objects output from \code{predLMrisk} or supermodels fit with \code{fitLM} (with argument \code{x=TRUE}) may be used as input.
-\item In order to bootstrap, supermodels fit with \code{fitLM} (with argument \code{x=TRUE}) may be used as input.
+\item For both apparent/internal calbration, objects output from \code{predLMrisk} or supermodels fit with \code{fitLM} may be used as input.
+\item In order to bootstrap, supermodels fit with \code{fitLM} may be used as input (note that the argument \code{x=TRUE} must be specified when fitting the model in \code{fitLM}).
 \item For external calibration, supermodels fit with \code{fitLM} are input along with new data in the \code{data} argument. This data can be a LMdataframe or a dataframe (in which case \code{tLM} must be specified).
 }
 }
