@@ -301,3 +301,45 @@ print.LMcoxph <- function(x, verbose = FALSE, ...) {
     cat("\n")
   }
 }
+
+
+#' Print the output from calling `LMpen`, similar to the output of printing a `glmnet` object
+#'
+#' I.e., print a summary of the glmnet path at each step along the path.
+#' @details
+#' If the model is a survival model (i.e., no competing risks), then the output
+#' is the same as a call to glmnet would produce. For competing risks, the
+#' default is only to print the output for the cause of interest (first cause).
+#' Further events can be examined by setting `all_causes = TRUE`.
+#'
+#' As in glmnet,
+#' "A three-column matrix with columns `Df`, `%Dev` and `Lambda` is printed.
+#' The `Df` column is the number of nonzero coefficients (Df is a
+#' reasonable name only for lasso fits). `%Dev` is the percent deviance
+#' explained (relative to the null deviance)."
+#'
+#' @param x a penLM object
+#' @param all_causes if penLM fit a cause-specific Cox model, set TRUE to print
+#'   a summary of the glmnet path for each model.
+#' @param silent Set TRUE to hide messages.
+#' @param digits Number of significant digits to include
+#' @param \dots additional print arguments
+#' @references Friedman, J., Hastie, T. and Tibshirani, R. (2008). Regularization Paths for Generalized Linear Models via Coordinate Descent
+#' @export
+print.LMpen <- function (x, all_causes = FALSE, silent = FALSE, digits = 3, ...) {
+    num_causes <- length(x)
+
+    cat(paste0("\nPenalized landmark cox super model fit for dynamic prediction:"))
+    if (all_causes){
+      for (i in 1:num_causes){
+        cat(paste0("\n\nCause ",i,":\n"))
+        print(x[[i]])
+      }
+
+    } else {
+      cat("\n\n")
+      if (num_causes > 1) cat(paste0("First Cause:\n"))
+      print(x[[1]])
+      if (num_causes > 1 & !silent) message("\n (To print paths for remaining cause-specific models, call print with argument all_causes = TRUE)\n")
+    }
+  }
