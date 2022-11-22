@@ -57,6 +57,13 @@ cutLMsuper <- function(data, outcome, LMs, w, covs, format = c("wide", "long"), 
     }
 
   } else if (format == "long"){
+    # guard against errors in cutLM
+    if (is.null(covs$varying)) {
+      covs$varying <- "fake_column1234"
+      data["fake_column1234"] <- NA
+    }
+
+    # call cutLM
     LMdata <- dynpred::cutLM(data=data,
                     outcome=outcome,
                     LM=LMs[1],
@@ -72,8 +79,10 @@ cutLMsuper <- function(data, outcome, LMs, w, covs, format = c("wide", "long"), 
                                      covs=covs,
                                      format, id, rtime, right))
     }
+    LMdata <- LMdata[, names(LMdata) != "fake_column1234"]
+
   }
-  out=list(LMdata=LMdata, outcome=outcome, w=w, end_time=LMs[length(LMs)])
+  out=list(LMdata=LMdata, outcome=outcome, w=w, end_time=LMs[length(LMs)], LM_col="LM")
   class(out)="LMdataframe"
   return(out)
 }

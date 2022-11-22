@@ -45,9 +45,12 @@
 #' }
 #'
 #' @export
-addLMtime <- function(LMdata, LMcovars, func_covars, func_LMs, LM_col="LM",keep=T){
+addLMtime <- function(LMdata, LMcovars, func_covars, func_LMs, LM_col="LM", keep=T){
   if (LM_col %in% func_covars){
     stop(paste0("arg LM_col (given as ",LM_col,") should not be in arg func_covars."))
+  }
+  for(col in c(LMcovars, LM_col)){
+    if (!(col %in% colnames(LMdata$LMdata))) stop(paste("Column",col,"is not a column in LMdata"))
   }
   data <- LMdata$LMdata
   if (missing(func_covars)){
@@ -65,7 +68,7 @@ addLMtime <- function(LMdata, LMcovars, func_covars, func_LMs, LM_col="LM",keep=
 
   allLMcovars <- c(LMcovars)
   data_LM <- data[[LM_col]]
-  # Add func_covarss: covariate LM interactions
+  # Add func_covars: covariate LM interactions
   for(i in 1:length(LMcovars)){
     for (j in 1:length(func_covars)){
       f <- func_covars[[j]]
