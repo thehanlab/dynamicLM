@@ -4,13 +4,16 @@
 #' @param formula A survival or event history formula. The left hand side is used to compute the expected event status.
 #'   If none is given, it is obtained from the prediction object.
 #' @param metrics  Character vector specifying which metrics to apply. Choices are "auc" and "brier". Case matters.
-#' @param cause Cause of interest if considering competing risks
-#' @param tLM  Landmark times for which scores must be given. These must be a subset of LM times used during the prediction
+#' @param cause Cause of interest if considering competing risks. If left blank, this is inferred from the preds object.
+#' @param tLM  Landmark times for which scores must be given. These must be a subset of LM times used during the prediction.
+#'    If left blank, all landmark prediction time points are considered.
 #' @param unit Time unit for window of prediction, e.g., "year", "month", etc. Only used for printing results.
-#' @param split.method Method for cross-validation. Right now, as in riskRegression, the only option is bootcv.
-#' @param B The number of bootstap steps for cross-validation.
-#' @param ... Additional arguments to pass to Score (riskRegression package)
-#'
+#' @param split.method Defines the internal validation design as in riskRegression::Score. Options are currently none or bootcv
+#' @param B The number of bootstrap steps for cross-validation.
+#' @param M The size of the subsamples drawn for bootstrap cross-validation.
+#'   If specified it has to be an integer smaller than the size of data.
+#' @param ... Additional arguments to pass to Score (riskRegression package).
+#'   These arguments have been included for user flexibility but have not been tested and are not necessarily appropriate.
 #' @return An object of class "LMScore", which has components:
 #'   - auct: dataframe containing time-dependent auc information if "auc" was a metric
 #'   - briert: dataframe containing time-dependent brier score if "brier" was a metric
@@ -19,7 +22,7 @@
 #' @export
 #'
 LMScore <-
-  function(preds,
+  function(preds, ##object
            formula,
            metrics = c("auc", "brier"),
            cause,
@@ -27,6 +30,7 @@ LMScore <-
            unit,
            split.method,
            B,
+           M,
            ...) {
     if (!requireNamespace("data.table", quietly = TRUE)) {
       stop("Package \"data.table\" must be installed to use function LMScore.",
@@ -74,9 +78,7 @@ LMScore <-
       tLM = times[t]
 
       idx = preds[[1]]$preds$LM == tLM
-      # print(head(preds[[1]]$data[idx,c(1,2)]))
       data_to_test = preds[[1]]$data[idx,]
-      # print(head(data_to_test[,c(1,2)]))
       risks_to_test = lapply(preds, function(p) p$preds$risk[idx])
 
       if (nrow(data_to_test) != length(risks_to_test[[1]])) {
@@ -89,7 +91,7 @@ LMScore <-
         data = data_to_test,
         metrics = metrics,
         cause = cause,
-        times = c(tLM + w - 10e-5), # TODO: issue comes from here
+        times = c(tLM + w - 10e-5),
         # split.method = split.method, # TODO: implement
         # B = B,
         ...

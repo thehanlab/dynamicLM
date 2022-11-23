@@ -14,8 +14,13 @@ with components:
 \item type: as input
 \item w, func_covars, func_LMs, LMcovars, allLMcovars, outcome: as in LMdata
 \item LHS: the LHS of the input formula
+<<<<<<< HEAD
 \item linear.predictors: the vector of linear predictors, one per subject. Note
 that this vector has not been centered.
+=======
+\item linear.predictors: the vector of linear predictors, one per subject. Note that this vector has not been centered.
+\item args: arguments used to call model fitting
+>>>>>>> f28317e (LMcalPlot bootstrapping v1 complete + minor updates)
 }
 }
 \description{
