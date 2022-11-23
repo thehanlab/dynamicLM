@@ -8,6 +8,10 @@
   LMdata,
   formula,
   type = "coxph",
+<<<<<<< HEAD
+=======
+  reg = FALSE,
+>>>>>>> 56371f8 (Merge conflicts)
   method = "breslow",
   func_covars,
   func_LMs,
@@ -15,8 +19,11 @@
   outcome,
   w,
   LMcovars,
+<<<<<<< HEAD
   cluster,
   x = FALSE,
+=======
+>>>>>>> 56371f8 (Merge conflicts)
   ...
 )
 }
@@ -52,12 +59,15 @@ time period risk from the LM points)}
 \item{LMcovars}{Vector of strings indicating the columns that are to have a
 LM interaction}
 
+<<<<<<< HEAD
 \item{cluster}{Variable which clusters the observations (for e.g., identifies
 repeated patient IDs), for the purposes of a robust variance.}
 
 \item{x}{Logical value. If set to true, the LMdata is stored in the returned
 object. This is required for internal validation.}
 
+=======
+>>>>>>> 56371f8 (Merge conflicts)
 \item{...}{Arguments given to coxph or CSC.}
 }
 \value{
@@ -69,8 +79,11 @@ An object of class "LMcoxph" or "LMCSC" with components:
 \item LHS: the LHS of the input formula
 \item linear.predictors: the vector of linear predictors, one per subject. Note
 that this vector has not been centered.
+<<<<<<< HEAD
 \item args: arguments used to call model fitting
 \item ID_col: the cluster argument, usually specifies the column with patient ID
+=======
+>>>>>>> 56371f8 (Merge conflicts)
 }
 }
 \description{
