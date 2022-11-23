@@ -78,7 +78,8 @@ penLM <- function(x, y, LMdata, xcols, ...) {
   } else {
     attr(models, "survival.type") = "survival"
   }
-
+  if (!missing(LMdata)) attr(models, "LMdata") = LMdata
+  if (!missing(xcols)) attr(models, "xcols") = xcols
   class(models) = "LMpen"
   return(models)
 }
