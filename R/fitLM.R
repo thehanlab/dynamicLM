@@ -239,8 +239,12 @@ fitLM.LMdataframe <- function(LMdata,
 # TODO: print function - should maybe still only print out coefficients and not
 #       standard errors etc
 fitLM.LMpen <- function(object, id, s, ...){
+<<<<<<< HEAD
   survival.type = attr(object, "survival.type")
 
+=======
+  survival.type <- attr(object, "survival.type")
+>>>>>>> 56371f8 (Merge conflicts)
   LMdata <- attr(object, "LMdata")
   xcols <- attr(object, "xcols")
   data <- LMdata$LMdata

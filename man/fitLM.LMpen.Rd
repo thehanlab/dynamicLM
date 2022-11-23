@@ -4,7 +4,11 @@
 \alias{fitLM.LMpen}
 \title{Fit a penalized coxph or CSC model for a specific coefficient}
 \usage{
+<<<<<<< HEAD
 \method{fitLM}{LMpen}(object, id, s, ...)
+=======
+\method{fitLM}{LMpen}(object, id, s)
+>>>>>>> 56371f8 (Merge conflicts)
 }
 \arguments{
 \item{object}{A fitted object of class "LMpen" (i.e., TODO), this can be
