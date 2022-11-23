@@ -261,8 +261,9 @@ fitLM.LMpen <- function(object, id, s, ...){
       exit = data[[LMdata$outcome$time]]
       status = data[[LMdata$outcome$status]]
       y = Hist(exit, status, entry)
-      LHS <- paste0("Surv(",LMdata$LM_col,",",LMdata$outcome$time,",",LMdata$outcome$status,")") # TODO: check compatibility with other stuff
-      formula <- paste0(LHS, "~", paste0(xcols, collapse="+"), "+cluster(",id,")")
+      LHS_surv <- paste0("Surv(",LMdata$LM_col,",",LMdata$outcome$time,",",LMdata$outcome$status,")") # TODO: check compatibility with other stuff
+      formula <- paste0(LHS_surv, "~", paste0(xcols, collapse="+"), "+cluster(",id,")")
+      LHS <- paste0("Hist(",LMdata$outcome$time,",",LMdata$outcome$status,",",LMdata$LM_col,") ~ 1")
 
       superfm <- survival::coxph(as.formula(formula), data, method="breslow", iter.max=0, init = glmnet_coefs, ...)
 
