@@ -1,6 +1,6 @@
 #' Calcutes dynamic risk score at a time for an individual (helper to predLMrisk)
 #'
-#' @param model A coxph object
+#' @param object A coxph object
 #' @param tLM Landmarking time point at which to calculate risk score (time at which the prediction is made)
 #' @param data Dataframe (single row) of individual. Must contain the original covariates.
 #' @param func_covars A list of functions to use for interactions between LMs and covariates.
@@ -9,9 +9,9 @@
 #' @return Numeric risk score
 #' @export
 #'
-riskScore <- function(model, tLM, data, func_covars, func_LMs)
+riskScore <- function(object, tLM, data, func_covars, func_LMs)
 {
-  coefs <- model$coefficients
+  coefs <- object$coefficients
   pred_covars <- names(coefs)
   idx_LM_covars <- grep("LM",pred_covars, fixed=TRUE)
   LM_covars <- pred_covars[idx_LM_covars]

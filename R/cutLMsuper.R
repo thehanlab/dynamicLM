@@ -10,7 +10,7 @@
 #' @param rtime Character string specifying the column name in data containing the (running) time variable associated; only needed if format="long"
 #' @param right Boolean (default=TRUE), indicating if the intervals for the time-varying covariates are closed on the right (and open on the left) or vice versa, see cut
 #'
-#' @return An object of class "LM.data.frame". This the following components:
+#' @return An object of class "LMdataframe". This the following components:
 #'   - LMdata: containing the stacked data set, i.e., the outcome and the values of time-fixed and time-varying covariates taken at the landmark time points. The value of the landmark time point is stored in column LM.
 #'   - outcome: same as input
 #'   - w: same as input

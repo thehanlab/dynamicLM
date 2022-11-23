@@ -56,6 +56,7 @@ fitLM <- function(...) {
 #'   - LHS: the LHS of the input formula
 #'   - linear.predictors: the vector of linear predictors, one per subject. Note
 #'     that this vector has not been centered.
+#'   - args: arguments used to call model fitting
 #' @examples
 #' \dontrun{
 #' data(relapse)
@@ -87,6 +88,11 @@ fitLM <- function(...) {
 fitLM.LMdataframe <- function(LMdata, formula, type="coxph", reg=FALSE, method="breslow",
                   func_covars, func_LMs, LM_col, outcome, w, LMcovars, ...){
 
+  # store arguments but not the data (heavy)
+  args = match.call()
+  args$LMdata = NULL
+
+  # extra LHS of formula
   LHS = getLHS(formula)
 
   if (!grepl("cluster", as.character(stats::as.formula(formula))[3])){
@@ -168,7 +174,8 @@ fitLM.LMdataframe <- function(LMdata, formula, type="coxph", reg=FALSE, method="
            outcome=outcome,
            LHS=LHS,
            linear.predictors=linear.predictors,
-           original.landmarks=original.landmarks
+           original.landmarks=original.landmarks,
+           args=args
   )
   class(out)=cl
 

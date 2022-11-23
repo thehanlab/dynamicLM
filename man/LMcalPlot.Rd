@@ -5,41 +5,56 @@
 \title{Calibration plots for dynamic risk prediction landmark models}
 \usage{
 LMcalPlot(
-  preds,
+  object,
+  times,
+  formula,
+  data,
+  tLM,
+  ID_col = "ID",
+  split.method = "none",
+  B = 1,
+  M,
   unit = "year",
   cause,
-  tLM,
-  formula,
   plot = T,
   main,
   sub = T,
-  splitMethod = "none",
-  B = 1,
   ...
 )
 }
 \arguments{
-\item{preds}{A named list of prediction models, where allowed entries are outputs from predLMrisk}
+\item{object}{A named list of prediction models, where allowed entries are outputs from predLMrisk or supermodels from fitLM}
+
+\item{times}{Landmark times for which calibration must be plot. These must be a subset of LM times used during the prediction}
+
+\item{formula}{A survival or event history formula (Hist(..)). The left hand side is used to compute the expected event status.
+If none is given, it is obtained from the prediction object.}
+
+\item{data}{Data on which to predict if the object is a fitted model. If bootstrapping, must be an object
+of class LMdataframe. If not bootstrapping, it can be a dataframe.}
+
+\item{tLM}{Landmark times corresponding to the patient entries in data. Only required if data is a dataframe.
+tLM can be a string (indicating a column in data), a vector of length nrow(data),
+or a single value if all patient entries were obtained at the same landmark time.}
+
+\item{ID_col}{Column name that identifies individuals in data. Only required if bootstrapping.}
+
+\item{split.method}{Defines the internal validation design as in pec::calPlot. Options are currently none or bootcv}
+
+\item{B}{Number of times bootstrapping is performed.}
+
+\item{M}{Subsample size for cross-validation.}
 
 \item{unit}{The unit of w, i.e. w-unit prediction ("year","month", etc...). Only used to label the plot.}
 
 \item{cause}{Cause of interest if considering competing risks}
-
-\item{tLM}{Landmark times for which calibration must be plot. These must be a subset of LM times used during the prediction}
-
-\item{formula}{A survival or event history formula. The left hand side is used to compute the expected event status.
-It is recommended to give a formula. If none is given, it is obtained from the prediction object.}
 
 \item{plot}{If FALSE, do not plot the results, just return a plottable object. Default is TRUE.}
 
 \item{main}{Optional title to override default.}
 
 \item{sub}{If TRUE, add a subheading with the number of individuals at risk, and the number that under the event of interest.
-Default is TRUE.}
-
-\item{splitMethod}{Defines the internal validation design as in pec::calPlot. Options are none/noPlan or BootCv.}
-
-\item{B}{The number of cross-validation steps.}
+Default is TRUE. Set to FALSE for bootstrapping.}
 
 \item{...}{Additional arguments to pass to calPlot}
 }
@@ -59,7 +74,7 @@ See the Github for example code on using LMcalPlot in general.
 par(mfrow=c(2,2),pty="s")
 outlist = LMcalPlot(list("Model1"=p1),
                     unit="month",            # for the title
-                    tLM=c(6,12,18,24),       # landmarks at which to provide calibration plots
+                    times=c(6,12,18,24),       # landmarks at which to provide calibration plots
                     formula="Hist(event,Time,LM)~1",
                     method="quantile", q=10, # method for calibration plot
                     ylim=c(0,0.4), xlim=c(0,0.4))

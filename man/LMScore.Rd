@@ -13,6 +13,7 @@ LMScore(
   unit,
   split.method,
   B,
+  M,
   ...
 )
 }
@@ -24,17 +25,22 @@ If none is given, it is obtained from the prediction object.}
 
 \item{metrics}{Character vector specifying which metrics to apply. Choices are "auc" and "brier". Case matters.}
 
-\item{cause}{Cause of interest if considering competing risks}
+\item{cause}{Cause of interest if considering competing risks. If left blank, this is inferred from the preds object.}
 
-\item{tLM}{Landmark times for which scores must be given. These must be a subset of LM times used during the prediction}
+\item{tLM}{Landmark times for which scores must be given. These must be a subset of LM times used during the prediction.
+If left blank, all landmark prediction time points are considered.}
 
 \item{unit}{Time unit for window of prediction, e.g., "year", "month", etc. Only used for printing results.}
 
-\item{split.method}{Method for cross-validation. Right now, as in riskRegression, the only option is bootcv.}
+\item{split.method}{Defines the internal validation design as in riskRegression::Score. Options are currently none or bootcv}
 
-\item{B}{The number of bootstap steps for cross-validation.}
+\item{B}{The number of bootstrap steps for cross-validation.}
 
-\item{...}{Additional arguments to pass to Score (riskRegression package)}
+\item{M}{The size of the subsamples drawn for bootstrap cross-validation.
+If specified it has to be an integer smaller than the size of data.}
+
+\item{...}{Additional arguments to pass to Score (riskRegression package).
+These arguments have been included for user flexibility but have not been tested and are not necessarily appropriate.}
 }
 \value{
 An object of class "LMScore", which has components:
