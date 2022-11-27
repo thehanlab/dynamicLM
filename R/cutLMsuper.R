@@ -82,6 +82,11 @@ cutLMsuper <- function(data, outcome, LMs, w, covs, format = c("wide", "long"), 
     LMdata <- LMdata[, names(LMdata) != "fake_column1234"]
 
   }
+
+  # TODO: add base values for attributes added in addLMtime
+  # (likely have issues with predLMrisk when using new data and func_LMs/covars
+  # is missing)
+
   out=list(LMdata=LMdata, outcome=outcome, w=w, end_time=LMs[length(LMs)], LM_col="LM")
   class(out)="LMdataframe"
   return(out)
