@@ -243,7 +243,7 @@ check_evaluation_inputs <- function(
       }))
 
       colnames(preds.b) <- names(object)
-      cbind(outcomes_val_b, preds.b)
+      cbind(outcomes_val_b, preds.b, b=rep(b, nrow(outcomes_val_b)))
 
       # pred.list[[b]] <- cbind(outcomes_val_b, preds.b, rep(b, nrow(outcomes_val_b)))
 
@@ -253,7 +253,7 @@ check_evaluation_inputs <- function(
     pred.df <- pred.df[complete.cases(pred.df), ] # TODO: remove/fix
     preds <- pred.df[names(object)]
     pred_LMs <- pred.df[[LM_col]]
-    data <- pred.df[c(outcome$time, outcome$status, LM_col)]
+    data <- pred.df[c(outcome$time, outcome$status, LM_col, "b")]
     num_preds <- nrow(data)
     type <- lapply(object, function(o) ifelse(class(o) == "LMcoxph", "coxph", "CSC"))
 
