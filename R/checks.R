@@ -15,6 +15,7 @@ check_evaluation_inputs <- function(
 
   ### Check inputs ###
 
+
   # first checks
   split.method <- tolower(split.method)
   if (split.method == "none") B <- 1
@@ -65,6 +66,11 @@ check_evaluation_inputs <- function(
 
   # external validation: only need a dataframe
   if (!missing(data)) {
+    if (split.method == "bootcv"){
+      if (!missing(tLM)){
+        warning("LMdataframe objects have LM columns, tLM is ignored.")
+      }
+    }
     # only need the dataframe
     if (class(data) == "LMdataframe") {
       tLM <- data$LMdata[[data$LM_col]]
@@ -110,9 +116,6 @@ check_evaluation_inputs <- function(
 
   perform.boot <- F
   if (split.method == "bootcv"){
-    if (!missing(tLM)){
-      warning("LMdataframe objects have LM columns, tLM is ignored.")
-    }
     unique.inds = unique(data[[ID_col]])
     split.method <- riskRegression::getSplitMethod(split.method, B=B, N=length(unique.inds), M=M, seed)
     B <- split.method$B
@@ -261,15 +264,13 @@ check_evaluation_inputs <- function(
   }
 
   # check LM times
-  if (missing(tLM))
+  if (missing(times))
     times <- unique(pred_LMs)
   else {
-    if (all(tLM %in% pred_LMs))
-      times <- tLM
-    else {
-      tLM = paste(tLM, collapse = ",")
-      pred_LMs = paste(pred_LMs, collapse = ",")
-      stop(paste("arg tLM (= ",tLM,") must be a subset of landmark prediction times (= ",pred_LMs,")"))
+    if (!all(times %in% unique(pred_LMs))) {
+      times = paste(times, collapse = ",")
+      pred_LMs = paste(unique(pred_LMs), collapse = ",")
+      stop(paste("arg times (= ",times,") must be a subset of landmark prediction times (= ",pred_LMs,")"))
     }
   }
 

@@ -21,89 +21,133 @@
 #' @import riskRegression
 #' @export
 #'
+# TODO: update description
 LMScore <-
-  function(preds, ##object
-           formula,
+  function(object,
+           times,
            metrics = c("auc", "brier"),
-           cause,
+           formula,
+           data,
            tLM,
-           unit,
-           split.method,
-           B,
+           ID_col="ID",
+           se.fit = TRUE,
+           conf.int = 0.95,
+           split.method = "none",
+           B = 1,
            M,
+           cores = 1,
+           seed,
+           unit ="year",
+           cause,
            ...) {
+
     if (!requireNamespace("data.table", quietly = TRUE)) {
       stop("Package \"data.table\" must be installed to use function LMScore.",
            call. = FALSE)
     }
-    if (missing(unit))
-      unit = "year"
 
-    pred_LMs <- unique(preds[[1]]$preds$LM)
-    if (missing(tLM))
-      times <- pred_LMs
-    else {
-      if (all(tLM %in% pred_LMs))
-        times <- tLM
-      else {
-        tLM = paste(tLM, collapse = ",")
-        pred_LMs = paste(pred_LMs, collapse = ",")
-        stop(paste("arg tLM (= ",tLM,") must be a subset of landmark prediction times (= ",pred_LMs,")"))
+    checked_input <- match.call()
+    m <- match(c("object", "times", "formula", "data", "tLM", "ID_col",
+                 "split.method", "B", "M", "cores", "seed", "cause"), names(checked_input), 0L)
+    checked_input <- checked_input[c(1L, m)]
+    checked_input[[1L]] <- quote(check_evaluation_inputs)
+    checked_input <- eval(checked_input, parent.frame())
+
+    object = checked_input$object
+    times = checked_input$times
+    preds = checked_input$preds
+    pred_LMs = checked_input$pred_LMs
+    data = checked_input$data
+    NF = checked_input$NF
+    w = checked_input$w
+    formula = checked_input$formula
+    cause = checked_input$cause
+
+    if(is.null(data$b)) data$b <- 1
+
+    B = length(unique(data$b))
+    se.fit.b <- se.fit
+    if (B > 1) se.fit.b <- FALSE
+
+    auct <- lapply(1:B, function(b) data.table::data.table())
+    briert <- lapply(1:B, function(b) data.table::data.table())
+    for (b in 1:B){
+      for (t in 1:length(times)) {
+        tLM = times[t]
+
+        idx = (pred_LMs == tLM) & (data$b == b)
+        data_to_test = data[idx,]
+        risks_to_test = lapply(1:NF, function(i) {
+          preds[idx, i]
+        })
+        names(risks_to_test) = names(object)
+
+        # TODO: check for CR
+        # --> not neccessary for cox
+        #
+        # if (object[[1]]$type == "coxph") {
+        #   risks_to_test = lapply(risks_to_test, function(r) 1-r)
+        # }
+
+        if (nrow(data_to_test) != length(risks_to_test[[1]])) {
+          stop("nrow(data_to_test)!=length(risks_to_test)")
+        }
+
+        # TODO: add a try around this
+        # and use NAs if it doesn't work
+        score_t <- riskRegression::Score(
+          risks_to_test,
+          formula = stats::as.formula(formula),
+          data = data_to_test,
+          metrics = metrics,
+          cause = cause,
+          times = c(tLM + w - 10e-5),
+          se.fit = se.fit.b,
+          conf.int = conf.int,
+          ...
+        )
+
+        if ("auc" %in% metrics) {
+          auct[[b]] <- rbind(auct[[b]], cbind(tLM, score_t$AUC$score))
+        }
+
+        if ("brier" %in% metrics) {
+          briert[[b]] <- rbind(briert[[b]], cbind(tLM, score_t$Brier$score))
+        }
+      }
+    }
+    auct <- do.call("rbind", auct)
+    briert <- do.call("rbind", briert)
+    if (B > 1) {
+      if (se.fit==TRUE) {
+        alpha = 1-conf.int
+        auct <- auct[,
+                     data.table::data.table(
+                       mean(.SD[["AUC"]],na.rm=TRUE),
+                       se=sd(.SD[["AUC"]],na.rm=TRUE),
+                       lower=quantile(.SD[["AUC"]],alpha/2,na.rm=TRUE),
+                       upper=quantile(.SD[["AUC"]],(1-alpha/2),na.rm=TRUE)),
+                     by=c("model","tLM"),.SDcols="AUC"
+                     ]
+        briert <- briert[,
+                         data.table::data.table(
+                           mean(.SD[["Brier"]],na.rm=TRUE),
+                           se=sd(.SD[["Brier"]],na.rm=TRUE),
+                           lower=quantile(.SD[["Brier"]],alpha/2,na.rm=TRUE),
+                           upper=quantile(.SD[["Brier"]],(1-alpha/2),na.rm=TRUE)),
+                         by=c("model","tLM"),.SDcols="Brier"
+                         ]
+        data.table::setnames(auct,c("model","tLM","AUC","se","lower","upper"))
+        data.table::setnames(briert,c("model","tLM","Brier","se","lower","upper"))
+      } else {
+        auct <- auct[,data.table::data.table(mean(.SD[["AUC"]],na.rm=TRUE)),by=c("model","tLM"),.SDcols="AUC"]
+        briert <- briert[,data.table::data.table(mean(.SD[["Brier"]],na.rm=TRUE)),by=c("model","tLM"),.SDcols="Brier"]
+        data.table::setnames(auct,c("model","tLM","AUC"))
+        data.table::setnames(briert,c("model","tLM","Brier"))
       }
     }
 
-    w = preds[[1]]$w
-    data = eval(preds[[1]]$data)
-    num_preds = nrow(preds[[1]]$preds)
-
-    if (missing(cause))
-      cause <- preds[[1]]$cause
-    if (missing(formula))
-      formula <- preds[[1]]$LHS
-
-    if (length(preds) > 1) {
-      for (i in 2:length(preds)) {
-        if (preds[[i]]$w != w)
-          stop("prediction window w is not the same for all prediction models.")
-        if (nrow(preds[[i]]$preds) != num_preds)
-          stop("number of predictions is not the same for all prediction models.")
-        if (!isTRUE(all.equal(preds[[i]]$preds$LM, preds[[1]]$preds$LM)))
-          stop("LM points used for each data point is not the same for all prediction models.")
-      }
-    }
-
-    auct <- data.table::data.table()
-    briert <- data.table::data.table()
-    for (t in 1:length(times)) {
-      tLM = times[t]
-
-      idx = preds[[1]]$preds$LM == tLM
-      data_to_test = preds[[1]]$data[idx,]
-      risks_to_test = lapply(preds, function(p) p$preds$risk[idx])
-
-      if (nrow(data_to_test) != length(risks_to_test[[1]])) {
-        stop("nrow(data_to_test)!=length(risks_to_test)")
-      }
-
-      score_t <- riskRegression::Score(
-        risks_to_test,
-        formula = stats::as.formula(formula),
-        data = data_to_test,
-        metrics = metrics,
-        cause = cause,
-        times = c(tLM + w - 10e-5),
-        # split.method = split.method, # TODO: implement
-        # B = B,
-        ...
-      )
-
-      if ("auc" %in% metrics)
-        auct <- rbind(auct, cbind(tLM, score_t$AUC$score))
-      if ("brier" %in% metrics)
-        briert <- rbind(briert, cbind(tLM, score_t$Brier$score))
-
-    }
-    outlist = list(
+    outlist <- list(
       auct = auct,
       briert = briert,
       w = w,
