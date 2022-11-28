@@ -59,6 +59,8 @@
 #' @param ... Additional arguments to pass to Score (`riskRegression` package).
 #'   These arguments have been included for user flexibility but have not been
 #'  tested and should be used with precaution.
+#' @param silent Show any error messages when computing `Score` for each
+#'  landmark time (and potentially bootstrap iteration)
 #' @return An object of class "LMScore", which has components:
 #'   - `auct`: dataframe containing time-dependent AUC if "auc" was
 #'     included as a metric
@@ -87,6 +89,7 @@ LMScore <-
            seed,
            unit ="year",
            cause,
+           silent = T,
            ...) {
 
     if (!requireNamespace("data.table", quietly = TRUE)) {
@@ -119,6 +122,9 @@ LMScore <-
 
     auct <- lapply(1:B, function(b) data.table::data.table())
     briert <- lapply(1:B, function(b) data.table::data.table())
+
+    # TODO: turn into an lapply?
+    # TODO: parallelize
     for (b in 1:B){
       for (t in 1:length(times)) {
         tLM = times[t]
@@ -141,31 +147,49 @@ LMScore <-
           stop("nrow(data_to_test)!=length(risks_to_test)")
         }
 
-        # TODO: add a try around this
-        # and use NAs if it doesn't work
-        score_t <- riskRegression::Score(
-          risks_to_test,
-          formula = stats::as.formula(formula),
-          data = data_to_test,
-          metrics = metrics,
-          cause = cause,
-          times = c(tLM + w - 10e-5),
-          se.fit = se.fit.b,
-          conf.int = conf.int,
-          ...
+        score_t <- try(
+          riskRegression::Score(
+            risks_to_test,
+            formula = stats::as.formula(formula),
+            data = data_to_test,
+            metrics = metrics,
+            cause = cause,
+            times = c(tLM + w - 10e-5),
+            se.fit = se.fit.b,
+            conf.int = conf.int,
+            ...
+          ), silent = silent
         )
 
+        if (inherits(score_t, "try-error")) {
+          auct_b <- data.frame(model=names(object), times=NA, AUC=NA)
+          briert_b <- data.frame(model=names(object), times=NA, Brier=NA)
+        } else {
+          auct_b <- score_t$AUC$score
+          briert_b <- score_t$Brier$score
+        }
+        auct_b$b <- b
+        briert_b$b <- b
+
         if ("auc" %in% metrics) {
-          auct[[b]] <- rbind(auct[[b]], cbind(tLM, score_t$AUC$score))
+          auct[[b]] <- rbind(auct[[b]], cbind(tLM, auct_b))
         }
 
         if ("brier" %in% metrics) {
-          briert[[b]] <- rbind(briert[[b]], cbind(tLM, score_t$Brier$score))
+          briert[[b]] <- rbind(briert[[b]], cbind(tLM, briert_b))
         }
       }
     }
     auct <- do.call("rbind", auct)
     briert <- do.call("rbind", briert)
+    b_na <- auct$b[is.na(auct$AUC)]
+    tLM_na <- auct$tLM[is.na(auct$AUC)]
+    model_na <- auct$model[is.na(auct$AUC)]
+
+    if(length(b_na) != 0) {
+      message(paste0("\nNote that some metrics could not be computed. Set silent=FALSE to potentially see more error messages. Metrics not computed for (model, b, tLM) = ",paste0("(",model_na,", ",b_na,", ",tLM_na,")", collapse=", ")))
+    }
+
     if (B > 1) {
       if (se.fit==TRUE) {
         alpha = 1-conf.int

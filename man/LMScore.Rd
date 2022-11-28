@@ -22,6 +22,7 @@ LMScore(
   seed,
   unit = "year",
   cause,
+  silent = T,
   ...
 )
 }
@@ -79,6 +80,9 @@ Only used for printing results.}
 
 \item{cause}{Cause of interest if considering competing risks. If left blank,
 this is inferred from object.}
+
+\item{silent}{Show any error messages when computing \code{Score} for each
+landmark time (and potentially bootstrap iteration)}
 
 \item{...}{Additional arguments to pass to Score (\code{riskRegression} package).
 These arguments have been included for user flexibility but have not been
