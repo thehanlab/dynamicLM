@@ -1,11 +1,19 @@
 #' Calibration plots for dynamic risk prediction landmark models.
 #'
-#' There are three ways to perform calibration: apparent/internal, bootstrapped, and external. Accordingly, the named list of prediction models must be as follows:
-#' * For both apparent/internal calbration, objects output from `predLMrisk` or supermodels fit with `fitLM` may be used as input.
-#' * In order to bootstrap, supermodels fit with `fitLM` may be used as input (note that the argument `x=TRUE` must be specified when fitting the model in `fitLM`).
-#' * For external calibration, supermodels fit with `fitLM` are input along with new data in the `data` argument. This data can be a LMdataframe or a dataframe (in which case `tLM` must be specified).
+#' There are three ways to perform calibration: apparent/internal, bootstrapped,
+#' and external. Accordingly, the named list of prediction models must be as
+#' follows:
+#' * For both apparent/internal calbration, objects output from `predLMrisk`
+#'   for supermodels fit with `fitLM` may be used as input.
+#' * In order to bootstrap, supermodels fit with `fitLM` may be used as input
+#'   (note that the argument `x=TRUE` must be specified when fitting the model
+#'   in `fitLM`).
+#' * For external calibration, supermodels fit with `fitLM` are input along with
+#'   new data in the `data` argument. This data can be a LMdataframe or a
+#'   dataframe (in which case `tLM` must be specified).
 #'
-#' For both internal calibration and bootstrapping, it is assumed that all models in `object` are fit on the same data.
+#' For both internal calibration and bootstrapping, it is assumed that all
+#' models in `object` are fit on the same data.
 #'
 #' @param object A named list of prediction models, where allowed entries are outputs from `predLMrisk` or supermodels from `fitLM` depending on the type of calibration.
 #' @param times Landmark times for which calibration must be plot. These must be a subset of LM times used during the prediction
@@ -29,13 +37,15 @@
 #' @param regression_values Default is FALSE. If set to TRUE, the returned list is appended by a list `regression_values`,
 #'   which contains the intercept and slope of a linear regression of each model for each landmark time (i.e., each calibration plot).
 #'   Note that perfect calibration has a slope of 1 and an intercept of 0.
-#' @param unit The unit of w, i.e. w-unit prediction ("year","month", etc...). Only used to label the plot.
-#' @param cause Cause of interest if considering competing risks
+#' @param unit Time unit for window of prediction, e.g., "year", "month", etc. Only used for printing results.
+#' @param cause Cause of interest if considering competing risks. If left blank, this is inferred from object.
 #' @param plot If FALSE, do not plot the results, just return a plottable object. Default is TRUE.
 #' @param main Optional title to override default.
 #' @param sub If TRUE, add a subheading with the number of individuals at risk, and the number that under the event of interest.
 #'   Default is TRUE. Set to FALSE for bootstrapping.
-#' @param ... Additional arguments to pass to calPlot
+#' @param ... Additional arguments to pass to calPlot (`pec` package).
+#'   These arguments have been included for user flexibility but have not been
+#'   tested and should be used with precaution.
 #'
 #' @return List of plots of w-year risk, one entry per prediction/landmark time point
 #' @details When collecting bootstrap samples, the same individuals are considered across landmarks.

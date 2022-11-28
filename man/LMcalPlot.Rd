@@ -59,9 +59,9 @@ or a single value if all patient entries were obtained at the same landmark time
 which contains the intercept and slope of a linear regression of each model for each landmark time (i.e., each calibration plot).
 Note that perfect calibration has a slope of 1 and an intercept of 0.}
 
-\item{unit}{The unit of w, i.e. w-unit prediction ("year","month", etc...). Only used to label the plot.}
+\item{unit}{Time unit for window of prediction, e.g., "year", "month", etc. Only used for printing results.}
 
-\item{cause}{Cause of interest if considering competing risks}
+\item{cause}{Cause of interest if considering competing risks. If left blank, this is inferred from object.}
 
 \item{plot}{If FALSE, do not plot the results, just return a plottable object. Default is TRUE.}
 
@@ -70,21 +70,31 @@ Note that perfect calibration has a slope of 1 and an intercept of 0.}
 \item{sub}{If TRUE, add a subheading with the number of individuals at risk, and the number that under the event of interest.
 Default is TRUE. Set to FALSE for bootstrapping.}
 
-\item{...}{Additional arguments to pass to calPlot}
+\item{...}{Additional arguments to pass to calPlot (\code{pec} package).
+These arguments have been included for user flexibility but have not been
+tested and should be used with precaution.}
 }
 \value{
 List of plots of w-year risk, one entry per prediction/landmark time point
 }
 \description{
-There are three ways to perform calibration: apparent/internal, bootstrapped, and external. Accordingly, the named list of prediction models must be as follows:
+There are three ways to perform calibration: apparent/internal, bootstrapped,
+and external. Accordingly, the named list of prediction models must be as
+follows:
 \itemize{
-\item For both apparent/internal calbration, objects output from \code{predLMrisk} or supermodels fit with \code{fitLM} may be used as input.
-\item In order to bootstrap, supermodels fit with \code{fitLM} may be used as input (note that the argument \code{x=TRUE} must be specified when fitting the model in \code{fitLM}).
-\item For external calibration, supermodels fit with \code{fitLM} are input along with new data in the \code{data} argument. This data can be a LMdataframe or a dataframe (in which case \code{tLM} must be specified).
+\item For both apparent/internal calbration, objects output from \code{predLMrisk}
+for supermodels fit with \code{fitLM} may be used as input.
+\item In order to bootstrap, supermodels fit with \code{fitLM} may be used as input
+(note that the argument \code{x=TRUE} must be specified when fitting the model
+in \code{fitLM}).
+\item For external calibration, supermodels fit with \code{fitLM} are input along with
+new data in the \code{data} argument. This data can be a LMdataframe or a
+dataframe (in which case \code{tLM} must be specified).
 }
 }
 \details{
-For both internal calibration and bootstrapping, it is assumed that all models in \code{object} are fit on the same data.
+For both internal calibration and bootstrapping, it is assumed that all
+models in \code{object} are fit on the same data.
 
 When collecting bootstrap samples, the same individuals are considered across landmarks.
 I.e., sample \code{M} unique individuals, train on the super dataset formed by these individuals, and validate on the individuals not sampled at the landmarks they remain alive (or that are given in \code{times}).

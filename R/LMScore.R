@@ -1,27 +1,75 @@
-#' Methods (AUCt, Brier) to score the predictive performance of dynamic risk markers from LM super models
+#' Methods (time-dependent AUC and Brier Score) to score the predictive
+#' performance of dynamic risk prediction landmark models.
 #'
-#' @param preds A named list of prediction models, where allowed entries are outputs from predLMrisk
-#' @param formula A survival or event history formula. The left hand side is used to compute the expected event status.
+#' There are three ways to perform assess the predictive performance:
+#' apparent/internal, bootstrapped, and external. Accordingly, the named list of
+#' prediction models must be as follows:
+#' * For both apparent/internal evaluation, objects output from `predLMrisk` or
+#'   supermodels fit with `fitLM` may be used as input.
+#' * In order to bootstrap, supermodels fit with `fitLM` may be used as input
+#'   (note that the argument `x=TRUE` must be specified when fitting the model
+#'   in `fitLM`).
+#' * For external calibration, supermodels fit with `fitLM` are input along with
+#'   new data in the `data` argument. This data can be a LMdataframe or a
+#'   dataframe (in which case `tLM` must be specified).
+#'
+#' For both internal evaluation and bootstrapping, it is assumed that all
+#' models in `object` are fit on the same data.
+#'
+#'
+#' @param object A named list of prediction models, where allowed entries are
+#'   outputs from `predLMrisk` or supermodels from `fitLM` depending on the type
+#'   of calibration.
+#' @param times Landmark times for which calibration must be plot. These must be
+#'   a subset of LM times used during the prediction
+#' @param metrics  Character vector specifying which metrics to apply. Choices
+#'   are "auc" and "brier". Case matters.
+#' @param formula A survival or event history formula (`Hist(...)`). The left
+#'   hand side is used to compute the expected event status.
 #'   If none is given, it is obtained from the prediction object.
-#' @param metrics  Character vector specifying which metrics to apply. Choices are "auc" and "brier". Case matters.
-#' @param cause Cause of interest if considering competing risks. If left blank, this is inferred from the preds object.
-#' @param tLM  Landmark times for which scores must be given. These must be a subset of LM times used during the prediction.
-#'    If left blank, all landmark prediction time points are considered.
-#' @param unit Time unit for window of prediction, e.g., "year", "month", etc. Only used for printing results.
-#' @param split.method Defines the internal validation design as in riskRegression::Score. Options are currently none or bootcv
-#' @param B The number of bootstrap steps for cross-validation.
-#' @param M The size of the subsamples drawn for bootstrap cross-validation.
-#'   If specified it has to be an integer smaller than the size of data.
-#' @param ... Additional arguments to pass to Score (riskRegression package).
-#'   These arguments have been included for user flexibility but have not been tested and are not necessarily appropriate.
+#' @param data Data for external validation.
+#' @param tLM Landmark times corresponding to the patient entries in data. Only
+#'   required if data is a dataframe. tLM can be a string (indicating a column
+#'   in data), a vector of length nrow(data), or a single value if all patient
+#'   entries were obtained at the same landmark time.
+#' @param ID_col Column name that identifies individuals in data. If omitted, it
+#'   is obtained from the prediction object.
+#' @param se.fit If FALSE or 0, no standard errors are calculated.
+#' @param conf.int Confidence interval (CI) coverage. Default is 0.95. If
+#'   bootstrapping, CIs are calculated from empirical quantiles. If not, for
+#'   right censored data, they are calculated by the package `riskRegression` as
+#'   in Blanche et al (references).
+#' @param split.method Defines the internal validation design as in
+#'   `pec::calPlot`. Options are currently "none" or "bootcv".
+#'
+#'   "none": assess the model in the test data (`data` argument)/data it was trained on.
+#'
+#'   "bootcv": `B` models are trained on boostrap samples either drawn with replacement of the same size as the original data or without replacement of size `M`. Models are then assessed in observations not in the sample.
+#'
+#' @param B Number of times bootstrapping is performed.
+#' @param M Subsample size for training in cross-validation. Entries not sampled
+#'   in the M subsamples are used for validation.
+#' @param cores To perform parallel computing, specifies the number of cores.
+#' @param seed Optional, integer passed to set.seed. If not given or NA, no seed
+#'   is set.
+#' @param unit Time unit for window of prediction, e.g., "year", "month", etc.
+#'   Only used for printing results.
+#' @param cause Cause of interest if considering competing risks. If left blank,
+#'   this is inferred from object.
+#' @param ... Additional arguments to pass to Score (`riskRegression` package).
+#'   These arguments have been included for user flexibility but have not been
+#'  tested and should be used with precaution.
 #' @return An object of class "LMScore", which has components:
-#'   - auct: dataframe containing time-dependent auc information if "auc" was a metric
-#'   - briert: dataframe containing time-dependent brier score if "brier" was a metric
+#'   - `auct`: dataframe containing time-dependent AUC if "auc" was
+#'     included as a metric
+#'   - `briert`: dataframe containing time-dependent Brier score if "brier" was
+#'     included as a metric
 #' @details See the Github for example code
+#' @references Paul Blanche, Cecile Proust-Lima, Lucie Loubere, Claudine Berr, Jean- Francois Dartigues, and Helene Jacqmin-Gadda. Quantifying and comparing dynamic predictive accuracy of joint models for longitudinal marker and time-to-event in presence of censoring and competing risks. Biometrics, 71 (1):102–113, 2015.
+#'
+#' P. Blanche, J-F Dartigues, and H. Jacqmin-Gadda. Estimating and comparing time-dependent areas under receiver operating characteristic curves for censored event times with competing risks. Statistics in Medicine, 32(30):5381–5397, 2013.
 #' @import riskRegression
 #' @export
-#'
-# TODO: update description
 LMScore <-
   function(object,
            times,
