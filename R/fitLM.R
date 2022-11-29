@@ -209,14 +209,16 @@ fitLM.LMdataframe <- function(LMdata,
 }
 
 
-#' Fit a penalized coxph or CSC model for a specific coefficient
+#' Fit a penalized coxph or CSC supermodel for a specific coefficient
 #'
 #' @details The Breslow method is used for handling ties, as we use the `glmnet`
 #'   package which does the same.
 #'
-#' @param object  A fitted object of class "LMpen". This can becreated by
+#' @param object  A fitted object of class "LMpen". This can be created by
 #'   calling `penLM` using arguments `LMdata` and `xcols`.
-#' @param s Value of the penalty parameter `lambda` at which to fit a model.
+#' @param s Value of the penalty parameter `lambda` at which to fit a model. For
+#'   cause specific Cox super models, this must be a list or vector of values:
+#'   one for each cause.
 #'
 #' @return An object of class "penLMcoxph" or "penLMCSC" with components:
 #'   - model: fitted model
@@ -231,10 +233,6 @@ fitLM.LMdataframe <- function(LMdata,
 #' }
 #' @import survival glmnet
 #' @export
-# TODO: allow for x, y input (need to then specific func_covars, etc. and need
-#       x to be a dataframe... etc)
-# TODO: print function - should maybe still only print out coefficients and not
-#       standard errors etc
 fitLM.penLM <- function(object, s, ...){
   survival.type <- attr(object, "survival.type")
   LMdata <- attr(object, "LMdata")
@@ -244,7 +242,10 @@ fitLM.penLM <- function(object, s, ...){
   data <- LMdata$LMdata
   NC <- length(object)
 
-  # TOOD: check inputs - is LMdata an LMdataframe etc?
+  # TOOD: check inputs -
+  # * is LMdata an LMdataframe etc?
+  # * is s the correct length?
+  # * allow for (x,y)
   func_covars <- LMdata$func_covars
   func_LMs <- LMdata$func_LMs
   original.landmarks <- data[[LMdata$LM_col]]
@@ -328,14 +329,17 @@ fitLM.penLM <- function(object, s, ...){
 }
 
 
-#' Fit a penalized coxph or CSC model for a specific coefficient
+#' Fit a penalized cross-validated coxph or CSC super model
 #'
 #' @details The Breslow method is used for handling ties, as we use the `glmnet`
 #'   package which does the same.
 #'
-#' @param object  A fitted object of class "LMpen". This can becreated by
-#'   calling `penLM` using arguments `LMdata` and `xcols`.
+#' @param object  A fitted object of class "cv.LMpen". This can be created by
+#'   calling `cv.penLM` using arguments `LMdata` and `xcols`.
 #' @param s Value of the penalty parameter `lambda` at which to fit a model.
+#'   Default is "lambda.1se" stored in the object; "lambda.min" can also be used
+#'   or a specific value of can be input. For cause-specific Cox super models,
+#'   this must be a list or vector of values: one for each cause.
 #'
 #' @return An object of class "penLMcoxph" or "penLMCSC" with components:
 #'   - model: fitted model
@@ -350,10 +354,6 @@ fitLM.penLM <- function(object, s, ...){
 #' }
 #' @import survival glmnet
 #' @export
-# TODO: allow for x, y input (need to then specific func_covars, etc. and need
-#       x to be a dataframe... etc)
-# TODO: print function - should maybe still only print out coefficients and not
-#       standard errors etc
 fitLM.cv.penLM <- function(object, s="lambda.1se", ...){
   if (class(s) == "character"){
     if (s == "lambda.1se") s <- lapply(object, function(o) o$lambda.1se)
