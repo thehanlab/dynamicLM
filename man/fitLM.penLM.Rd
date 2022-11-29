@@ -2,15 +2,17 @@
 % Please edit documentation in R/fitLM.R
 \name{fitLM.penLM}
 \alias{fitLM.penLM}
-\title{Fit a penalized coxph or CSC model for a specific coefficient}
+\title{Fit a penalized coxph or CSC supermodel for a specific coefficient}
 \usage{
 \method{fitLM}{penLM}(object, s, ...)
 }
 \arguments{
-\item{object}{A fitted object of class "LMpen". This can becreated by
+\item{object}{A fitted object of class "LMpen". This can be created by
 calling \code{penLM} using arguments \code{LMdata} and \code{xcols}.}
 
-\item{s}{Value of the penalty parameter \code{lambda} at which to fit a model.}
+\item{s}{Value of the penalty parameter \code{lambda} at which to fit a model. For
+cause specific Cox super models, this must be a list or vector of values:
+one for each cause.}
 }
 \value{
 An object of class "penLMcoxph" or "penLMCSC" with components:
@@ -25,7 +27,7 @@ that this vector has not been centered.
 }
 }
 \description{
-Fit a penalized coxph or CSC model for a specific coefficient
+Fit a penalized coxph or CSC supermodel for a specific coefficient
 }
 \details{
 The Breslow method is used for handling ties, as we use the \code{glmnet}
