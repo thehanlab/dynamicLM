@@ -238,6 +238,8 @@ fitLM.LMdataframe <- function(LMdata,
 fitLM.penLM <- function(object, s, ...){
   survival.type <- attr(object, "survival.type")
   LMdata <- attr(object, "LMdata")
+  if(is.null(LMdata))
+    stop("To fit a penalized model, penLM or cv.penLM must be called with arguments LMdata and xcols. (x,y) is not yet implemented")
   xcols <- attr(object, "xcols")
   data <- LMdata$LMdata
   NC <- length(object)
@@ -253,6 +255,7 @@ fitLM.penLM <- function(object, s, ...){
   allLMcovars <- LMdata$allLMcovars
 
   if(survival.type=="survival"){
+    if (class(s) == "list") s <- s[[1]]
     glmnet_coefs <- as.vector(coef(object[[1]], s = s))
 
     entry = LMdata$LM_col
@@ -322,4 +325,40 @@ fitLM.penLM <- function(object, s, ...){
   )
   class(out)=cl
   return(out)
+}
+
+
+#' Fit a penalized coxph or CSC model for a specific coefficient
+#'
+#' @details The Breslow method is used for handling ties, as we use the `glmnet`
+#'   package which does the same.
+#'
+#' @param object  A fitted object of class "LMpen". This can becreated by
+#'   calling `penLM` using arguments `LMdata` and `xcols`.
+#' @param s Value of the penalty parameter `lambda` at which to fit a model.
+#'
+#' @return An object of class "penLMcoxph" or "penLMCSC" with components:
+#'   - model: fitted model
+#'   - type: as input
+#'   - w, func_covars, func_LMs, LMcovars, allLMcovars, outcome: as in LMdata
+#'   - LHS: the LHS of the input formula
+#'   - linear.predictors: the vector of linear predictors, one per subject. Note
+#'     that this vector has not been centered.
+#'   - s: the values of lambda for which this model has been fit.
+#' @examples
+#' \dontrun{
+#' }
+#' @import survival glmnet
+#' @export
+# TODO: allow for x, y input (need to then specific func_covars, etc. and need
+#       x to be a dataframe... etc)
+# TODO: print function - should maybe still only print out coefficients and not
+#       standard errors etc
+fitLM.cv.penLM <- function(object, s="lambda.1se", ...){
+  if (class(s) == "character"){
+    if (s == "lambda.1se") s <- lapply(object, function(o) o$lambda.1se)
+    else if (s == "lambda.min") s <- lapply(object, function(o) o$lambda.min)
+  }
+
+  return(fitLM.penLM(object, s, ...))
 }
