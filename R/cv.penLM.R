@@ -13,10 +13,12 @@
 #' @param xcols A vector of column names of the data stored in `LMdata` that
 #'   are to be used as dependent variables. If not specified, it is assumed that
 #'   all non-response variables are the dependent variables.
+#' @param ID_col TODO
 #' @param nfolds Number of folds in k-fold cross validation. Default is 10.
 #' @param type.measure Loss for cross-validation. Currently the only option is
 #'   "deviance" which is the partial-likelihood for the Cox model. If using
 #'   cause-specific Cox models, this is evaluated on each model separately.
+#' @param seed TODO
 #' @param ... Additional arguments to `cv.glmnet`.
 #'
 #' @return An object class `cv.penLM`. This is a list of `cv.glmnet` objects
@@ -26,7 +28,7 @@
 #'   inputs if given.
 #'   Functions `print` and `plot` exist for the object. To make predictions,
 #'   see `fitLM.cv.penLM`.
-#' @import glmnet
+#' @import glmnet riskRegression
 #' @export
 #'
 #' @examples
@@ -59,10 +61,11 @@
 #' print(pen_supermodel)
 #' plot(pen_supermodel)
 #' }
-cv.penLM <- function(x, y, LMdata, xcols, type.measure="deviance",...) {
+cv.penLM <- function(x, y, LMdata, xcols, ID_col, nfolds=10, type.measure="deviance", seed=NULL, ...) {
 
   checked_input <- match.call()
   checked_input$parent_func = quote(cv.penLM)
+  checked_input$CV = TRUE
   checked_input[[1L]] <- quote(check_penLM_inputs)
   checked_input <- eval(checked_input, parent.frame())
 
@@ -72,23 +75,29 @@ cv.penLM <- function(x, y, LMdata, xcols, type.measure="deviance",...) {
   y = checked_input$y
   LMdata = checked_input$LMdata
   xcols = checked_input$xcols
+  IDs = checked_input$IDs
+  ID_col = checked_input$ID_col
+  unique.IDs = unique(IDs)
+  # print(unique.IDs)
 
-  # TODO: implement foldid based on an ID column
-  # split.method <- riskRegression::getSplitMethod(split.method, B=B, N=length(unique.inds), M=M, seed)
-  # B <- split.method$B
-  # split.idx <- split.method$index
-  # perform.boot <- !is.null(split.idx)
-  # if (perform.boot) split.idx <- replace(split.idx, seq_along(split.idx), unique.inds[split.idx])# get IDs of the individuals
+  # create foldids (as all instances of an individual must be in the same fold)
+  split.method <- paste0("cv",nfolds)
+  split.idx <- riskRegression::getSplitMethod(split.method, B=1, N=length(unique.IDs), seed=seed)$index
+  foldid <- split.idx[match(IDs, unique.IDs)]
+  print(foldid[1:100])
 
   models <- lapply(y, function(yi) {
-    glmnet::cv.glmnet(x = x, y = yi, family = "cox", type.measure = type.measure, ...)
+    glmnet::cv.glmnet(x = x, y = yi, family = "cox", type.measure = type.measure, foldid = foldid, ...)
   })
   if (length(models) > 1){
     attr(models, "survival.type") = "competing.risk"
   } else {
     attr(models, "survival.type") = "survival"
   }
-  if (!is.null(LMdata)) attr(models, "LMdata") = LMdata
+  if (!is.null(LMdata)) {
+    LMdata$ID_col <- ID_col
+    attr(models, "LMdata") = LMdata
+  }
   if (!is.null(xcols)) attr(models, "xcols") = xcols
   class(models) = "cv.penLM"
   return(models)

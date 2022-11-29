@@ -319,6 +319,22 @@ check_penLM_inputs <- function(x, y, lmdata, xcols, parent_func, ...) {
         `stop("Inputs are mismatched. Arguments (x, y) should be of type (matrix, Surv object) or arguments (lmdata, xcols) should be (LMdataframe, vector of column names)")
       }
       else return(parent_func(lmdata = x, ...))
+check_penLM_inputs <- function(x, y, LMdata, xcols, ID_col=NULL, parent_func, CV=FALSE, ...){
+  parent_func <- eval(parent_func)
+  # check which data inputs are provided
+  # i.e., are all provided? & can we replace LMdata and xcols with x and y?
+  use_LMdata <- T
+  if (missing(LMdata)) use_LMdata <- F
+  if (!use_LMdata){
+    if (missing(x)) stop("argument x is missing with no default, or provide LMdata")
+    if (class(x)[1] == "LMdataframe"){
+      if (!missing(xcols)) {
+        return(parent_func(LMdata = x, xcol = xcol, ID_col=ID_col, ...))
+      } else if (!missing(y)) {
+        if (class(y) == "character") return(parent_func(LMdata = x, xcols = y, ID_col=ID_col, ...))
+        else stop("Inputs are mismatched. Arguments (x, y) should be of type (matrix, Surv object) or arguments (LMdata, xcols) should be (LMdataframe, vector of column names)")
+      }
+      else return(parent_func(LMdata = x, ID_col=ID_col, ...))
     }
     if (missing(y)) stop("argument y is missing with no default, or provide lmdata")
     if (!(class(y) %in% c("Surv", "Hist"))) stop("argument y should be a Surv or Hist object")
@@ -333,6 +349,26 @@ check_penLM_inputs <- function(x, y, lmdata, xcols, parent_func, ...) {
     }
   }
 
+  # get IDs if performing cross-validation
+  if (CV) {
+    # get ID_col if parent function is cv.penLM
+    if (is.null(ID_col) & !use_LMdata) {
+      stop("argument ID_col must be provided when using arguments x and y.")
+    }
+    else if (is.null(ID_col) & use_LMdata){
+      ID_col <- LMdata$ID_col
+      if (length(LMdata$LMdata[[ID_col]]) == 0)
+        stop("The extraction of an ID column from LMdata was unsuccessful, provide argument ID_col")
+    }
+    # use ID_col to extract IDs
+    if (use_LMdata) IDs <- LMdata$LMdata[[ID_col]]
+    else {
+      IDs <- x[,ID_col]
+      if (class(ID_col) == "numeric") x <- x[,-ID_col]
+      else x <- x[,colnames(x) != ID_col]
+    }
+  }
+
   # if using an LMdataframe, create x and y for glmnet
   if (use_lmdata){
     entry = lmdata$data[[lmdata$LM_col]]
@@ -344,7 +380,7 @@ check_penLM_inputs <- function(x, y, lmdata, xcols, parent_func, ...) {
       if (!is.null(lmdata$all_covs)) xcols <- lmdata$all_covs
       else {
         all_cols = colnames(lmdata$data)
-        xcols <- all_cols[!(all_cols %in% c(lmdata$LM_col, lmdata$outcome$time, lmdata$outcome$status))]
+        xcols <- all_cols[!(all_cols %in% c(lmdata$LM_col, lmdata$outcome$time, lmdata$outcome$status, ID_col))]
       }
     }
     x <- as.matrix(lmdata$data[xcols])
@@ -387,5 +423,9 @@ check_penLM_inputs <- function(x, y, lmdata, xcols, parent_func, ...) {
     lmdata = lmdata,
     xcols = xcols
   )
+  if (CV) {
+    out$IDs <- IDs
+    out$ID_col <- ID_col
+  }
   return(out)
 }

@@ -5,7 +5,17 @@
 \title{Cross-validation for a  regular or cause-specific Cox landmark supermodel
 with lasso or elasticnet penalization.}
 \usage{
-cv.penLM(x, y, LMdata, xcols, type.measure = "deviance", ...)
+cv.penLM(
+  x,
+  y,
+  LMdata,
+  xcols,
+  ID_col,
+  nfolds = 10,
+  type.measure = "deviance",
+  seed = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{Input matrix with each row an observation.}
@@ -19,13 +29,17 @@ running \code{cutLMsuper} and \code{addLMtime}}
 are to be used as dependent variables. If not specified, it is assumed that
 all non-response variables are the dependent variables.}
 
+\item{ID_col}{TODO}
+
+\item{nfolds}{Number of folds in k-fold cross validation. Default is 10.}
+
 \item{type.measure}{Loss for cross-validation. Currently the only option is
 "deviance" which is the partial-likelihood for the Cox model. If using
 cause-specific Cox models, this is evaluated on each model separately.}
 
-\item{...}{Additional arguments to \code{cv.glmnet}.}
+\item{seed}{TODO}
 
-\item{nfolds}{Number of folds in k-fold cross validation. Default is 10.}
+\item{...}{Additional arguments to \code{cv.glmnet}.}
 }
 \value{
 An object class \code{cv.penLM}. This is a list of \code{cv.glmnet} objects
