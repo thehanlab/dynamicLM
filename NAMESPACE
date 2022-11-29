@@ -2,7 +2,8 @@
 
 S3method(fitLM,LMdataframe)
 S3method(fitLM,penLM)
-S3method(plot,LMpen)
+S3method(plot,cv.penLM)
+S3method(plot,penLM)
 S3method(print,LMCSC)
 S3method(print,LMScore)
 S3method(print,LMcoxph)
