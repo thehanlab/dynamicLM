@@ -74,19 +74,20 @@ fitLM <- function(...) {
 #' func.covars <- list( function(t) t, function(t) t^2)
 #' # let hazard depend on landmark time
 #' func.LMs <- list( function(t) t, function(t) t^2)
-#' # Choose covariates that will have time interaction
-#' pred.covars <- c("age","male","stage","bmi","treatment")
+#'
 #' # Stack landmark datasets
-#' LMdata <- cutLMsuper(relapse, outcome, LMs, w, covs, format="long",
-#'                      id="ID", rtime="fup_time", right=F)
+#' LMdata <- cutLMsuper(relapse, outcome, LMs, w, covars, format="long",
+#'                      id="ID", rtime="T_txgiven", right=F)
 #' # Update complex LM-varying covariates, note age is in years and LM is in months
 #' LMdata$LMdata$age <- LMdata$LMdata$age.at.time.0 + LMdata$LMdata$LM/12
+#' # Choose covariates that will have time interaction
+#' pred.covars <- c("age","male","stage","bmi","treatment")
 #' # Add LM-time interactions
 #' LMdata <- addLMtime(LMdata, pred.covars, func.covars, func.LMs)
 #' formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment +
 #'            age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 +
 #'            bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
-#' supermodel <- fitLM(as.formula(formula), LMdata, "CSC")
+#' supermodel <- fitLM(LMdata, as.formula(formula), "CSC")
 #' }
 #' @import survival
 #' @export
