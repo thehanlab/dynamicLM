@@ -22,6 +22,7 @@
 #'   or `survival`) and `LMdata` and `xcols` which store the inputs if given.
 #'   Functions `print` and `plot` exist for the object. To make predictions,
 #'   see `fitLM.penLM`.
+#' @import glmnet
 #' @export
 #'
 #' @examples
@@ -71,7 +72,7 @@ penLM <- function(x, y, LMdata, xcols, ...) {
   xcols = checked_input$xcols
 
   models <- lapply(y, function(yi) {
-    glmnet(x = x, y = yi, family = "cox", ...)
+    glmnet::glmnet(x = x, y = yi, family = "cox", ...)
   })
   if (length(models) > 1){
     attr(models, "survival.type") = "competing.risk"
