@@ -243,6 +243,7 @@ fitLM.LMpen <- function(object, id, s, ...){
   LMdata <- attr(object, "LMdata")
   xcols <- attr(object, "xcols")
   data <- LMdata$LMdata
+  NC <- length(object)
 
   # TOOD: check inputs - is LMdata an LMdataframe etc?
   func_covars <- LMdata$func_covars
@@ -255,61 +256,68 @@ fitLM.LMpen <- function(object, id, s, ...){
   allLMcovars <- LMdata$allLMcovars
 
   if(survival.type=="survival"){
-      glmnet_coefs <- as.vector(coef(object[[1]], s = s))
+    glmnet_coefs <- as.vector(coef(object[[1]], s = s))
 
-      entry = data[[LMdata$LM_col]]
-      exit = data[[LMdata$outcome$time]]
-      status = data[[LMdata$outcome$status]]
-      y = Hist(exit, status, entry)
-      LHS_surv <- paste0("Surv(",LMdata$LM_col,",",LMdata$outcome$time,",",LMdata$outcome$status,")") # TODO: check compatibility with other stuff
-      formula <- paste0(LHS_surv, "~", paste0(xcols, collapse="+"), "+cluster(",id,")")
-      LHS <- paste0("Hist(",LMdata$outcome$time,",",LMdata$outcome$status,",",LMdata$LM_col,") ~ 1")
+    entry = LMdata$LM_col
+    exit = LMdata$outcome$time
+    status = LMdata$outcome$status
+    LHS_surv <- paste0("Surv(",entry,",",exit,",",status,")")
+    formula <- paste0(LHS_surv, "~", paste0(xcols, collapse="+"), "+cluster(",id,")")
+    superfm <- survival::coxph(as.formula(formula), data, method="breslow", iter.max=0, init = glmnet_coefs, ...)
 
-      superfm <- survival::coxph(as.formula(formula), data, method="breslow", iter.max=0, init = glmnet_coefs, ...)
+    LHS <- paste0("Hist(",exit,",",status,",",entry,") ~ 1")
+    models <- list(superfm)
+    num_causes <- 1
+    superfm$call$data <- data
+    type <- "coxph"
+    cl <- "LMcoxph" # TODO: "penLMcoxph
 
-      models <- list(superfm)
-      num_causes <- 1
-      superfm$call$data <- data
-      type <- "coxph"
-      cl <- "LMcoxph" # TODO: "penLMcoxph
+  }
 
-    } else if (survival.type=="competing.risk"){
-      # TODO
-      # if (!requireNamespace("riskRegression", quietly = TRUE)) {
-      #   stop("Package \"riskRegression\" must be installed to use this function.", call. = FALSE)}
-      #
-      # superfm <- riskRegression::CSC(formula, data, method=method, ...)
-      # models <- superfm$models
-      # num_causes <- length(models)
-      # superfm$call$data <- data
-      # type <- "CauseSpecificCox"
-      # cl <- "LMCSC"
-    }
+  else if (survival.type=="competing.risk"){
+    if (!requireNamespace("riskRegression", quietly = TRUE)) {
+      stop("Package \"riskRegression\" must be installed to use this function.", call. = FALSE)}
 
-    data = data
-    linear.predictors <-
-      t(sapply(1:num_causes, function(c) {
-        coefs <- models[[c]]$coefficients
-        df <- data[,names(coefs)]
-        rowSums(data.frame(mapply(`*`,df,coefs)))
-      }))
+    glmnet_coefs <- lapply(1:NC, function(i){
+      as.vector(coef(object[[i]], s = s[[i]]))
+    })
 
-    out=list(model=superfm,
-             type=type,
-             w=w,
-             end_time=end_time,
-             func_covars=func_covars,
-             func_LMs=func_LMs,
-             LMcovars=LMcovars,
-             allLMcovars=allLMcovars,
-             outcome=outcome,
-             LHS=LHS,
-             linear.predictors=linear.predictors,
-             original.landmarks=original.landmarks
-    )
+    entry = LMdata$LM_col
+    exit = LMdata$outcome$time
+    status = LMdata$outcome$status
+    LHS <- paste0("Hist(",exit,",",status,",",entry,")")
+    formula <- paste0(LHS, "~", paste0(xcols, collapse="+"), "+cluster(",id,")")
+    superfm <- CSC.fixed.coefs(as.formula(formula), data, method="breslow", cause.specific.coefs=glmnet_coefs, ...)
 
-    class(out)=cl
+    LHS <- paste0(LHS," ~ 1")
+    models <- superfm$models
+    num_causes <- NC
+    superfm$call$data <- data
+    type <- "CauseSpecificCox"
+    cl <- "LMCSC" # TODO: "penLMCSC
+  }
 
-    return(out)
+  data = data
+  linear.predictors <-
+    t(sapply(1:num_causes, function(c) {
+      coefs <- models[[c]]$coefficients
+      df <- data[,names(coefs)]
+      rowSums(data.frame(mapply(`*`,df,coefs)))
+    }))
 
+  out=list(model=superfm,
+           type=type,
+           w=w,
+           end_time=end_time,
+           func_covars=func_covars,
+           func_LMs=func_LMs,
+           LMcovars=LMcovars,
+           allLMcovars=allLMcovars,
+           outcome=outcome,
+           LHS=LHS,
+           linear.predictors=linear.predictors,
+           original.landmarks=original.landmarks
+  )
+  class(out)=cl
+  return(out)
 }

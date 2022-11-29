@@ -75,3 +75,130 @@ getLHS <- function(formula){
   enter = deparse(enter)
   return(paste0("Hist(",exit,", ",status,", ",enter,") ~ 1"))
 }
+
+
+
+# ----------------------------------------------------------
+# CSC.extended: cause-specific Cox proportional hazard regression
+# extended to accomodate specific arguments to each cause-specific
+# Cox model
+# TODO: licensing / referencing
+# ----------------------------------------------------------
+CSC.fixed.coefs <- function(formula,
+                            data,
+                            cause,
+                            cause.specific.coefs,
+                            ...){
+  fitter <- "coxph"
+  surv.type <- "hazard"
+
+  # {{{ formulae & response
+  if (inherits(x=formula,what="formula")) formula <- list(formula)
+  call <- match.call()
+  # get outcome information from formula
+  Rform <- update(formula[[1]],".~1")
+  response <- eval(Rform[[2]],envir=data)
+  if (any(is.na(response)))
+    stop("Event history response may not contain missing values")
+  time <- response[, "time"]
+  status <- response[, "status"]
+  event <- prodlim::getEvent(response)
+  if ("entry" %in% colnames(response))
+    entry <- response[, "entry"]
+  else{
+    entry <- NULL
+  }
+  if (any(entry>time)) stop("entry > time detected. Entry time into the study must be strictly greater than outcome time.")
+  ## remove event history variables from data
+  if(any((this <- match(all.vars(Rform),names(data),nomatch=0))>0)){
+    if (data.table::is.data.table(data))
+      data <- data[,-this,with=FALSE]
+    else
+      data <- data[,-this]
+  }
+  # }}}
+  # {{{ sorted unique event times
+  eventTimes <- unique(sort(as.numeric(time[status != 0])))
+  # }}}
+  # {{{ causes
+  causes <- prodlim::getStates(response)
+  NC <- length(causes)
+  if (length(cause.specific.coefs) != NC) stop("There should be one entry for each cause specific argument but there are ", NC, " causes and ",length(cause.specific.args)," elements in cause.specific.args")
+
+  if (length(formula)!=NC[1] && length(formula)>1) stop("Wrong number of formulae. Should be one for each cause ",NC,".")
+  if (length(formula)==1) {
+    formula <- lapply(1:NC,function(x)formula[[1]])
+  }
+  # }}}
+  # {{{ find the cause of interest
+  if (missing(cause)){
+    theCause <- causes[1]
+  }
+  else{
+    if ((foundCause <- match(as.character(cause),causes,nomatch=0))==0)
+      stop(paste0("Cannot find all requested cause(s) ...\n\n",
+                  "Requested cause(s): ", paste0(cause, collapse = ", "),
+                  "\n Available causes: ", paste(causes, collapse = ", "),
+                  "\n"))
+    else{
+      theCause <- causes[foundCause]
+    }
+  }
+  otherCauses <- causes[-match(theCause,causes)]
+  # }}}
+  # {{{ fit Cox models
+  CoxModels <- lapply(1:NC,function(x){
+    if (x==1)
+      causeX <- theCause
+    else
+      causeX <- otherCauses[x-1]
+
+    statusX <- as.numeric(event==causeX)
+
+    if (is.null(entry))
+      workData <- data.frame(time=time,status=statusX)
+    else
+      workData <- data.frame(time=time,status=statusX,entry=entry)
+    if(any(this <- match(names(data),names(workData),nomatch=0)>0)){
+      warning(paste("Variables named",paste(names(data)[this],collapse=", "),"in data will be ignored."))
+      if (is.data.table(data))
+        data <- data[,-this,with=FALSE]
+      else
+        data <- data[,-this,drop=FALSE]
+    }
+    workData <- cbind(workData,data)
+    if (is.null(entry))
+      survresponse <- "survival::Surv(time, status)"
+    else
+      survresponse <- "survival::Surv(entry, time, status)"
+    ## check whether right hand side of formula includes ~.
+    allvars <- all.vars(formula[[x]])
+    if (any(grepl("^\\.$",allvars))){
+      formulaXX <- as.formula(paste0(survresponse,"~."))
+    }
+    else {
+      formulaXX <- update(formula[[x]],paste0(survresponse,"~."))
+    }
+
+    args <- list(formulaXX, data = workData)
+    extra.args <- list(...)
+    fit <- do.call("coxph",c(args, list(x=TRUE, y=TRUE, iter.max=0, init=cause.specific.coefs[[x]]), extra.args))
+    fit$call$formula <- formulaXX
+    fit$call$data <- workData
+    fit
+  })
+  names(CoxModels) <- paste("Cause",c(theCause,otherCauses))
+
+  # }}}
+  out <- list(call=call,
+              models=CoxModels,
+              response=response,
+              eventTimes=eventTimes,
+              surv.type=surv.type,
+              fitter=fitter,
+              theCause=theCause,
+              causes=c(theCause,otherCauses))
+  class(out) <- "CauseSpecificCox"
+  out
+}
+
