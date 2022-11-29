@@ -213,11 +213,8 @@ fitLM.LMdataframe <- function(LMdata,
 #' @details The Breslow method is used for handling ties, as we use the `glmnet`
 #'   package which does the same.
 #'
-#' @param object  A fitted object of class "LMpen" (i.e., TODO), this can be
-#'   created by calling `penLM`. This should be fit using arguments `LMdata` and
-#'   `xcols`.
-#' @param id Column name that indicates the ID of the individual for robust
-#'   error estimates.
+#' @param object  A fitted object of class "LMpen". This can becreated by
+#'   calling `penLM` using arguments `LMdata` and `xcols`.
 #' @param s Value of the penalty parameter `lambda` at which to fit a model.
 #'
 #' @return An object of class "penLMcoxph" or "penLMCSC" with components:
@@ -227,18 +224,17 @@ fitLM.LMdataframe <- function(LMdata,
 #'   - LHS: the LHS of the input formula
 #'   - linear.predictors: the vector of linear predictors, one per subject. Note
 #'     that this vector has not been centered.
-#'   - TODO: add regularization information
+#'   - s: the values of lambda for which this model has been fit.
 #' @examples
 #' \dontrun{
 #' }
 #' @import survival glmnet
 #' @export
-# TODO: add regularization information in the returned object
 # TODO: allow for x, y input (need to then specific func_covars, etc. and need
 #       x to be a dataframe... etc)
 # TODO: print function - should maybe still only print out coefficients and not
 #       standard errors etc
-fitLM.LMpen <- function(object, id, s, ...){
+fitLM.penLM <- function(object, s, ...){
   survival.type <- attr(object, "survival.type")
   LMdata <- attr(object, "LMdata")
   xcols <- attr(object, "xcols")
@@ -262,7 +258,7 @@ fitLM.LMpen <- function(object, id, s, ...){
     exit = LMdata$outcome$time
     status = LMdata$outcome$status
     LHS_surv <- paste0("Surv(",entry,",",exit,",",status,")")
-    formula <- paste0(LHS_surv, "~", paste0(xcols, collapse="+"), "+cluster(",id,")")
+    formula <- paste0(LHS_surv, "~", paste0(xcols, collapse="+")) #, "+cluster(",id,")"
     superfm <- survival::coxph(as.formula(formula), data, method="breslow", iter.max=0, init = glmnet_coefs, ...)
 
     LHS <- paste0("Hist(",exit,",",status,",",entry,") ~ 1")
@@ -270,8 +266,7 @@ fitLM.LMpen <- function(object, id, s, ...){
     num_causes <- 1
     superfm$call$data <- data
     type <- "coxph"
-    cl <- "LMcoxph" # TODO: "penLMcoxph
-
+    cl <- "penLMcoxph"
   }
 
   else if (survival.type=="competing.risk"){
@@ -286,7 +281,7 @@ fitLM.LMpen <- function(object, id, s, ...){
     exit = LMdata$outcome$time
     status = LMdata$outcome$status
     LHS <- paste0("Hist(",exit,",",status,",",entry,")")
-    formula <- paste0(LHS, "~", paste0(xcols, collapse="+"), "+cluster(",id,")")
+    formula <- paste0(LHS, "~", paste0(xcols, collapse="+")) #, "+cluster(",id,")"
     superfm <- CSC.fixed.coefs(as.formula(formula), data, method="breslow", cause.specific.coefs=glmnet_coefs, ...)
 
     LHS <- paste0(LHS," ~ 1")
@@ -294,10 +289,15 @@ fitLM.LMpen <- function(object, id, s, ...){
     num_causes <- NC
     superfm$call$data <- data
     type <- "CauseSpecificCox"
-    cl <- "LMCSC" # TODO: "penLMCSC
+    cl <- "penLMCSC"
   }
 
-  data = data
+  # no std errors for penalized Cox
+  for(i in 1:num_causes){
+    models[[i]]$var <- NULL
+  }
+
+  # calculate LPs
   linear.predictors <-
     t(sapply(1:num_causes, function(c) {
       coefs <- models[[c]]$coefficients
@@ -316,7 +316,8 @@ fitLM.LMpen <- function(object, id, s, ...){
            outcome=outcome,
            LHS=LHS,
            linear.predictors=linear.predictors,
-           original.landmarks=original.landmarks
+           original.landmarks=original.landmarks,
+           s=s
   )
   class(out)=cl
   return(out)
