@@ -1,12 +1,13 @@
 #' Print function for object of class LM.data.frame
 #'
 #' @param x Object of class LMpred
+#' @param data Logical. If true, includes the head of data when printing.
 #' @param ... Arguments passed to print.
 #'
 #' @return Printed output.
 #' @export
 #'
-print.LMpred <- function(x, ...){
+print.LMpred <- function(x, data=FALSE, ...){
   cat("$preds\n")
   print(utils::head(x$preds))
   if(nrow(x$preds) > 5) cat(paste0(" [ omitted ",nrow(x$preds)-5," rows ]\n"))
@@ -24,10 +25,12 @@ print.LMpred <- function(x, ...){
   print(x$LHS)
   cat("\n")
 
-  cat("$data\n")
-  print(utils::head(x$data))
-  if(nrow(x$data) > 5) cat(paste0(" [ omitted ",nrow(x$data)-5," rows ]\n"))
-  cat("\n")
+  if (data == TRUE) {
+    cat("$data\n")
+    print(utils::head(x$data))
+    if(nrow(x$data) > 5) cat(paste0(" [ omitted ",nrow(x$data)-5," rows ]\n"))
+    cat("\n")
+  }
 
   cat("$cause\n")
   print(x$cause)
@@ -171,15 +174,17 @@ print.LMScore <- function(x,digits=3,...){
 #' Print function for object of class LMCSC
 #'
 #' @param x Object of class LMCSC
+#' @param verbose Logical, if verbose print func_covars, func_LMs, w, end_time
+#'   and type.
 #' @param ... Arguments passed to print.
 #'
 #' @return Printed output.
 #' @export
 #'
-print.LMCSC <- function(x, ...) {
-  cat(paste0("\nLandmark cause-specific cox super model fit for dynamic prediction of window size ",x$w,":\n\n"))
+print.LMCSC <- function(x, verbose=FALSE, ...) {
+  cat(paste0("\nLandmark cause-specific Cox super model fit for dynamic prediction of window size ",x$w,":\n\n"))
 
-  cat("$model\n")
+  if(verbose)cat("$model\n")
   num_causes <- length(x$model$causes)
   for (i in 1:num_causes){
     cat(paste0("----------> Cause: ",i,"\n"))
@@ -188,89 +193,92 @@ print.LMCSC <- function(x, ...) {
     print(cox_model)
     cat("\n\n")
   }
+  if(verbose){
+    cat("$func_covars\n")
+    names.fc = names(x$func_covars)
+    for (i in 1:length(x$func_covars)){
+      if (is.null(names.fc[i])) label <- paste0("[[",i,"]]")
+      else paste0("$",names.fc[i])
+      cat(paste0("$func_covars$",label,"\n"))
+      print(x$func_covars[[i]])
+      cat("\n")
+    }
+    cat("$func_LMs\n")
+    names.fc = names(x$func_LMs)
+    for (i in 1:length(x$func_LMs)){
+      if (is.null(names.fc[i])) label <- paste0("[[",i,"]]")
+      else paste0("$",names.fc[i])
+      cat(paste0("$func_LMs$",label,"\n"))
+      print(x$func_LMs[[i]])
+      cat("\n")
+    }
 
-  cat("$func_covars\n")
-  names.fc = names(x$func_covars)
-  for (i in 1:length(x$func_covars)){
-    if (is.null(names.fc[i])) label <- paste0("[[",i,"]]")
-    else paste0("$",names.fc[i])
-    cat(paste0("$func_covars$",label,"\n"))
-    print(x$func_covars[[i]])
+    cat("$w\n")
+    print(x$w)
+    cat("\n")
+
+    cat("$end_time\n")
+    print(x$end_time)
+    cat("\n")
+
+    cat("$type\n")
+    print(x$type)
     cat("\n")
   }
-  cat("$func_LMs\n")
-  names.fc = names(x$func_LMs)
-  for (i in 1:length(x$func_LMs)){
-    if (is.null(names.fc[i])) label <- paste0("[[",i,"]]")
-    else paste0("$",names.fc[i])
-    cat(paste0("$func_LMs$",label,"\n"))
-    print(x$func_LMs[[i]])
-    cat("\n")
-  }
-
-  cat("$w\n")
-  print(x$w)
-  cat("\n")
-
-  cat("$end_time\n")
-  print(x$end_time)
-  cat("\n")
-
-  cat("$type\n")
-  print(x$type)
-  cat("\n")
-
 }
 
 
 #' Print function for object of class LMcoxph
 #'
 #' @param x Object of class LMcoxph
+#' @param verbose Logical, if verbose print func_covars, func_LMs, w, end_time
+#'   and type.
 #' @param ... Arguments passed to print.
 #'
 #' @return Printed output.
 #' @export
 #'
-print.LMcoxph <- function(x, ...) {
-  cat(paste0("\nLandmark cox super model fit for dynamic prediction of window size ",x$w,":\n\n"))
-  cat("$model\n")
+print.LMcoxph <- function(x, verbose=FALSE, ...) {
+  cat(paste0("\nLandmark Cox super model fit for dynamic prediction of window size ",x$w,":\n\n"))
+  if(verbose) cat("$model\n")
 
   cox_model = x$model
   cox_model$call = NULL
   print(cox_model)
   cat("\n\n")
 
-  cat("$func_covars\n")
-  names.fc = names(x$func_covars)
-  for (i in 1:length(x$func_covars)){
-    if (is.null(names.fc[i])) label <- paste0("[[",i,"]]")
-    else paste0("$",names.fc[i])
-    cat(paste0("$func_covars$",label,"\n"))
-    print(x$func_covars[[i]])
+  if(verbose){
+    cat("$func_covars\n")
+    names.fc = names(x$func_covars)
+    for (i in 1:length(x$func_covars)){
+      if (is.null(names.fc[i])) label <- paste0("[[",i,"]]")
+      else paste0("$",names.fc[i])
+      cat(paste0("$func_covars$",label,"\n"))
+      print(x$func_covars[[i]])
+      cat("\n")
+    }
+    cat("$func_LMs\n")
+    names.fc = names(x$func_LMs)
+    for (i in 1:length(x$func_LMs)){
+      if (is.null(names.fc[i])) label <- paste0("[[",i,"]]")
+      else paste0("$",names.fc[i])
+      cat(paste0("$func_LMs$",label,"\n"))
+      print(x$func_LMs[[i]])
+      cat("\n")
+    }
+
+    cat("$w\n")
+    print(x$w)
+    cat("\n")
+
+    cat("$end_time\n")
+    print(x$end_time)
+    cat("\n")
+
+    cat("$type\n")
+    print(x$type)
     cat("\n")
   }
-  cat("$func_LMs\n")
-  names.fc = names(x$func_LMs)
-  for (i in 1:length(x$func_LMs)){
-    if (is.null(names.fc[i])) label <- paste0("[[",i,"]]")
-    else paste0("$",names.fc[i])
-    cat(paste0("$func_LMs$",label,"\n"))
-    print(x$func_LMs[[i]])
-    cat("\n")
-  }
-
-  cat("$w\n")
-  print(x$w)
-  cat("\n")
-
-  cat("$end_time\n")
-  print(x$end_time)
-  cat("\n")
-
-  cat("$type\n")
-  print(x$type)
-  cat("\n")
-
 }
 
 
@@ -297,10 +305,10 @@ print.LMcoxph <- function(x, ...) {
 #' @param \dots additional print arguments
 #' @references Friedman, J., Hastie, T. and Tibshirani, R. (2008). Regularization Paths for Generalized Linear Models via Coordinate Descent
 #' @export
-print.LMpen <- function (x, all_causes = FALSE, silent = FALSE, digits = 3, ...) {
+print.penLM <- function (x, all_causes = FALSE, silent = FALSE, digits = 3, ...) {
     num_causes <- length(x)
 
-    cat(paste0("\nPenalized landmark cox super model fit for dynamic prediction:"))
+    cat(paste0("\nPenalized landmark Cox super model fit for dynamic prediction:"))
     if (all_causes){
       for (i in 1:num_causes){
         cat(paste0("\n\nCause ",i,":\n"))
@@ -313,4 +321,157 @@ print.LMpen <- function (x, all_causes = FALSE, silent = FALSE, digits = 3, ...)
       print(x[[1]])
       if (num_causes > 1 & !silent) message("\n (To print paths for remaining cause-specific models, call print with argument all_causes = TRUE)\n")
     }
+}
+
+#' Print the output from calling `cv.LMpen`, similar to the output of printing a `cv.glmnet` object
+#'
+#' I.e., print a cross-validated LMpen object
+#' @details
+#' If the model is a survival model (i.e., no competing risks), then the output
+#' is the same as a call to glmnet would produce. For competing risks, the
+#' default is only to print the output for the cause of interest (first cause).
+#' Further events can be examined by setting `all_causes = TRUE`.
+#'
+#' @param x a penLM object
+#' @param all_causes if penLM fit a cause-specific Cox model, set TRUE to print
+#'   a summary of the glmnet path for each model.
+#' @param silent Set TRUE to hide messages.
+#' @param digits Number of significant digits to include
+#' @param \dots additional print arguments
+#' @references Friedman, J., Hastie, T. and Tibshirani, R. (2008). Regularization Paths for Generalized Linear Models via Coordinate Descent
+#' @export
+print.cv.penLM <- function (x, all_causes = FALSE, silent = FALSE, digits = 3, ...) {
+  num_causes <- length(x)
+
+  cat(paste0("\nCross-validated penalized landmark Cox super model fit for dynamic prediction:"))
+  if (all_causes){
+    for (i in 1:num_causes){
+      cat(paste0("\n\nCause ",i,":\n"))
+      print(x[[i]])
+    }
+
+  } else {
+    cat("\n\n")
+    if (num_causes > 1) cat(paste0("First Cause:\n"))
+    print(x[[1]])
+    if (num_causes > 1 & !silent) message("\n (To print for remaining cause-specific models, call print with argument all_causes = TRUE)\n")
   }
+}
+
+
+#' Print function for object of class penLMCSC
+#'
+#' @param x Object of class penLMCSC
+#' @param verbose Logical, if verbose print func_covars, func_LMs, w, end_time
+#'   and type.
+#' @param ... Arguments passed to print.
+#'
+#' @return Printed output.
+#' @export
+#'
+print.penLMCSC <- function(x, verbose=FALSE, ...) {
+  cat(paste0("\nPenalized landmark cause-specific Cox super model fit for dynamic prediction of window size ",x$w,"\n"))
+  cat("(Note that zero-valued coefficients are not printed)\n\n")
+
+  if(verbose) cat("$model\n")
+  num_causes <- length(x$model$causes)
+  for (i in 1:num_causes){
+    cat(paste0("----------> Cause: ",i,"\n"))
+    cat(paste0("            (s = ",x$s[[i]],")\n"))
+    coefs = x$model$models[[i]]$coefficients
+    non_zero_coefs = coefs[coefs!=0]
+    non_zero_coefs = cbind(non_zero_coefs, exp(non_zero_coefs))
+    colnames(non_zero_coefs) = c("coef", "exp(coef)")
+    print(non_zero_coefs)
+    cat("\n\n")
+  }
+
+  if (verbose){
+    cat("$func_covars\n")
+    names.fc = names(x$func_covars)
+    for (i in 1:length(x$func_covars)){
+      if (is.null(names.fc[i])) label <- paste0("[[",i,"]]")
+      else paste0("$",names.fc[i])
+      cat(paste0("$func_covars$",label,"\n"))
+      print(x$func_covars[[i]])
+      cat("\n")
+    }
+    cat("$func_LMs\n")
+    names.fc = names(x$func_LMs)
+    for (i in 1:length(x$func_LMs)){
+      if (is.null(names.fc[i])) label <- paste0("[[",i,"]]")
+      else paste0("$",names.fc[i])
+      cat(paste0("$func_LMs$",label,"\n"))
+      print(x$func_LMs[[i]])
+      cat("\n")
+    }
+
+    cat("$w\n")
+    print(x$w)
+    cat("\n")
+
+    cat("$end_time\n")
+    print(x$end_time)
+    cat("\n")
+
+    cat("$type\n")
+    print(x$type)
+    cat("\n")
+  }
+}
+
+
+#' Print function for object of class penLMcoxph
+#'
+#' @param x Object of class penLMcoxph
+#' @param verbose Logical, if verbose print func_covars, func_LMs, w, end_time
+#'   and type.
+#' @param ... Arguments passed to print.
+#'
+#' @return Printed output.
+#' @export
+#'
+print.penLMcoxph <- function(x, verbose=FALSE, ...) {
+  cat(paste0("\nPenalized landmark Cox super model fit for dynamic prediction of window size ",x$w," (s = ",x$s,")",":\n\n"))
+  if (verbose)cat("$model\n")
+
+  coefs = x$model$coefficients
+  non_zero_coefs = coefs[coefs!=0]
+  non_zero_coefs = cbind(non_zero_coefs, exp(non_zero_coefs))
+  colnames(non_zero_coefs) = c("coef", "exp(coef)")
+  print(non_zero_coefs)
+  cat("\n\n")
+
+  if(verbose){
+    cat("$func_covars\n")
+    names.fc = names(x$func_covars)
+    for (i in 1:length(x$func_covars)){
+      if (is.null(names.fc[i])) label <- paste0("[[",i,"]]")
+      else paste0("$",names.fc[i])
+      cat(paste0("$func_covars$",label,"\n"))
+      print(x$func_covars[[i]])
+      cat("\n")
+    }
+    cat("$func_LMs\n")
+    names.fc = names(x$func_LMs)
+    for (i in 1:length(x$func_LMs)){
+      if (is.null(names.fc[i])) label <- paste0("[[",i,"]]")
+      else paste0("$",names.fc[i])
+      cat(paste0("$func_LMs$",label,"\n"))
+      print(x$func_LMs[[i]])
+      cat("\n")
+    }
+
+    cat("$w\n")
+    print(x$w)
+    cat("\n")
+
+    cat("$end_time\n")
+    print(x$end_time)
+    cat("\n")
+
+    cat("$type\n")
+    print(x$type)
+    cat("\n")
+  }
+}

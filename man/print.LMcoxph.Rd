@@ -4,10 +4,13 @@
 \alias{print.LMcoxph}
 \title{Print function for object of class LMcoxph}
 \usage{
-\method{print}{LMcoxph}(x, ...)
+\method{print}{LMcoxph}(x, verbose = FALSE, ...)
 }
 \arguments{
 \item{x}{Object of class LMcoxph}
+
+\item{verbose}{Logical, if verbose print func_covars, func_LMs, w, end_time
+and type.}
 
 \item{...}{Arguments passed to print.}
 }

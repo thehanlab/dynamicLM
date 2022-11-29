@@ -4,10 +4,12 @@
 \alias{print.LMpred}
 \title{Print function for object of class LM.data.frame}
 \usage{
-\method{print}{LMpred}(x, ...)
+\method{print}{LMpred}(x, data = FALSE, ...)
 }
 \arguments{
 \item{x}{Object of class LMpred}
+
+\item{data}{Logical. If true, includes the head of data when printing.}
 
 \item{...}{Arguments passed to print.}
 }
