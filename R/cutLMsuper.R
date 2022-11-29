@@ -87,7 +87,7 @@ cutLMsuper <- function(data, outcome, LMs, w, covs, format = c("wide", "long"), 
   # (likely have issues with predLMrisk when using new data and func_LMs/covars
   # is missing)
 
-  out=list(LMdata=LMdata, outcome=outcome, w=w, end_time=LMs[length(LMs)], LM_col="LM")
+  out=list(LMdata=LMdata, outcome=outcome, w=w, end_time=LMs[length(LMs)], LM_col="LM", ID_col=id)
   class(out)="LMdataframe"
   return(out)
 }

@@ -59,6 +59,7 @@ penLM <- function(x, y, LMdata, xcols, ...) {
 
   checked_input <- match.call()
   checked_input$parent_func = quote(penLM)
+  checked_input$CV = FALSE
   checked_input[[1L]] <- quote(check_penLM_inputs)
   checked_input <- eval(checked_input, parent.frame())
 
