@@ -97,6 +97,10 @@ LMScore <-
            call. = FALSE)
     }
 
+    get.auc <- FALSE; get.brier <- FALSE
+    if ("auc" %in% metrics) get.auc <- TRUE
+    if ("brier" %in% metrics) get.brier <- TRUE
+
     checked_input <- match.call()
     m <- match(c("object", "times", "formula", "data", "tLM", "ID_col",
                  "split.method", "B", "M", "cores", "seed", "cause"), names(checked_input), 0L)
@@ -120,13 +124,9 @@ LMScore <-
     se.fit.b <- se.fit
     if (B > 1) se.fit.b <- FALSE
 
-    auct <- lapply(1:B, function(b) data.table::data.table())
-    briert <- lapply(1:B, function(b) data.table::data.table())
-
-    # TODO: turn into an lapply?
-    # TODO: parallelize
-    for (b in 1:B){
-      for (t in 1:length(times)) {
+    # TODO: parallelize?
+    metrics <- lapply(1:B, function(b){
+      m_b <- lapply(1:length(times), function(t){
         tLM = times[t]
 
         idx = (pred_LMs == tLM) & (data$b == b)
@@ -168,20 +168,22 @@ LMScore <-
           auct_b <- score_t$AUC$score
           briert_b <- score_t$Brier$score
         }
-        auct_b$b <- b
-        briert_b$b <- b
+        auct_b$b <- b; briert_b$b <- b
 
-        if ("auc" %in% metrics) {
-          auct[[b]] <- rbind(auct[[b]], cbind(tLM, auct_b))
-        }
+        metrics_b_t <- list()
+        if (get.auc) metrics_b_t$AUC <- cbind(tLM, auct_b)
+        if (get.brier) metrics_b_t$Brier <- cbind(tLM, briert_b)
+        metrics_b_t
+      })
 
-        if ("brier" %in% metrics) {
-          briert[[b]] <- rbind(briert[[b]], cbind(tLM, briert_b))
-        }
-      }
-    }
-    auct <- do.call("rbind", auct)
-    briert <- do.call("rbind", briert)
+      m_out <- list()
+      if (get.auc) m_out$AUC <- do.call("rbind", lapply(m_b, function(m) m$AUC))
+      if (get.brier) m_out$Brier <- do.call("rbind", lapply(m_b, function(m) m$Brier))
+      m_out
+    })
+
+    auct <- do.call("rbind", lapply(metrics, function(m) m$AUC))
+    briert <- do.call("rbind", lapply(metrics, function(m) m$Brier))
     b_na <- auct$b[is.na(auct$AUC)]
     tLM_na <- auct$tLM[is.na(auct$AUC)]
     model_na <- auct$model[is.na(auct$AUC)]
