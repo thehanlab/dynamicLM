@@ -78,13 +78,11 @@ cv.penLM <- function(x, y, LMdata, xcols, ID_col, nfolds=10, type.measure="devia
   IDs = checked_input$IDs
   ID_col = checked_input$ID_col
   unique.IDs = unique(IDs)
-  # print(unique.IDs)
 
   # create foldids (as all instances of an individual must be in the same fold)
   split.method <- paste0("cv",nfolds)
   split.idx <- riskRegression::getSplitMethod(split.method, B=1, N=length(unique.IDs), seed=seed)$index
   foldid <- split.idx[match(IDs, unique.IDs)]
-  print(foldid[1:100])
 
   models <- lapply(y, function(yi) {
     glmnet::cv.glmnet(x = x, y = yi, family = "cox", type.measure = type.measure, foldid = foldid, ...)
