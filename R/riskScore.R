@@ -2,10 +2,14 @@
 #' predict.dynamicLM)
 #'
 #' @param object A coxph object
-#' @param tLM Landmarking time point at which to calculate risk score (time at which the prediction is made)
-#' @param data Dataframe (single row) of individual. Must contain the original covariates.
-#' @param func_covars A list of functions to use for interactions between LMs and covariates.
-#' @param func_lms A list of functions to use for transformations of the landmark times.
+#' @param tLM Landmarking time point at which to calculate risk score
+#'   (time at which the prediction is made)
+#' @param data Dataframe (single row) of individual. Must contain the
+#'   original covariates.
+#' @param func_covars A list of functions to use for interactions
+#'   between LMs and covariates.
+#' @param func_lms A list of functions to use for transformations of
+#'  the landmark times.
 #'
 #' @return Numeric risk score
 #' @export
@@ -51,4 +55,3 @@ riskScore <- function(object, tLM, data, func_covars, func_lms)
   )
   return(risk)
 }
-

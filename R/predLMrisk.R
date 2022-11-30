@@ -108,6 +108,13 @@ predLMrisk <- function(object, newdata, tLM, cause, w, extend=F, silence=F, comp
       }
     }
 
+    ## Check that func_covars/func_LM actually exist when using newdata
+    ## If not, we cannot compute the risk score
+    if (is.null(func_covars))
+      message("object does not have func_covars stored, assuming there are no interactions with landmark times.")
+    if (is.null(func_LM))
+      message("object does not have func_LM stored, assuming there are no transformations of the landmark times.")
+
     ## Get risk scores
     risks <- matrix(sapply(1:num_preds, function(i){
       tLMi <- tLM[i]
