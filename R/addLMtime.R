@@ -46,7 +46,7 @@
 #'
 #' @export
 addLMtime <- function(LMdata, LMcovars, func_covars, func_LMs, LM_col="LM", keep=T){
-  if (LM_col %in% func_covars){
+  if (LM_col %in% LMcovars){
     stop(paste0("arg LM_col (given as ",LM_col,") should not be in arg func_covars."))
   }
   for(col in c(LMcovars, LM_col)){
