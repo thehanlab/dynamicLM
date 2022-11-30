@@ -44,7 +44,9 @@
 #'
 #'   "none": assess the model in the test data (`data` argument)/data it was trained on.
 #'
-#'   "bootcv": `B` models are trained on boostrap samples either drawn with replacement of the same size as the original data or without replacement of size `M`. Models are then assessed in observations not in the sample.
+#'   "bootcv": `B` models are trained on boostrap samples either drawn with
+#'     replacement of the same size as the original data or without replacement
+#'     of size `M`. Models are then assessed in observations not in the sample.
 #'
 #' @param B Number of times bootstrapping is performed.
 #' @param M Subsample size for training in cross-validation. Entries not sampled
