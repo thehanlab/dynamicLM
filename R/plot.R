@@ -70,3 +70,114 @@ plot.cv.penLM <- function(x, all_causes = FALSE, silent = FALSE, label=FALSE,
     if (length(x) > 1 & !silent) message("\n (To print plot paths for remaining cause-specific models, call plot with argument all_causes = TRUE)\n")
   }
 }
+
+
+
+#' Generic function to plot coefficients
+#'
+#' Can plot positive and negative coefficients in two separate plots or the
+#' same. X-axes are the same if separate plots are used.
+#'
+#' @param coefs (Named) Vector of coefficients
+#' @param single.plot Logical, defaults to FALSE. A single plot for both
+#'   positive and negative coefficients, or two separate plots.
+#' @param max_coefs Default is 10. The maximum number of coefficients to plot.
+#'   Can be set to NULL if plotting all coefficients is desired.
+#' @param ... Additional arguments to barplot.
+#' @export
+plot.coefs <- function(coefs, single.plot, max_coefs, ...) {
+  pos_coefs <- sort(coefs[coefs>0], decreasing = T)
+  neg_coefs <- (-sort(-(coefs[coefs<0]), decreasing = T))
+
+  if (!single.plot){
+    xmax <- 1.1 * max(c(pos_coefs, -neg_coefs), na.rm=T)
+    ymax <- max(length(pos_coefs), length(neg_coefs))
+    if (length(neg_coefs)>0){
+      neg_coefs <- neg_coefs[1:min(length(neg_coefs),max_coefs)]
+      barplot(neg_coefs,
+              col="blue",
+              names.arg = names(neg_coefs),
+              horiz = TRUE, las=1, xpd = F,
+              xlim=c(-xmax, 0),
+              ylim=c(0,ymax),
+              width = 0.8,
+              xlab = "Value")
+    }
+    if (length(pos_coefs)>0) {
+      pos_coefs <- pos_coefs[1:min(length(pos_coefs),max_coefs)]
+      barplot(pos_coefs,
+              col = "blue",
+              names.arg = names(pos_coefs),
+              horiz = TRUE, las=1, xpd = F,
+              xlim=c(0, xmax),
+              ylim=c(0,ymax),
+              width = 0.8,
+              xlab = "Value")
+    }
+  }
+
+  else {
+    if (length(pos_coefs)>0)
+      pos_coefs <- pos_coefs[1:min(length(pos_coefs),max_coefs)]
+    if (length(neg_coefs)>0)
+      neg_coefs <- neg_coefs[1:min(length(neg_coefs),max_coefs)]
+
+    barplot(c(pos_coefs, neg_coefs),
+            col="blue",
+            names.arg = c(names(pos_coefs),names(neg_coefs)),
+            horiz = TRUE, las=1, xpd = F,
+            xlab = "Value")
+  }
+}
+
+#' Plot the coefficients of a penalized Cox supermodel
+#'
+#' Can plot positive and negative coefficients in two separate plots or the
+#' same. X-axes are the same if separate plots are used.
+#'
+#' @param object a penalized Cox supermodel - created by calling `fitLM` on an
+#'   object created from `penLM`/`cv.pen`
+#' @param single.plot Logical, defaults to FALSE. A single plot for both
+#'   positive and negative coefficients, or two separate plots.
+#' @param max_coefs Default is 10. The maximum number of coefficients to plot.
+#'   Can be set to NULL if plotting all coefficients is desired.
+#' @param ... Additional arguments to barplot.
+#' @export
+plot.penLMcoxph <- function(
+    object,
+    single.plot = FALSE,
+    max_coefs = 10,
+    ...
+) {
+  coefs <- object$model$coefficients
+  plot.coefs(coefs, single.plot, max_coefs, ...)
+}
+
+#' Plot the coefficients of a penalized Cause-specific Cox supermodel
+#'
+#' @param object a penalized cause-specific Cox supermodel - created by calling
+#'   `fitLM` on an object created from `penLM`/`cv.pen`
+#' @param single.plot Logical, defaults to FALSE. A single plot for both
+#'   positive and negative coefficients, or two separate plots.
+#' @param max_coefs Default is 10. The maximum number of coefficients to plot.
+#'   Can be set to NULL if plotting all coefficients is desired.
+#' @param all_causes Logical, default is FALSE. Plot coefficients for all
+#'   cause-specific models.
+#' @param ... Additional arguments to barplot.
+#' @export
+plot.penLMCSC <- function(
+    object,
+    single.plot = FALSE,
+    max_coefs = 10,
+    all_causes = FALSE,
+    ...
+) {
+  if (!all_causes) {
+    coefs <- object$model$models[[1]]$coefficients
+    plot.coefs(coefs, single.plot, max_coefs, ...)
+  }
+  else {
+    lapply(1:length(object$model),
+           function(i) plot.coefs(object$model$models[[i]]$coefficients, single.plot, max_coefs, ...))
+  }
+}
