@@ -61,7 +61,7 @@ fitLM <- function(...) {
 #'   - linear.predictors: the vector of linear predictors, one per subject. Note
 #'     that this vector has not been centered.
 #'   - args: arguments used to call model fitting
-#'   - ID_col: the cluster argument, usually specifies the column with patient ID
+#'   - ID_col: the cluster argument, usually specifies column with patient ID
 #'
 #' @examples
 #' \dontrun{
@@ -119,7 +119,10 @@ fitLM.LMdataframe <- function(LMdata,
       message("Did you forget to specify a cluster argument or add a '+ cluster(ID)' term for your ID variable in your formula? No cluster argument was specified in the formula. Standard errors may be estimated incorrectly.")
     }
   } else {
-    cluster <- regmatches(cluster_check, gregexpr("(?<=cluster\\().*?(?=\\))", cluster_check, perl=T))[[1]]
+    cluster <- regmatches(
+      cluster_check,
+      gregexpr("(?<=cluster\\().*?(?=\\))", cluster_check, perl=T)
+    )[[1]]
   }
   ID_col <- cluster
 
@@ -136,7 +139,8 @@ fitLM.LMdataframe <- function(LMdata,
     allLMcovars <- c(sapply(1:length(func_covars), function(i) paste0(LMcovars,"_",i)),
                      sapply(1:length(func_LMs), function(i) paste0("LM_",i)))
     if (!all(allLMcovars %in% colnames(LMdata))){
-      stop(paste0("The data should have all of the following column names: ",paste0(allLMcovars, collapse=", ")))
+      stop(paste0("The data should have all of the following column names: ",
+                  paste0(allLMcovars, collapse=", ")))
     }
 
     data <- LMdata
@@ -167,7 +171,8 @@ fitLM.LMdataframe <- function(LMdata,
 
   } else if (type=="CauseSpecificCox" | type=="CSC"){
     if (!requireNamespace("riskRegression", quietly = TRUE)) {
-      stop("Package \"riskRegression\" must be installed to use this function.", call. = FALSE)}
+      stop("Package \"riskRegression\" must be installed to use this function.",
+           call. = FALSE)}
 
     superfm <- riskRegression::CSC(formula, data, method=method, ...)
     models <- superfm$models
@@ -263,8 +268,9 @@ fitLM.penLM <- function(object, lambda, ...){
     exit = LMdata$outcome$time
     status = LMdata$outcome$status
     LHS_surv <- paste0("Surv(",entry,",",exit,",",status,")")
-    formula <- paste0(LHS_surv, "~", paste0(xcols, collapse="+")) #, "+cluster(",id,")"
-    superfm <- survival::coxph(as.formula(formula), data, method="breslow", iter.max=0, init = glmnet_coefs, ...)
+    formula <- paste0(LHS_surv, "~", paste0(xcols, collapse="+"))
+    superfm <- survival::coxph(as.formula(formula), data, method="breslow",
+                               iter.max=0, init = glmnet_coefs, ...)
 
     LHS <- paste0("Hist(",exit,",",status,",",entry,") ~ 1")
     models <- list(superfm)
@@ -276,7 +282,8 @@ fitLM.penLM <- function(object, lambda, ...){
 
   else if (survival.type=="competing.risk"){
     if (!requireNamespace("riskRegression", quietly = TRUE)) {
-      stop("Package \"riskRegression\" must be installed to use this function.", call. = FALSE)}
+      stop("Package \"riskRegression\" must be installed to use this function.",
+           call. = FALSE)}
 
     glmnet_coefs <- lapply(1:NC, function(i){
       as.vector(coef(object[[i]], s = s[[i]]))
@@ -286,8 +293,9 @@ fitLM.penLM <- function(object, lambda, ...){
     exit = LMdata$outcome$time
     status = LMdata$outcome$status
     LHS <- paste0("Hist(",exit,",",status,",",entry,")")
-    formula <- paste0(LHS, "~", paste0(xcols, collapse="+")) #, "+cluster(",id,")"
-    superfm <- CSC.fixed.coefs(as.formula(formula), data, method="breslow", cause.specific.coefs=glmnet_coefs, ...)
+    formula <- paste0(LHS, "~", paste0(xcols, collapse="+"))
+    superfm <- CSC.fixed.coefs(as.formula(formula), data, method="breslow",
+                               cause.specific.coefs=glmnet_coefs, ...)
 
     LHS <- paste0(LHS," ~ 1")
     models <- superfm$models
@@ -356,8 +364,10 @@ fitLM.penLM <- function(object, lambda, ...){
 #' @export
 fitLM.cv.penLM <- function(object, lambda="lambda.1se", ...){
   if (class(lambda) == "character"){
-    if (lambda == "lambda.1se") lambda <- lapply(object, function(o) o$lambda.1se)
-    else if (lambda == "lambda.min") lambda <- lapply(object, function(o) o$lambda.min)
+    if (lambda == "lambda.1se")
+      lambda <- lapply(object, function(o) o$lambda.1se)
+    else if (lambda == "lambda.min")
+      lambda <- lapply(object, function(o) o$lambda.min)
   }
 
   return(fitLM.penLM(object, s=lambda, ...))
