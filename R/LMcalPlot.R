@@ -15,54 +15,93 @@
 #' For both internal calibration and bootstrapping, it is assumed that all
 #' models in `object` are fit on the same data.
 #'
-#' @param object A named list of prediction models, where allowed entries are outputs from `predLMrisk` or supermodels from `fitLM` depending on the type of calibration.
-#' @param times Landmark times for which calibration must be plot. These must be a subset of LM times used during the prediction
-#' @param formula A survival or event history formula (`Hist(...)`). The left hand side is used to compute the expected event status.
+#' @param object A named list of prediction models, where allowed entries are
+#'   outputs from `predLMrisk` or supermodels from `fitLM` depending on the type
+#'   of calibration.
+#' @param times Landmark times for which calibration must be plot. These must be
+#'   a subset of LM times used during the prediction
+#' @param formula A survival or event history formula (`Hist(...)`). The left
+#"   hand side is used to compute the expected event status.
 #'   If none is given, it is obtained from the prediction object.
 #' @param data Data for external validation.
-#' @param tLM Landmark times corresponding to the patient entries in data. Only required if data is a dataframe.
-#'   tLM can be a string (indicating a column in data), a vector of length nrow(data),
-#'   or a single value if all patient entries were obtained at the same landmark time.
-#' @param ID_col Column name that identifies individuals in data. If omitted, it is obtained from the prediction object.
-#' @param split.method Defines the internal validation design as in `pec::calPlot`. Options are currently "none" or "bootcv".
+#' @param tLM Landmark times corresponding to the patient entries in data. Only
+#'   required if data is a dataframe.
+#'   tLM can be a string (indicating a column in data), a vector of length
+#'   nrow(data), or a single value if all patient entries were obtained at the
+#'   same landmark time.
+#' @param ID_col Column name that identifies individuals in data. If omitted, it
+#'   is obtained from the prediction object.
+#' @param split.method Defines the internal validation design as in
+#'   `pec::calPlot`. Options are currently "none" or "bootcv".
 #'
-#'   "none": assess the model in the test data (`data` argument)/data it was trained on.
+#'   "none": assess the model in the test data (`data` argument)/data it was
+#"   trained on.
 #'
-#'   "bootcv": `B` models are trained on boostrap samples either drawn with replacement of the same size as the original data or without replacement of size `M`. Models are then assessed in observations not in the sample.
+#'   "bootcv": `B` models are trained on boostrap samples either drawn with
+#"   replacement of the same size as the original data or without replacement of
+#'   size `M`. Models are then assessed in observations not in the sample.
 #'
 #' @param B Number of times bootstrapping is performed.
-#' @param M Subsample size for training in cross-validation. Entries not sampled in the M subsamples are used for validation.
+#' @param M Subsample size for training in cross-validation. Entries not sampled
+#"   in the M subsamples are used for validation.
 #' @param cores To perform parallel computing, specifies the number of cores.
-#' @param seed Optional, integer passed to set.seed. If not given or NA, no seed is set.
-#' @param regression_values Default is FALSE. If set to TRUE, the returned list is appended by a list `regression_values`,
-#'   which contains the intercept and slope of a linear regression of each model for each landmark time (i.e., each calibration plot).
+#' @param seed Optional, integer passed to set.seed. If not given or NA, no seed
+#"   is set.
+#' @param regression_values Default is FALSE. If set to TRUE, the returned list
+#'   is appended by a list `regression_values`,
+#'   which contains the intercept and slope of a linear regression of each model
+#'   for each landmark time (i.e., each calibration plot).
 #'   Note that perfect calibration has a slope of 1 and an intercept of 0.
-#' @param unit Time unit for window of prediction, e.g., "year", "month", etc. Only used for printing results.
-#' @param cause Cause of interest if considering competing risks. If left blank, this is inferred from object.
-#' @param plot If FALSE, do not plot the results, just return a plottable object. Default is TRUE.
+#' @param unit Time unit for window of prediction, e.g., "year", "month", etc.
+#'   Only used for printing results.
+#' @param cause Cause of interest if considering competing risks. If left blank,
+#'   this is inferred from object.
+#' @param plot If FALSE, do not plot the results, just return a plottable
+#'   object. Default is TRUE.
 #' @param main Optional title to override default.
-#' @param sub If TRUE, add a subheading with the number of individuals at risk, and the number that under the event of interest.
+#' @param sub If TRUE, add a subheading with the number of individuals at risk,
+#"   and the number that under the event of interest.
 #'   Default is TRUE. Set to FALSE for bootstrapping.
 #' @param ... Additional arguments to pass to calPlot (`pec` package).
 #'   These arguments have been included for user flexibility but have not been
 #'   tested and should be used with precaution.
 #'
-#' @return List of plots of w-year risk, one entry per prediction/landmark time point
-#' @details When collecting bootstrap samples, the same individuals are considered across landmarks.
-#'   I.e., sample `M` unique individuals, train on the super dataset formed by these individuals, and validate on the individuals not sampled at the landmarks they remain alive (or that are given in `times`).
+#' @return List of plots of w-year risk, one entry per prediction/landmark time
+#'   point
+#' @details When collecting bootstrap samples, the same individuals are
+#'   considered across landmarks.
+#'   I.e., sample `M` unique individuals, train on the super dataset formed by
+#'   these individuals, and validate on the individuals not sampled at the
+#'   landmarks they remain alive (or that are given in `times`).
 #'
-#'  Note that only complete cases of data are considered (whatever type of calibration is performed). Furthermore, most errors in plotting occur when a formula is not given. Formulas can look like `Hist(Time,event,LM)~1` / similar...
+#'  Note that only complete cases of data are considered (whatever type of
+#'  calibration is performed). Furthermore, most errors in plotting occur when a
+#'  formula is not given. Formulas can look like `Hist(Time,event,LM)~1` /
+#'  similar...
 #'
-#'  See the [github](https://github.com/thehanlab/dynamicLM) for detailed example code.
+#'  See the [github](https://github.com/thehanlab/dynamicLM) for detailed
+#'  example code.
+#'
+#'  A comment on the following message:
+#'  "Dropping bootstrap b = {X} for model {name} due
+#'  to unreliable predictions". As certain approximations are made, numerical
+#'  overflow sometimes occurs in predictions for bootstrapped samples. To avoid
+#'  potential errors, the whole bootstrap sample is dropped in this case. Note
+#'  that input data should be complete otherwise this may occur
+#'  unintentionally. Calibration plots are still produced excluding predictions
+#'  made during the bootstrap resampling.
+#'
 #' @examples
 #' \dontrun{
 #' par(mfrow=c(2,2),pty="s")
 #' outlist = LMcalPlot(list("Model1"=p1),
 #'                     unit="month",            # for the title
-#'                     times=c(6,12,18,24),     # landmarks at which to provide calibration plots
+#'                     times=c(6,12,18,24),     # LMs at which to plot
 #'                     formula="Hist(event,Time,LM)~1",
 #'                     method="quantile", q=10, # method for calibration plot
+#'                     regression_values = TRUE,
 #'                     ylim=c(0,0.4), xlim=c(0,0.4))
+#' outlist$regression_values
 #' }
 #' @import prodlim
 #' @export
@@ -90,14 +129,16 @@ LMcalPlot <-
     ### Check input and set up some initial variables ###
 
     if (!requireNamespace("pec", quietly = T)) {
-      stop("Package \"pec\" must be installed to use function LMcalPlot.", call. = F)
+      stop("Package \"pec\" must be installed to use function LMcalPlot.",
+           call. = F)
     }
     if (!(class(object)=="list")) stop("object must be a named list.")
 
 
     checked_input <- match.call()
     m <- match(c("object", "times", "formula", "data", "tLM", "ID_col",
-                  "split.method", "B", "M", "cores", "seed", "cause"), names(checked_input), 0L)
+                  "split.method", "B", "M", "cores", "seed", "cause"),
+               names(checked_input), 0L)
     checked_input <- checked_input[c(1L, m)]
     checked_input[[1L]] <- quote(check_evaluation_inputs)
     # print(checked_input)
@@ -163,7 +204,8 @@ LMcalPlot <-
 
       if (plot) {
         if (add_title) {
-          title = paste0("Calibration of ",w,"-",unit," risk \n measured at LM time ",tLM)
+          title = paste0("Calibration of ",w,"-",unit,
+                         " risk \n measured at LM time ",tLM)
           graphics::title(main = title)
         }
         else {
@@ -174,7 +216,8 @@ LMcalPlot <-
           num_patients = length(risks_to_test[[1]])
           status = object[[1]]$outcome$status
           num_events = sum(data_to_test[[status]] == indicator)
-          subtitle = paste0("#at risk=", num_patients,",#that undergo event=", num_events)
+          subtitle = paste0("#at risk=", num_patients,
+                            ",#that undergo event=", num_events)
           graphics::title(sub = substitute(paste(italic(subtitle))))
         }
       }

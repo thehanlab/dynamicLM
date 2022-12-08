@@ -26,48 +26,61 @@ LMcalPlot(
 )
 }
 \arguments{
-\item{object}{A named list of prediction models, where allowed entries are outputs from \code{predLMrisk} or supermodels from \code{fitLM} depending on the type of calibration.}
+\item{object}{A named list of prediction models, where allowed entries are
+outputs from \code{predLMrisk} or supermodels from \code{fitLM} depending on the type
+of calibration.}
 
-\item{times}{Landmark times for which calibration must be plot. These must be a subset of LM times used during the prediction}
+\item{times}{Landmark times for which calibration must be plot. These must be
+a subset of LM times used during the prediction}
 
-\item{formula}{A survival or event history formula (\code{Hist(...)}). The left hand side is used to compute the expected event status.
+\item{formula}{A survival or event history formula (\code{Hist(...)}). The left
 If none is given, it is obtained from the prediction object.}
 
 \item{data}{Data for external validation.}
 
-\item{tLM}{Landmark times corresponding to the patient entries in data. Only required if data is a dataframe.
-tLM can be a string (indicating a column in data), a vector of length nrow(data),
-or a single value if all patient entries were obtained at the same landmark time.}
+\item{tLM}{Landmark times corresponding to the patient entries in data. Only
+required if data is a dataframe.
+tLM can be a string (indicating a column in data), a vector of length
+nrow(data), or a single value if all patient entries were obtained at the
+same landmark time.}
 
-\item{ID_col}{Column name that identifies individuals in data. If omitted, it is obtained from the prediction object.}
+\item{ID_col}{Column name that identifies individuals in data. If omitted, it
+is obtained from the prediction object.}
 
-\item{split.method}{Defines the internal validation design as in \code{pec::calPlot}. Options are currently "none" or "bootcv".
+\item{split.method}{Defines the internal validation design as in
+\code{pec::calPlot}. Options are currently "none" or "bootcv".
 
-"none": assess the model in the test data (\code{data} argument)/data it was trained on.
+"none": assess the model in the test data (\code{data} argument)/data it was
 
-"bootcv": \code{B} models are trained on boostrap samples either drawn with replacement of the same size as the original data or without replacement of size \code{M}. Models are then assessed in observations not in the sample.}
+"bootcv": \code{B} models are trained on boostrap samples either drawn with
+size \code{M}. Models are then assessed in observations not in the sample.}
 
 \item{B}{Number of times bootstrapping is performed.}
 
-\item{M}{Subsample size for training in cross-validation. Entries not sampled in the M subsamples are used for validation.}
+\item{M}{Subsample size for training in cross-validation. Entries not sampled}
 
 \item{cores}{To perform parallel computing, specifies the number of cores.}
 
-\item{seed}{Optional, integer passed to set.seed. If not given or NA, no seed is set.}
+\item{seed}{Optional, integer passed to set.seed. If not given or NA, no seed}
 
-\item{regression_values}{Default is FALSE. If set to TRUE, the returned list is appended by a list \code{regression_values},
-which contains the intercept and slope of a linear regression of each model for each landmark time (i.e., each calibration plot).
+\item{regression_values}{Default is FALSE. If set to TRUE, the returned list
+is appended by a list \code{regression_values},
+which contains the intercept and slope of a linear regression of each model
+for each landmark time (i.e., each calibration plot).
 Note that perfect calibration has a slope of 1 and an intercept of 0.}
 
-\item{unit}{Time unit for window of prediction, e.g., "year", "month", etc. Only used for printing results.}
+\item{unit}{Time unit for window of prediction, e.g., "year", "month", etc.
+Only used for printing results.}
 
-\item{cause}{Cause of interest if considering competing risks. If left blank, this is inferred from object.}
+\item{cause}{Cause of interest if considering competing risks. If left blank,
+this is inferred from object.}
 
-\item{plot}{If FALSE, do not plot the results, just return a plottable object. Default is TRUE.}
+\item{plot}{If FALSE, do not plot the results, just return a plottable
+object. Default is TRUE.}
 
 \item{main}{Optional title to override default.}
 
-\item{sub}{If TRUE, add a subheading with the number of individuals at risk, and the number that under the event of interest.
+\item{sub}{If TRUE, add a subheading with the number of individuals at risk,
 Default is TRUE. Set to FALSE for bootstrapping.}
 
 \item{...}{Additional arguments to pass to calPlot (\code{pec} package).
@@ -75,7 +88,8 @@ These arguments have been included for user flexibility but have not been
 tested and should be used with precaution.}
 }
 \value{
-List of plots of w-year risk, one entry per prediction/landmark time point
+List of plots of w-year risk, one entry per prediction/landmark time
+point
 }
 \description{
 There are three ways to perform calibration: apparent/internal, bootstrapped,
@@ -96,21 +110,39 @@ dataframe (in which case \code{tLM} must be specified).
 For both internal calibration and bootstrapping, it is assumed that all
 models in \code{object} are fit on the same data.
 
-When collecting bootstrap samples, the same individuals are considered across landmarks.
-I.e., sample \code{M} unique individuals, train on the super dataset formed by these individuals, and validate on the individuals not sampled at the landmarks they remain alive (or that are given in \code{times}).
+When collecting bootstrap samples, the same individuals are
+considered across landmarks.
+I.e., sample \code{M} unique individuals, train on the super dataset formed by
+these individuals, and validate on the individuals not sampled at the
+landmarks they remain alive (or that are given in \code{times}).
 
-Note that only complete cases of data are considered (whatever type of calibration is performed). Furthermore, most errors in plotting occur when a formula is not given. Formulas can look like \code{Hist(Time,event,LM)~1} / similar...
+Note that only complete cases of data are considered (whatever type of
+calibration is performed). Furthermore, most errors in plotting occur when a
+formula is not given. Formulas can look like \code{Hist(Time,event,LM)~1} /
+similar...
 
-See the \href{https://github.com/thehanlab/dynamicLM}{github} for detailed example code.
+See the \href{https://github.com/thehanlab/dynamicLM}{github} for detailed
+example code.
+
+A comment on the following message:
+"Dropping bootstrap b = {X} for model {name} due
+to unreliable predictions". As certain approximations are made, numerical
+overflow sometimes occurs in predictions for bootstrapped samples. To avoid
+potential errors, the whole bootstrap sample is dropped in this case. Note
+that input data should be complete otherwise this may occur
+unintentionally. Calibration plots are still produced excluding predictions
+made during the bootstrap resampling.
 }
 \examples{
 \dontrun{
 par(mfrow=c(2,2),pty="s")
 outlist = LMcalPlot(list("Model1"=p1),
                     unit="month",            # for the title
-                    times=c(6,12,18,24),     # landmarks at which to provide calibration plots
+                    times=c(6,12,18,24),     # LMs at which to plot
                     formula="Hist(event,Time,LM)~1",
                     method="quantile", q=10, # method for calibration plot
+                    regression_values = TRUE,
                     ylim=c(0,0.4), xlim=c(0,0.4))
+outlist$regression_values
 }
 }
