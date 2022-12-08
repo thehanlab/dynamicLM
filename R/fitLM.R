@@ -216,7 +216,7 @@ fitLM.LMdataframe <- function(LMdata,
 #'
 #' @param object  A fitted object of class "LMpen". This can be created by
 #'   calling `penLM` using arguments `LMdata` and `xcols`.
-#' @param s Value of the penalty parameter `lambda` at which to fit a model. For
+#' @param lambda Value of the penalty parameter `lambda` at which to fit a model. For
 #'   cause specific Cox super models, this must be a list or vector of values:
 #'   one for each cause.
 #'
@@ -227,13 +227,13 @@ fitLM.LMdataframe <- function(LMdata,
 #'   - LHS: the LHS of the input formula
 #'   - linear.predictors: the vector of linear predictors, one per subject. Note
 #'     that this vector has not been centered.
-#'   - s: the values of lambda for which this model has been fit.
+#'   - lambda: the values of lambda for which this model has been fit.
 #' @examples
 #' \dontrun{
 #' }
 #' @import survival glmnet
 #' @export
-fitLM.penLM <- function(object, s, ...){
+fitLM.penLM <- function(object, lambda, ...){
   survival.type <- attr(object, "survival.type")
   LMdata <- attr(object, "LMdata")
   if(is.null(LMdata))
@@ -256,8 +256,8 @@ fitLM.penLM <- function(object, s, ...){
   allLMcovars <- LMdata$allLMcovars
 
   if(survival.type=="survival"){
-    if (class(s) == "list") s <- s[[1]]
-    glmnet_coefs <- as.vector(coef(object[[1]], s = s))
+    if (class(s) == "list") lambda <- lambda[[1]]
+    glmnet_coefs <- as.vector(coef(object[[1]], s = lambda))
 
     entry = LMdata$LM_col
     exit = LMdata$outcome$time
@@ -322,7 +322,7 @@ fitLM.penLM <- function(object, s, ...){
            LHS=LHS,
            linear.predictors=linear.predictors,
            original.landmarks=original.landmarks,
-           s=s
+           lambda=lambda
   )
   class(out)=cl
   return(out)
@@ -336,7 +336,7 @@ fitLM.penLM <- function(object, s, ...){
 #'
 #' @param object  A fitted object of class "cv.LMpen". This can be created by
 #'   calling `cv.penLM` using arguments `LMdata` and `xcols`.
-#' @param s Value of the penalty parameter `lambda` at which to fit a model.
+#' @param lambda Value of the penalty parameter `lambda` at which to fit a model.
 #'   Default is "lambda.1se" stored in the object; "lambda.min" can also be used
 #'   or a specific value of can be input. For cause-specific Cox super models,
 #'   this must be a list or vector of values: one for each cause.
@@ -354,11 +354,11 @@ fitLM.penLM <- function(object, s, ...){
 #' }
 #' @import survival glmnet
 #' @export
-fitLM.cv.penLM <- function(object, s="lambda.1se", ...){
-  if (class(s) == "character"){
-    if (s == "lambda.1se") s <- lapply(object, function(o) o$lambda.1se)
-    else if (s == "lambda.min") s <- lapply(object, function(o) o$lambda.min)
+fitLM.cv.penLM <- function(object, lambda="lambda.1se", ...){
+  if (class(lambda) == "character"){
+    if (lambda == "lambda.1se") lambda <- lapply(object, function(o) o$lambda.1se)
+    else if (lambda == "lambda.min") lambda <- lapply(object, function(o) o$lambda.min)
   }
 
-  return(fitLM.penLM(object, s, ...))
+  return(fitLM.penLM(object, s=lambda, ...))
 }

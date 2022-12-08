@@ -4,13 +4,13 @@
 \alias{fitLM.penLM}
 \title{Fit a penalized coxph or CSC supermodel for a specific coefficient}
 \usage{
-\method{fitLM}{penLM}(object, s, ...)
+\method{fitLM}{penLM}(object, lambda, ...)
 }
 \arguments{
 \item{object}{A fitted object of class "LMpen". This can be created by
 calling \code{penLM} using arguments \code{LMdata} and \code{xcols}.}
 
-\item{s}{Value of the penalty parameter \code{lambda} at which to fit a model. For
+\item{lambda}{Value of the penalty parameter \code{lambda} at which to fit a model. For
 cause specific Cox super models, this must be a list or vector of values:
 one for each cause.}
 }
@@ -23,7 +23,7 @@ An object of class "penLMcoxph" or "penLMCSC" with components:
 \item LHS: the LHS of the input formula
 \item linear.predictors: the vector of linear predictors, one per subject. Note
 that this vector has not been centered.
-\item s: the values of lambda for which this model has been fit.
+\item lambda: the values of lambda for which this model has been fit.
 }
 }
 \description{

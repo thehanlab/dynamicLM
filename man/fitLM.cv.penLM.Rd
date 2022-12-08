@@ -4,13 +4,13 @@
 \alias{fitLM.cv.penLM}
 \title{Fit a penalized cross-validated coxph or CSC super model}
 \usage{
-\method{fitLM}{cv.penLM}(object, s = "lambda.1se", ...)
+\method{fitLM}{cv.penLM}(object, lambda = "lambda.1se", ...)
 }
 \arguments{
 \item{object}{A fitted object of class "cv.LMpen". This can be created by
 calling \code{cv.penLM} using arguments \code{LMdata} and \code{xcols}.}
 
-\item{s}{Value of the penalty parameter \code{lambda} at which to fit a model.
+\item{lambda}{Value of the penalty parameter \code{lambda} at which to fit a model.
 Default is "lambda.1se" stored in the object; "lambda.min" can also be used
 or a specific value of can be input. For cause-specific Cox super models,
 this must be a list or vector of values: one for each cause.}
