@@ -50,6 +50,7 @@ check_evaluation_inputs <- function(
       }
 
     }
+    # TODO: update to include penalized classes
     else if (!(class(object[[i]]) %in% c("LMCSC", "LMcoxph"))) {
       stop(paste("all prediction models in object must be of class LMCSC, LMcoxph (i.e., output from fitLM) or LMpred (i.e., output from predLMrisk) but", name, "is of class",class(object[[i]])))
     }
@@ -104,7 +105,7 @@ check_evaluation_inputs <- function(
     }
   }
   if (missing(cause))
-    cause <- object[[1]]$cause
+    cause <- object[[1]]$model$theCause
   indicator <- cause
   if (is.null(cause))
     indicator <- 1
@@ -159,8 +160,6 @@ check_evaluation_inputs <- function(
 
   else if (!perform.boot) {
     # TODO: consider including w, extend, silence, complete as args to predLMrisk
-    # TODO: consider allowing not LMdata
-    # TODO: test what happens if data is a dataframe
     if (!missing(data)) preds = lapply(object, function(o) predLMrisk(o, data, tLM, cause))
     else preds = lapply(object, function(o) predLMrisk(o, cause=cause))
     args = match.call()
@@ -229,11 +228,10 @@ check_evaluation_inputs <- function(
         pred.b <- try(
           # TODO: consider including w, extend, silence, complete as args to predLMrisk
           # TODO: use complete=T
-          # TODO: consider allowing not LMdata
           predLMrisk(model.b,newdata=data_val_b,tLM=tLMs_b,cause=model.b$cause, complete=F),
           silent = F
         )
-        # print(pred.b)
+
         # print(length(pred.b$preds$risk))
 
         if (inherits(pred.b, "try-error")){
@@ -241,12 +239,24 @@ check_evaluation_inputs <- function(
         } else {
           P <- pred.b$preds$risk
         }
-        return(P)
+        # print(P)
+        if (sum(is.na(P)) > 0) {
+          message(paste("Dropping bootstrap b =",b,"for model",names(object)[[f]],"due to unreliable predictions."))
+          return(c())
+        }
+        else {
+          return(P)
+        }
 
       }))
+      if (length(preds.b) > 0) {
+        colnames(preds.b) <- names(object)
+        return(cbind(outcomes_val_b, preds.b, b=rep(b, nrow(outcomes_val_b))))
+      }
+      # else {
+      #   return(c())
+      # }
 
-      colnames(preds.b) <- names(object)
-      cbind(outcomes_val_b, preds.b, b=rep(b, nrow(outcomes_val_b)))
 
       # pred.list[[b]] <- cbind(outcomes_val_b, preds.b, rep(b, nrow(outcomes_val_b)))
 

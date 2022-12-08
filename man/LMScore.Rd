@@ -23,6 +23,7 @@ LMScore(
   unit = "year",
   cause,
   silent = T,
+  na.rm = FALSE,
   ...
 )
 }
@@ -63,7 +64,9 @@ in Blanche et al (references).}
 
 "none": assess the model in the test data (\code{data} argument)/data it was trained on.
 
-"bootcv": \code{B} models are trained on boostrap samples either drawn with replacement of the same size as the original data or without replacement of size \code{M}. Models are then assessed in observations not in the sample.}
+"bootcv": \code{B} models are trained on boostrap samples either drawn with
+replacement of the same size as the original data or without replacement
+of size \code{M}. Models are then assessed in observations not in the sample.}
 
 \item{B}{Number of times bootstrapping is performed.}
 
@@ -83,6 +86,11 @@ this is inferred from object.}
 
 \item{silent}{Show any error messages when computing \code{Score} for each
 landmark time (and potentially bootstrap iteration)}
+
+\item{na.rm}{Ignore bootstraps where there are errors (for example not
+enough datasamples) and calculate metrics on remaining values. This is not
+recommended. For example, if only one bootstrap sampling has enough data
+that live to the prediction window, the standard error will be zero.}
 
 \item{...}{Additional arguments to pass to Score (\code{riskRegression} package).
 These arguments have been included for user flexibility but have not been
@@ -116,7 +124,24 @@ dataframe (in which case \code{tLM} must be specified).
 For both internal evaluation and bootstrapping, it is assumed that all
 models in \code{object} are fit on the same data.
 
-See the Github for example code
+See the Github for example code.
+
+If data at late evaluation times is sparse, certain bootstrap samples may
+have patients that live long enough to perform evaluation. In this case,
+a message "Upper limit of followup in bootstrap samples, was too low.
+Results at evaluation time(s) beyond these points could not be computed
+and are left as NA". In this case, consider only evaluating for earlier
+landmarks or performing prediction with a smaller window as datapoints are
+slim. If you wish to see which model/bootstrap/landmark times failed, set
+SILENT=FALSE. Set na.rm = TRUE ignores these bootstraps and calculate
+metrics from the bootstrap samples that worked (not recommended).
+
+Another message may occur: "Dropping bootstrap b = {X} for model {name} due
+to unreliable predictions". As certain approximations are made, numerical
+overflow sometimes occurs in predictions for bootstrapped samples. To avoid
+potential errors, the whole bootstrap sample is dropped in this case. Note
+that input data should be complete otherwise this may occur
+unintentionally.
 }
 \references{
 Paul Blanche, Cecile Proust-Lima, Lucie Loubere, Claudine Berr, Jean- Francois Dartigues, and Helene Jacqmin-Gadda. Quantifying and comparing dynamic predictive accuracy of joint models for longitudinal marker and time-to-event in presence of censoring and competing risks. Biometrics, 71 (1):102–113, 2015.

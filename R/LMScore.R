@@ -63,12 +63,34 @@
 #'  tested and should be used with precaution.
 #' @param silent Show any error messages when computing `Score` for each
 #'  landmark time (and potentially bootstrap iteration)
+#' @param na.rm Ignore bootstraps where there are errors (for example not
+#'  enough datasamples) and calculate metrics on remaining values. This is not
+#'  recommended. For example, if only one bootstrap sampling has enough data
+#'  that live to the prediction window, the standard error will be zero.
 #' @return An object of class "LMScore", which has components:
 #'   - `auct`: dataframe containing time-dependent AUC if "auc" was
 #'     included as a metric
 #'   - `briert`: dataframe containing time-dependent Brier score if "brier" was
 #'     included as a metric
-#' @details See the Github for example code
+#' @details See the Github for example code.
+#'
+#'   If data at late evaluation times is sparse, certain bootstrap samples may
+#'   have patients that live long enough to perform evaluation. In this case,
+#'   a message "Upper limit of followup in bootstrap samples, was too low.
+#'   Results at evaluation time(s) beyond these points could not be computed
+#'   and are left as NA". In this case, consider only evaluating for earlier
+#'   landmarks or performing prediction with a smaller window as datapoints are
+#'   slim. If you wish to see which model/bootstrap/landmark times failed, set
+#'   SILENT=FALSE. Set na.rm = TRUE ignores these bootstraps and calculate
+#'   metrics from the bootstrap samples that worked (not recommended).
+#'
+#'   Another message may occur: "Dropping bootstrap b = {X} for model {name} due
+#'   to unreliable predictions". As certain approximations are made, numerical
+#'   overflow sometimes occurs in predictions for bootstrapped samples. To avoid
+#'   potential errors, the whole bootstrap sample is dropped in this case. Note
+#'   that input data should be complete otherwise this may occur
+#'   unintentionally.
+#'
 #' @references Paul Blanche, Cecile Proust-Lima, Lucie Loubere, Claudine Berr, Jean- Francois Dartigues, and Helene Jacqmin-Gadda. Quantifying and comparing dynamic predictive accuracy of joint models for longitudinal marker and time-to-event in presence of censoring and competing risks. Biometrics, 71 (1):102–113, 2015.
 #'
 #' P. Blanche, J-F Dartigues, and H. Jacqmin-Gadda. Estimating and comparing time-dependent areas under receiver operating characteristic curves for censored event times with competing risks. Statistics in Medicine, 32(30):5381–5397, 2013.
@@ -92,6 +114,7 @@ LMScore <-
            unit ="year",
            cause,
            silent = T,
+           na.rm = FALSE,
            ...) {
 
     if (!requireNamespace("data.table", quietly = TRUE)) {
@@ -122,12 +145,12 @@ LMScore <-
 
     if(is.null(data$b)) data$b <- 1
 
-    B = length(unique(data$b))
+    num_B = length(unique(data$b))
     se.fit.b <- se.fit
-    if (B > 1) se.fit.b <- FALSE
+    if (num_B > 1) se.fit.b <- FALSE
 
     # TODO: parallelize?
-    metrics <- lapply(1:B, function(b){
+    metrics <- lapply(unique(data$b), function(b){
       m_b <- lapply(1:length(times), function(t){
         tLM = times[t]
 
@@ -149,7 +172,7 @@ LMScore <-
           stop("nrow(data_to_test)!=length(risks_to_test)")
         }
 
-        score_t <- try(
+        score_t <- suppressMessages(try(
           riskRegression::Score(
             risks_to_test,
             formula = stats::as.formula(formula),
@@ -160,8 +183,8 @@ LMScore <-
             se.fit = se.fit.b,
             conf.int = conf.int,
             ...
-          ), silent = silent
-        )
+          ), silent = T
+        ))
 
         if (inherits(score_t, "try-error")) {
           auct_b <- data.frame(model=names(object), times=NA, AUC=NA)
@@ -186,46 +209,60 @@ LMScore <-
 
     auct <- do.call("rbind", lapply(metrics, function(m) m$AUC))
     briert <- do.call("rbind", lapply(metrics, function(m) m$Brier))
-    b_na <- auct$b[is.na(auct$AUC)]
-    tLM_na <- auct$tLM[is.na(auct$AUC)]
-    model_na <- auct$model[is.na(auct$AUC)]
-
-    if(length(b_na) != 0) {
-      message(paste0("\nNote that some metrics could not be computed. Set silent=FALSE to potentially see more error messages. Metrics not computed for (model, b, tLM) = ",paste0("(",model_na,", ",b_na,", ",tLM_na,")", collapse=", ")))
-    }
 
     if (B > 1) {
       if (se.fit==TRUE) {
         alpha = 1-conf.int
-        auct <- auct[,
+        auct_out <- auct[,
                      data.table::data.table(
-                       mean(.SD[["AUC"]],na.rm=TRUE),
-                       se=sd(.SD[["AUC"]],na.rm=TRUE),
-                       lower=quantile(.SD[["AUC"]],alpha/2,na.rm=TRUE),
-                       upper=quantile(.SD[["AUC"]],(1-alpha/2),na.rm=TRUE)),
+                       mean(.SD[["AUC"]],na.rm=na.rm),
+                       se=sd(.SD[["AUC"]],na.rm=T),
+                       lower=quantile(.SD[["AUC"]],alpha/2,na.rm=T),
+                       upper=quantile(.SD[["AUC"]],(1-alpha/2),na.rm=T)),
                      by=c("model","tLM"),.SDcols="AUC"
                      ]
-        briert <- briert[,
+        briert_out <- briert[,
                          data.table::data.table(
-                           mean(.SD[["Brier"]],na.rm=TRUE),
-                           se=sd(.SD[["Brier"]],na.rm=TRUE),
-                           lower=quantile(.SD[["Brier"]],alpha/2,na.rm=TRUE),
-                           upper=quantile(.SD[["Brier"]],(1-alpha/2),na.rm=TRUE)),
+                           mean(.SD[["Brier"]],na.rm=na.rm),
+                           se=sd(.SD[["Brier"]],na.rm=T),
+                           lower=quantile(.SD[["Brier"]],alpha/2,na.rm=T),
+                           upper=quantile(.SD[["Brier"]],(1-alpha/2),na.rm=T)),
                          by=c("model","tLM"),.SDcols="Brier"
                          ]
-        data.table::setnames(auct,c("model","tLM","AUC","se","lower","upper"))
-        data.table::setnames(briert,c("model","tLM","Brier","se","lower","upper"))
+        data.table::setnames(auct_out,c("model","tLM","AUC","se","lower","upper"))
+        data.table::setnames(briert_out,c("model","tLM","Brier","se","lower","upper"))
+
+        message("Upper limit of followup in bootstrap samples was too low. Results at evaluation time(s) beyond these points could not be computed and are left as NA.")
+        if (!silent) {
+          b_na <- auct$b[is.na(auct$AUC)]
+          tLM_na <- auct$tLM[is.na(auct$AUC)]
+          model_na <- auct$model[is.na(auct$AUC)]
+
+          if(length(b_na) != 0) {
+            message(paste0("Metrics not computed for (model, b, tLM) = ",paste0("(",model_na,", ",b_na,", ",tLM_na,")", collapse=", ")))
+          }
+        }
+
+        if (na.rm == FALSE) {
+          auct_out <- auct_out[c(is.na(auct_out[,3])), `:=` ("se"=NA,"lower"=NA,"upper"=NA)]
+          briert_out <- briert_out[c(is.na(briert_out[,3])), `:=` ("se"=NA,"lower"=NA,"upper"=NA)]
+        }
+
+
       } else {
-        auct <- auct[,data.table::data.table(mean(.SD[["AUC"]],na.rm=TRUE)),by=c("model","tLM"),.SDcols="AUC"]
-        briert <- briert[,data.table::data.table(mean(.SD[["Brier"]],na.rm=TRUE)),by=c("model","tLM"),.SDcols="Brier"]
-        data.table::setnames(auct,c("model","tLM","AUC"))
-        data.table::setnames(briert,c("model","tLM","Brier"))
+        auct_out <- auct[,data.table::data.table(mean(.SD[["AUC"]],na.rm=na.rm)),by=c("model","tLM"),.SDcols="AUC"]
+        briert_out <- briert[,data.table::data.table(mean(.SD[["Brier"]],na.rm=na.rm)),by=c("model","tLM"),.SDcols="Brier"]
+        data.table::setnames(auct_out,c("model","tLM","AUC"))
+        data.table::setnames(briert_out,c("model","tLM","Brier"))
       }
+    } else {
+      auct_out <- auct
+      briert_out <- briert
     }
 
     outlist <- list(
-      auct = auct,
-      briert = briert,
+      auct = auct_out,
+      briert = briert_out,
       w = w,
       unit = unit
     )
