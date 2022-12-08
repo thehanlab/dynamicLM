@@ -70,7 +70,7 @@ An object of class "LMcoxph" or "LMCSC" with components:
 \item linear.predictors: the vector of linear predictors, one per subject. Note
 that this vector has not been centered.
 \item args: arguments used to call model fitting
-\item ID_col: the cluster argument, usually specifies the column with patient ID
+\item ID_col: the cluster argument, usually specifies column with patient ID
 }
 }
 \description{
