@@ -161,13 +161,6 @@ LMScore <-
         })
         names(risks_to_test) = names(object)
 
-        # TODO: check for CR
-        # --> not neccessary for cox
-        #
-        # if (object[[1]]$type == "coxph") {
-        #   risks_to_test = lapply(risks_to_test, function(r) 1-r)
-        # }
-
         if (nrow(data_to_test) != length(risks_to_test[[1]])) {
           stop("nrow(data_to_test)!=length(risks_to_test)")
         }

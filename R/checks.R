@@ -193,38 +193,9 @@ check_evaluation_inputs <- function(
         original_model <- object[[f]]
         args <- original_model$args
         args$LMdata <- NULL
-        # print(args)
         args$LMdata <- data_train_b
         model.b <- eval(args)
-
-        # print(model.b)
-        # print(model.b$model$coefficients)
-        # print(sum(model.b$model$coefficients))
         base_data = 0 * model.b$model$coefficients
-        # base_data = data_train_b$LMdata[1:3,]
-        # s = survfit(model.b$model, newdata=base_data)
-        # plot(s)
-        # print(summary(rowSums(data_train_b$LMdata[data_train_b$LMdata[["status"]] == 1, ] * model.b$model$coefficients)))
-        # print(summary(rowSums(data_train_b$LMdata[data_train_b$LMdata[["status"]] == 0, ] * model.b$model$coefficients)))
-
-        # print(summary(rowSums(data_train_b$LMdata)))
-        # print(class(model.b$model))
-        # plot(model.b$model, newdata=data_train_b$LMdata[1:3,])
-
-        # print(data.frame(time=s$time,surv=s$surv,Haz=-log(s$surv)))
-        # print(sort(unique(data_train_b$LMdata[data_train_b$LMdata[["status"]] == 1, "time"])))
-        # print(sort(unique(data_train_b$LMdata[data_train_b$LMdata[["status"]] == 0, "time"])))
-
-        # x = data_train_b$LMdata %>%
-        #   group_by(status, LM, time) %>%
-        #   summarise(n = n())
-        # print(x)
-
-        # print(sum(is.na(data_val_b)))
-        # print(head(data_val_b))
-        # print(head(outcomes_val_b))
-        # print(length(tLMs_b))
-        # print(model.b$cause)
         pred.b <- try(
           # TODO: consider including w, extend, silence, complete as args to predLMrisk
           # TODO: use complete=T
@@ -232,14 +203,12 @@ check_evaluation_inputs <- function(
           silent = F
         )
 
-        # print(length(pred.b$preds$risk))
 
         if (inherits(pred.b, "try-error")){
           P <- rep(NA,NROW(data_val_b))
         } else {
           P <- pred.b$preds$risk
         }
-        # print(P)
         if (sum(is.na(P)) > 0) {
           message(paste("Dropping bootstrap b =",b,"for model",names(object)[[f]],"due to unreliable predictions."))
           return(c())
@@ -253,13 +222,6 @@ check_evaluation_inputs <- function(
         colnames(preds.b) <- names(object)
         return(cbind(outcomes_val_b, preds.b, b=rep(b, nrow(outcomes_val_b))))
       }
-      # else {
-      #   return(c())
-      # }
-
-
-      # pred.list[[b]] <- cbind(outcomes_val_b, preds.b, rep(b, nrow(outcomes_val_b)))
-
     }, mc.cores=cores)
 
     pred.df <- do.call("rbind",pred.list)
