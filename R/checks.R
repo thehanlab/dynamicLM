@@ -15,7 +15,6 @@ check_evaluation_inputs <- function(
 
   ### Check inputs ###
 
-
   # first checks
   split.method <- tolower(split.method)
   if (split.method == "none") B <- 1
@@ -172,9 +171,6 @@ check_evaluation_inputs <- function(
 
   else if (perform.boot){
     pred.list <- parallel::mclapply(1:B,function(b){
-    # pred.list <- list()
-    # for (b in 1:B){
-    # for (b in 1){
       outcome <- object[[1]]$outcome
 
       id_train_b <- split.method$index[,b]
@@ -184,11 +180,8 @@ check_evaluation_inputs <- function(
       tLMs_b <- data_val_b[[LM_col]]
       outcomes_val_b <- data_val_b[c(outcome$time, outcome$status, LM_col)]
 
-      # print(data_val_b)
-
       data_train_b <- LMdata
       data_train_b$LMdata <- data[id_train_b, ]
-      # preds.b <- do.call("cbind",lapply(1:1,function(f){
       preds.b <- do.call("cbind",lapply(1:NF,function(f){
         original_model <- object[[f]]
         args <- original_model$args
