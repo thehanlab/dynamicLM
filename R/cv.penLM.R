@@ -13,12 +13,17 @@
 #' @param xcols A vector of column names of the data stored in `LMdata` that
 #'   are to be used as dependent variables. If not specified, it is assumed that
 #'   all non-response variables are the dependent variables.
-#' @param ID_col TODO
+#' @param ID_col Column name or index that identifies individuals in data.
+#'   Used to ensure the same individuals appear in the different cross
+#'   validation sets.
+#' @param alpha The elastic net mixing parameter: Lies betweent 0 and 1. At 1,
+#'   the penalty is the LASSO penalty, and at 0, the penalty is the ridge
+#'   penalty.
 #' @param nfolds Number of folds in k-fold cross validation. Default is 10.
 #' @param type.measure Loss for cross-validation. Currently the only option is
 #'   "deviance" which is the partial-likelihood for the Cox model. If using
 #'   cause-specific Cox models, this is evaluated on each model separately.
-#' @param seed TODO
+#' @param seed Set a seed.
 #' @param ... Additional arguments to `cv.glmnet`.
 #'
 #' @return An object class `cv.penLM`. This is a list of `cv.glmnet` objects
@@ -61,8 +66,15 @@
 #' print(pen_supermodel)
 #' plot(pen_supermodel)
 #' }
-cv.penLM <- function(x, y, LMdata, xcols, ID_col, nfolds=10, type.measure="deviance", seed=NULL, ...) {
-
+cv.penLM <- function(x, y,
+                     LMdata, xcols,
+                     ID_col,
+                     alpha=1,
+                     nfolds=10,
+                     type.measure="deviance",
+                     seed=NULL,
+                     ...
+) {
   checked_input <- match.call()
   checked_input$parent_func = quote(cv.penLM)
   checked_input$CV = TRUE
@@ -76,6 +88,7 @@ cv.penLM <- function(x, y, LMdata, xcols, ID_col, nfolds=10, type.measure="devia
   LMdata = checked_input$LMdata
   xcols = checked_input$xcols
   IDs = checked_input$IDs
+  alpha = checked_input$alpha
   ID_col = checked_input$ID_col
   unique.IDs = unique(IDs)
 
@@ -85,7 +98,11 @@ cv.penLM <- function(x, y, LMdata, xcols, ID_col, nfolds=10, type.measure="devia
   foldid <- split.idx[match(IDs, unique.IDs)]
 
   models <- lapply(y, function(yi) {
-    glmnet::cv.glmnet(x = x, y = yi, family = "cox", type.measure = type.measure, foldid = foldid, ...)
+    glmnet::cv.glmnet(x = x, y = yi,
+                      family = "cox",
+                      alpha = alpha,
+                      type.measure = type.measure,
+                      foldid = foldid, ...)
   })
   if (length(models) > 1){
     attr(models, "survival.type") = "competing.risk"
@@ -97,6 +114,7 @@ cv.penLM <- function(x, y, LMdata, xcols, ID_col, nfolds=10, type.measure="devia
     attr(models, "LMdata") = LMdata
   }
   if (!is.null(xcols)) attr(models, "xcols") = xcols
+  attr(models, "alpha") = alpha
   class(models) = "cv.penLM"
   return(models)
 }

@@ -11,6 +11,7 @@ cv.penLM(
   LMdata,
   xcols,
   ID_col,
+  alpha = 1,
   nfolds = 10,
   type.measure = "deviance",
   seed = NULL,
@@ -29,7 +30,13 @@ running \code{cutLMsuper} and \code{addLMtime}}
 are to be used as dependent variables. If not specified, it is assumed that
 all non-response variables are the dependent variables.}
 
-\item{ID_col}{TODO}
+\item{ID_col}{Column name or index that identifies individuals in data.
+Used to ensure the same individuals appear in the different cross
+validation sets.}
+
+\item{alpha}{The elastic net mixing parameter: Lies betweent 0 and 1. At 1,
+the penalty is the LASSO penalty, and at 0, the penalty is the ridge
+penalty.}
 
 \item{nfolds}{Number of folds in k-fold cross validation. Default is 10.}
 
@@ -37,7 +44,7 @@ all non-response variables are the dependent variables.}
 "deviance" which is the partial-likelihood for the Cox model. If using
 cause-specific Cox models, this is evaluated on each model separately.}
 
-\item{seed}{TODO}
+\item{seed}{Set a seed.}
 
 \item{...}{Additional arguments to \code{cv.glmnet}.}
 }

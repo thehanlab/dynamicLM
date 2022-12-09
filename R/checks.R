@@ -1,16 +1,18 @@
-check_penLM_inputs <- function(x, y, LMdata, xcols, ID_col=NULL, parent_func, CV=FALSE, ...){
+check_penLM_inputs <- function(x, y, LMdata, xcols, ID_col=NULL, alpha=1, parent_func, CV=FALSE, ...){
   parent_func <- eval(parent_func)
   # check which data inputs are provided
   # i.e., are all provided? & can we replace LMdata and xcols with x and y?
   use_LMdata <- T
-  if (missing(LMdata)) use_LMdata <- F
+  if (missing(LMdata)) {
+    use_LMdata <- F
+  }
   if (!use_LMdata){
     if (missing(x)) stop("argument x is missing with no default, or provide LMdata")
     if (class(x)[1] == "LMdataframe"){
       if (!missing(xcols)) {
-        return(parent_func(LMdata = x, xcol = xcol, ID_col=ID_col, ...))
+        return(parent_func(LMdata = x, xcol = xcol, ID_col=ID_col, alpha=alpha, ...))
       } else if (!missing(y)) {
-        if (class(y) == "character") return(parent_func(LMdata = x, xcols = y, ID_col=ID_col, ...))
+        if (class(y) == "character") return(parent_func(LMdata = x, xcols = y, ID_col=ID_col, alpha=alpha, ...))
         else stop("Inputs are mismatched. Arguments (x, y) should be of type (matrix, Surv object) or arguments (LMdata, xcols) should be (LMdataframe, vector of column names)")
       }
       else return(parent_func(LMdata = x, ID_col=ID_col, ...))
@@ -100,7 +102,8 @@ check_penLM_inputs <- function(x, y, LMdata, xcols, ID_col=NULL, parent_func, CV
     x = x,
     y = y,
     LMdata = LMdata,
-    xcols = xcols
+    xcols = xcols,
+    alpha = alpha
   )
   if (CV) {
     out$IDs <- IDs

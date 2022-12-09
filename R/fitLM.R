@@ -261,7 +261,7 @@ fitLM.penLM <- function(object, lambda, ...){
   allLMcovars <- LMdata$allLMcovars
 
   if(survival.type=="survival"){
-    if (class(s) == "list") lambda <- lambda[[1]]
+    if (class(lambda) == "list") lambda <- lambda[[1]]
     glmnet_coefs <- as.vector(coef(object[[1]], s = lambda))
 
     entry = LMdata$LM_col
@@ -370,5 +370,5 @@ fitLM.cv.penLM <- function(object, lambda="lambda.1se", ...){
       lambda <- lapply(object, function(o) o$lambda.min)
   }
 
-  return(fitLM.penLM(object, s=lambda, ...))
+  return(fitLM.penLM(object, lambda=lambda, ...))
 }

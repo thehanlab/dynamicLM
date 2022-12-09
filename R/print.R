@@ -377,7 +377,7 @@ print.penLMCSC <- function(x, verbose=FALSE, ...) {
   num_causes <- length(x$model$causes)
   for (i in 1:num_causes){
     cat(paste0("----------> Cause: ",i,"\n"))
-    cat(paste0("            (s = ",x$s[[i]],")\n"))
+    cat(paste0("            (lambda = ",x$lambda[[i]],")\n"))
     coefs = x$model$models[[i]]$coefficients
     non_zero_coefs = coefs[coefs!=0]
     non_zero_coefs = cbind(non_zero_coefs, exp(non_zero_coefs))
@@ -432,7 +432,7 @@ print.penLMCSC <- function(x, verbose=FALSE, ...) {
 #' @export
 #'
 print.penLMcoxph <- function(x, verbose=FALSE, ...) {
-  cat(paste0("\nPenalized landmark Cox super model fit for dynamic prediction of window size ",x$w," (s = ",x$s,")",":\n\n"))
+  cat(paste0("\nPenalized landmark Cox super model fit for dynamic prediction of window size ",x$w," (lambda = ",x$lambda,")",":\n\n"))
   if (verbose)cat("$model\n")
 
   coefs = x$model$coefficients
