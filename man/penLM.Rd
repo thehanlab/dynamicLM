@@ -5,7 +5,7 @@
 \title{Fit a regular or cause-specific Cox landmark supermodel with lasso or
 elasticnet penalization.}
 \usage{
-penLM(x, y, LMdata, xcols, ...)
+penLM(x, y, LMdata, xcols, alpha = 1, ...)
 }
 \arguments{
 \item{x}{Input matrix with each row an observation.}
@@ -18,6 +18,10 @@ running \code{cutLMsuper} and \code{addLMtime}}
 \item{xcols}{A vector of column names of the data stored in \code{LMdata} that
 are to be used as dependent variables. If not specified, it is assumed that
 all non-response variables are the dependent variables.}
+
+\item{alpha}{The elastic net mixing parameter: Lies betweent 0 and 1. At 1,
+the penalty is the LASSO penalty, and at 0, the penalty is the ridge
+penalty.}
 
 \item{...}{Additional arguments to \code{glmnet}.}
 }

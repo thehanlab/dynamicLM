@@ -325,7 +325,10 @@ plot.coefs <- function(coefs, single.plot, max_coefs, ...) {
 
   if (!single.plot){
     xmax <- 1.1 * max(c(pos_coefs, -neg_coefs), na.rm=T)
-    ymax <- max(length(pos_coefs), length(neg_coefs))
+    ymax <- max(
+      min(length(pos_coefs), max_coefs),
+      min(length(neg_coefs), max_coefs)
+    )
     if (length(neg_coefs)>0){
       neg_coefs <- neg_coefs[1:min(length(neg_coefs),max_coefs)]
       barplot(neg_coefs,

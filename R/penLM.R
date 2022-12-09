@@ -14,6 +14,9 @@
 #' @param xcols A vector of column names of the data stored in `LMdata` that
 #'   are to be used as dependent variables. If not specified, it is assumed that
 #'   all non-response variables are the dependent variables.
+#' @param alpha The elastic net mixing parameter: Lies betweent 0 and 1. At 1,
+#'   the penalty is the LASSO penalty, and at 0, the penalty is the ridge
+#'   penalty.
 #' @param ... Additional arguments to `glmnet`.
 #'
 #' @return An object class `penLM`. This is a list of `glmnet` objects (one for
@@ -55,7 +58,7 @@
 #' print(pen_supermodel)
 #' plot(pen_supermodel)
 #' }
-penLM <- function(x, y, LMdata, xcols, ...) {
+penLM <- function(x, y, LMdata, xcols, alpha = 1, ...) {
 
   checked_input <- match.call()
   checked_input$parent_func = quote(penLM)
@@ -71,9 +74,10 @@ penLM <- function(x, y, LMdata, xcols, ...) {
   y = checked_input$y
   LMdata = checked_input$LMdata
   xcols = checked_input$xcols
+  alpha = checked_input$alpha
 
   models <- lapply(y, function(yi) {
-    glmnet::glmnet(x = x, y = yi, family = "cox", ...)
+    glmnet::glmnet(x = x, y = yi, family = "cox", alpha = alpha, ...)
   })
   if (length(models) > 1){
     attr(models, "survival.type") = "competing.risk"
@@ -82,6 +86,7 @@ penLM <- function(x, y, LMdata, xcols, ...) {
   }
   if (!is.null(LMdata)) attr(models, "LMdata") = LMdata
   if (!is.null(xcols)) attr(models, "xcols") = xcols
+  attr(models, "alpha") = alpha
   class(models) = "penLM"
   return(models)
 }
