@@ -5,7 +5,7 @@
 \title{Plots the absolute w-year risk of individuals for different LM points for an event of interest within a window}
 \usage{
 plotLMrisk(
-  supermodel,
+  object,
   data,
   format,
   LM_col,
@@ -32,7 +32,7 @@ plotLMrisk(
 )
 }
 \arguments{
-\item{supermodel}{Fitted LM super model}
+\item{object}{Fitted LM supermodel}
 
 \item{data}{Data frame of individuals from which to plot risk}
 

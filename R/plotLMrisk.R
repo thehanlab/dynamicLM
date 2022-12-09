@@ -1,6 +1,6 @@
 #' Plots the absolute w-year risk of individuals for different LM points for an event of interest within a window
 #'
-#' @param supermodel Fitted LM super model
+#' @param object Fitted LM supermodel
 #' @param data Data frame of individuals from which to plot risk
 #' @param format Character string specifying whether the data are in wide (default) or in long format
 #' @param LM_col Character string specifying the column name in data containing the (running) time variable
@@ -32,13 +32,13 @@
 #' @details See the Github for example code
 #' @export
 #'
-plotLMrisk <- function(supermodel, data, format, LM_col, id_col, w,
+plotLMrisk <- function(object, data, format, LM_col, id_col, w,
                      cause, varying,
                      end_time, extend=F, silence=F,
                      unit,
                      pch,lty,lwd,col,main,xlab,ylab,xlim,ylim,x.legend,y.legend,...){
 
-  model_w <- supermodel$w
+  model_w <- object$w
   if(missing(w)){w <- model_w}
   else{
     if(w > model_w && !extend) stop(paste0("Prediction window w (=",w,") is larger than the window used in model fitting (=",model_w,").",
@@ -62,18 +62,18 @@ plotLMrisk <- function(supermodel, data, format, LM_col, id_col, w,
     NF <- nrow(data)
   } else {stop("format must be wide or long.")}
 
-  if (missing(end_time)) end_time <- supermodel$end_time
-  else if (end_time > supermodel$end_time & !extend){
-    if(!silence) message(paste0("NOTE: arg end_time (=",end_time,") is later than the last LM used in model fitting (=",supermodel$end_time,")",
-                                "\nand has been set back to the last LM used in model fitting. (=",supermodel$end_time,")",
-                                "\nIf you wish to still plot until ",end_time, ", set arg extend=T but note that results after time ",supermodel$end_time," may be unreliable."))
-    end_time <- supermodel$end_time
+  if (missing(end_time)) end_time <- object$end_time
+  else if (end_time > object$end_time & !extend){
+    if(!silence) message(paste0("NOTE: arg end_time (=",end_time,") is later than the last LM used in model fitting (=",object$end_time,")",
+                                "\nand has been set back to the last LM used in model fitting. (=",object$end_time,")",
+                                "\nIf you wish to still plot until ",end_time, ", set arg extend=T but note that results after time ",object$end_time," may be unreliable."))
+    end_time <- object$end_time
   }
-  else if (end_time > supermodel$end_time & extend){
-    if(!silence) warning(paste0("NOTE: arg end_time (=",end_time,") is later than the last LM used in model fitting (=",supermodel$end_time,")",
-                                "\nResults after time ",supermodel$end_time," may be unreliable."))
+  else if (end_time > object$end_time & extend){
+    if(!silence) warning(paste0("NOTE: arg end_time (=",end_time,") is later than the last LM used in model fitting (=",object$end_time,")",
+                                "\nResults after time ",object$end_time," may be unreliable."))
   }
-  type <- supermodel$type
+  type <- object$type
   if (type == "coxph") {
     if (!missing(cause) ){ stop("No cause should be specified for a coxph model.")}
     cause <- NULL
@@ -99,7 +99,7 @@ plotLMrisk <- function(supermodel, data, format, LM_col, id_col, w,
   if (length(pch) < NF)
     pch <- rep(pch, NF)
   if(missing(main))
-    main <- paste0(supermodel$w,"-",unit," dynamic risk prediction")
+    main <- paste0(object$w,"-",unit," dynamic risk prediction")
   if(missing(xlab))
     xlab <- "LM prediction time"
   if(missing(ylab))
@@ -120,7 +120,7 @@ plotLMrisk <- function(supermodel, data, format, LM_col, id_col, w,
       x <- data_ind[[LM_col]]
       idx <- x <= end_time
       x <- x[idx]
-      y <- predLMrisk(supermodel, data_ind[idx,], x, cause, extend=extend, silence=T, complete=F)$preds$risk
+      y <- predLMrisk(object, data_ind[idx,], x, cause, extend=extend, silence=T, complete=F)$preds$risk
 
       ## if some entries have missing values we want to replace them by the most recent score...
       if (sum(is.na(y))!=0){
@@ -194,7 +194,7 @@ plotLMrisk <- function(supermodel, data, format, LM_col, id_col, w,
 
     long_form = rbind(no_change, change1, change2)
 
-    plotLMrisk(supermodel, long_form, format="long", LM_col="LM", id_col,
+    plotLMrisk(object, long_form, format="long", LM_col="LM", id_col,
                            cause, varying,
                            end_time, extend, silence,
                            unit, pch,lty,lwd,col,main,xlab,ylab,xlim,ylim,x.legend,y.legend,...)

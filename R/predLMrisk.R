@@ -1,10 +1,12 @@
 #' Calculate w-year risk from a landmark time point
 #'
-#' @param supermodel fitted landmarking supermodel
-#' @param newdata dataframe of individuals to make predictions for. Must contain the original covariates (i.e., without landmark interaction)
+#' @param object fitted landmarking supermodel
+#' @param newdata Either a dataframe of individuals to make predictions for which must contain the original covariates (i.e., without landmark interaction) or an object of class LMdataframe (e.g., from cutLMsuper and addLMtime).
 #' @param tLM time points at which to predict risk of w more years.
 #'   Note tLM must be one value for newdata or must have the same length as the number of rows of newdata
 #'   (i.e., each datapoint is associated with one LM/prediction time point).
+#'   Alternatively, it can be a character string indicating a column in newdata.
+#'   It is only required when newdata is a dataframe.
 #' @param cause Cause of interest if under competing risks.
 #' @param w Prediction window, i.e., predict w-year (/month/..) risk from each of the tLMs.
 #'   Defaults to the w used in model fitting.
@@ -25,11 +27,11 @@
 #' @import survival
 #' @export
 #'
-predLMrisk <- function(supermodel, newdata, tLM, cause, w, extend=F, silence=F, complete=T)
+predLMrisk <- function(object, newdata, tLM, cause, w, extend=F, silence=F, complete=T)
 {
-  func_covars <- supermodel$func_covars
-  func_LM <- supermodel$func_LM
-  model_w <- supermodel$w
+  func_covars <- object$func_covars
+  func_LM <- object$func_LM
+  model_w <- object$w
   if(missing(w)){w <- model_w}
   else{
     if(w > model_w && !extend) stop(paste0("Prediction window w (=",w,") is larger than the window used in model fitting (=",model_w,").",
@@ -39,8 +41,8 @@ predLMrisk <- function(supermodel, newdata, tLM, cause, w, extend=F, silence=F, 
                 "\nPredictions may be unreliable."))
       }
   }
-  fm <- supermodel$model
-  type <- supermodel$type
+  fm <- object$model
+  type <- object$type
 
   if (type == "coxph") {
     models <- list(fm)
@@ -68,22 +70,33 @@ predLMrisk <- function(supermodel, newdata, tLM, cause, w, extend=F, silence=F, 
   }
 
   if (!missing(newdata)){
-    if (missing(tLM)) {
-      tLM = newdata$LM
+    if (class(newdata) == "LMdataframe"){
+      tLM <- newdata$LM_col
+      newdata <- newdata$LMdata
+    }
+    else if (missing(tLM)) {
+      tLM <- newdata$LM
       if (is.null(tLM)) {
         stop("tLM must be specified")
       }
     }
 
+    if (class(tLM) == "character"){
+      tLM <- newdata[[tLM]]
+      if (is.null(tLM)) {
+        stop("As tLM is a string, it must be a column in newdata.")
+      }
+    }
+
     ## Check prediction times match with LMs used in training
-    if (max(tLM) > supermodel$end_time & !extend){
+    if (max(tLM) > object$end_time & !extend){
       stop(paste0("Landmark/prediction time points tLM contains values later than the last LM used in model fitting
-                (last LM used in model fitting=",supermodel$end_time," and max tLM value=",max(tLM),").
+                (last LM used in model fitting=",object$end_time," and max tLM value=",max(tLM),").
                 If you wish to still make predictions at these times, set arg extend=T but note that results may be unreliable."))
     }
-    else if (max(tLM) > supermodel$end_time & extend){
-      if (!silence) message(paste0("NOTE:landmark/prediction time points tLM contains values later (max value=",max(tLM),") than the last LM used in model fitting (=",supermodel$end_time,").",
-                                   "\nPredictions at times after ",supermodel$end_time," may be unreliable."))
+    else if (max(tLM) > object$end_time & extend){
+      if (!silence) message(paste0("NOTE:landmark/prediction time points tLM contains values later (max value=",max(tLM),") than the last LM used in model fitting (=",object$end_time,").",
+                                   "\nPredictions at times after ",object$end_time," may be unreliable."))
     }
     ## Check prediction times & newdata given are coherent with each other
     num_preds <- nrow(newdata)
@@ -106,8 +119,8 @@ predLMrisk <- function(supermodel, newdata, tLM, cause, w, extend=F, silence=F, 
   } else {
     ## Get risk scores
     ## Note that linear predictors are centered, so need to un-center them for correct comparison.
-    tLM <- supermodel$original.landmarks
-    risks <- supermodel$linear.predictors
+    tLM <- object$original.landmarks
+    risks <- object$linear.predictors
     num_preds <- ncol(risks)
     # sanity check
     if (num_preds == 0){stop("Newdata must be specified.")}
@@ -168,7 +181,15 @@ predLMrisk <- function(supermodel, newdata, tLM, cause, w, extend=F, silence=F, 
     data = data
   }
 
-  out = list(preds=preds, w=w, type=type, LHS=supermodel$LHS, data=data, cause=cause)
+  out = list(
+    preds = preds,
+    w = w,
+    type = type,
+    LHS = object$LHS,
+    data = data,
+    cause = cause,
+    outcome = object$outcome
+  )
   class(out) = "LMpred"
   return(out)
 }

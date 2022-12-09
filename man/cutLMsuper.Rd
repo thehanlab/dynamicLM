@@ -36,7 +36,7 @@ cutLMsuper(
 \item{right}{Boolean (default=TRUE), indicating if the intervals for the time-varying covariates are closed on the right (and open on the left) or vice versa, see cut}
 }
 \value{
-An object of class "LM.data.frame". This the following components:
+An object of class "LMdataframe". This the following components:
 \itemize{
 \item LMdata: containing the stacked data set, i.e., the outcome and the values of time-fixed and time-varying covariates taken at the landmark time points. The value of the landmark time point is stored in column LM.
 \item outcome: same as input

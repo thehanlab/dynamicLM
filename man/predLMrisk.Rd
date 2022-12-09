@@ -5,7 +5,7 @@
 \title{Calculate w-year risk from a landmark time point}
 \usage{
 predLMrisk(
-  supermodel,
+  object,
   newdata,
   tLM,
   cause,
@@ -16,13 +16,15 @@ predLMrisk(
 )
 }
 \arguments{
-\item{supermodel}{fitted landmarking supermodel}
+\item{object}{fitted landmarking supermodel}
 
-\item{newdata}{dataframe of individuals to make predictions for. Must contain the original covariates (i.e., without landmark interaction)}
+\item{newdata}{Either a dataframe of individuals to make predictions for which must contain the original covariates (i.e., without landmark interaction) or an object of class LMdataframe (e.g., from cutLMsuper and addLMtime).}
 
 \item{tLM}{time points at which to predict risk of w more years.
 Note tLM must be one value for newdata or must have the same length as the number of rows of newdata
-(i.e., each datapoint is associated with one LM/prediction time point).}
+(i.e., each datapoint is associated with one LM/prediction time point).
+Alternatively, it can be a character string indicating a column in newdata.
+It is only required when newdata is a dataframe.}
 
 \item{cause}{Cause of interest if under competing risks.}
 

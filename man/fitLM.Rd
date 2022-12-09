@@ -15,6 +15,8 @@ fitLM(
   outcome,
   w,
   LMcovars,
+  cluster,
+  x = FALSE,
   ...
 )
 }
@@ -39,6 +41,10 @@ fitLM(
 
 \item{LMcovars}{Vector of strings indicating the columns that are to have a LM interaction}
 
+\item{cluster}{Variable which clusters the observations (for e.g., identifies repeated patient IDs), for the purposes of a robust variance.}
+
+\item{x}{Logical value. If set to true, the LMdata is stored in the returned object. This is required for internal validation.}
+
 \item{...}{Arguments given to coxph or CSC.}
 }
 \value{
@@ -49,6 +55,8 @@ An object of class "LMcoxph" or "LMCSC" with components:
 \item w, func_covars, func_LMs, LMcovars, allLMcovars, outcome: as in LMdata
 \item LHS: the LHS of the input formula
 \item linear.predictors: the vector of linear predictors, one per subject. Note that this vector has not been centered.
+\item args: arguments used to call model fitting
+\item ID_col: the cluster argument, usually specifies the column with patient ID
 }
 }
 \description{
