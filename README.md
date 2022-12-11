@@ -299,7 +299,7 @@ the landmark interaction terms must be named.
 
 ```R
     formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment + age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 + bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
-    supermodel <- fitLM(as.formula(formula), LMdata, "CSC") 
+    supermodel <- fitLM(LMdata, as.formula(formula), "CSC") 
     print(supermodel)
     #> Landmark cause-specific cox super model fit for dynamic prediction of window size 60:
     #> 
