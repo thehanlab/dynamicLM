@@ -286,7 +286,7 @@ fitLM.penLM <- function(object, lambda, ...){
            call. = FALSE)}
 
     glmnet_coefs <- lapply(1:NC, function(i){
-      as.vector(coef(object[[i]], s = s[[i]]))
+      as.vector(coef(object[[i]], s = lambda[[i]]))
     })
 
     entry = LMdata$LM_col
