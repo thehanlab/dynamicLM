@@ -225,14 +225,16 @@ LMScore <-
         data.table::setnames(auct_out,c("model","tLM","AUC","se","lower","upper"))
         data.table::setnames(briert_out,c("model","tLM","Brier","se","lower","upper"))
 
-        message("Upper limit of followup in bootstrap samples was too low. Results at evaluation time(s) beyond these points could not be computed and are left as NA.")
         if (!silent) {
           b_na <- auct$b[is.na(auct$AUC)]
           tLM_na <- auct$tLM[is.na(auct$AUC)]
           model_na <- auct$model[is.na(auct$AUC)]
 
           if(length(b_na) != 0) {
-            message(paste0("Metrics not computed for (model, b, tLM) = ",paste0("(",model_na,", ",b_na,", ",tLM_na,")", collapse=", ")))
+            message("Upper limit of followup in bootstrap samples was too low. Results at evaluation time(s) beyond these points could not be computed and are left as NA.")
+            message(paste0("Metrics not computed for (model, b, tLM) = ",
+                       paste0("(",model_na,", ",b_na,", ",tLM_na,")",
+                              collapse=", ")))
           }
         }
 

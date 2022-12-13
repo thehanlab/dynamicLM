@@ -183,8 +183,8 @@ check_evaluation_inputs <- function(
 
 
   else if (perform.boot){
-    # pred.list <- parallel::mclapply(1:B,function(b){
-    pred.list <- lapply(1:B,function(b){
+    pred.list <- parallel::mclapply(1:B,function(b){
+    # pred.list <- lapply(1:B,function(b){
       id_train_b <- split.idx[,b]
       id_train_b <- data[[ID_col]] %in% id_train_b
 
