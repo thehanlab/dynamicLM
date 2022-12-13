@@ -13,6 +13,8 @@ check_evaluation_inputs <- function(
     cause,
     ...) {
 
+  outcome <- NULL
+
   ### Check inputs ###
 
   # first checks
@@ -85,7 +87,7 @@ check_evaluation_inputs <- function(
   # get data if bootstrapping
   if (split.method == "bootcv") {
     LMdata <- object[[1]]$LMdata
-    LMdata$LMdata <- LMdata$LMdata[complete.cases(LMdata$LMdata), ]
+    LMdata$LMdata <- LMdata$LMdata[stats::complete.cases(LMdata$LMdata), ]
     data <- LMdata$LMdata
     LM_col <- LMdata$LM_col
 
@@ -221,7 +223,7 @@ check_evaluation_inputs <- function(
     }, mc.cores=cores)
 
     pred.df <- do.call("rbind",pred.list)
-    pred.df <- pred.df[complete.cases(pred.df), ] # TODO: remove/fix
+    pred.df <- pred.df[stats::complete.cases(pred.df), ] # TODO: remove/fix
     preds <- pred.df[names(object)]
     pred_LMs <- pred.df[[LM_col]]
     data <- pred.df[c(outcome$time, outcome$status, LM_col, "b")]

@@ -194,7 +194,7 @@ LMcalPlot <-
       if (regression_values){
         for (i in 1:NF) {
           name = names(object)[i]
-          coefs = lm(Pred ~ Obs, x$plotFrames[[name]])$coefficients
+          coefs = stats::lm(Pred ~ Obs, x$plotFrames[[name]])$coefficients
           coefs = c(tLM, coefs)
           names(coefs)[1] = "LM"
           reg_values_list[[name]] = rbind(reg_values_list[[name]], coefs)

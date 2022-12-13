@@ -95,6 +95,7 @@
 #'
 #' P. Blanche, J-F Dartigues, and H. Jacqmin-Gadda. Estimating and comparing time-dependent areas under receiver operating characteristic curves for censored event times with competing risks. Statistics in Medicine, 32(30):5381–5397, 2013.
 #' @import riskRegression
+#' @importFrom data.table .SD
 #' @export
 LMScore <-
   function(object,
@@ -209,17 +210,17 @@ LMScore <-
         auct_out <- auct[,
                      data.table::data.table(
                        mean(.SD[["AUC"]],na.rm=na.rm),
-                       se=sd(.SD[["AUC"]],na.rm=T),
-                       lower=quantile(.SD[["AUC"]],alpha/2,na.rm=T),
-                       upper=quantile(.SD[["AUC"]],(1-alpha/2),na.rm=T)),
+                       se=stats::sd(.SD[["AUC"]],na.rm=T),
+                       lower=stats::quantile(.SD[["AUC"]],alpha/2,na.rm=T),
+                       upper=stats::quantile(.SD[["AUC"]],(1-alpha/2),na.rm=T)),
                      by=c("model","tLM"),.SDcols="AUC"
                      ]
         briert_out <- briert[,
                          data.table::data.table(
                            mean(.SD[["Brier"]],na.rm=na.rm),
-                           se=sd(.SD[["Brier"]],na.rm=T),
-                           lower=quantile(.SD[["Brier"]],alpha/2,na.rm=T),
-                           upper=quantile(.SD[["Brier"]],(1-alpha/2),na.rm=T)),
+                           se=stats::sd(.SD[["Brier"]],na.rm=T),
+                           lower=stats::quantile(.SD[["Brier"]],alpha/2,na.rm=T),
+                           upper=stats::quantile(.SD[["Brier"]],(1-alpha/2),na.rm=T)),
                          by=c("model","tLM"),.SDcols="Brier"
                          ]
         data.table::setnames(auct_out,c("model","tLM","AUC","se","lower","upper"))
