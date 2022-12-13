@@ -13,8 +13,6 @@ check_evaluation_inputs <- function(
     cause,
     ...) {
 
-  outcome <- NULL
-
   ### Check inputs ###
 
   # first checks
@@ -105,14 +103,24 @@ check_evaluation_inputs <- function(
         stop("prediction window w is not the same for all prediction models.")
     }
   }
-  if (missing(cause))
+  outcome <- object[[1]]$outcome
+  if (NF > 1) {
+    for (i in 2:NF) {
+      if (object[[i]]$outcome != outcome)
+        stop("outcome is not the same for all prediction models.")
+    }
+  }
+  if (missing(cause)){
     if (inherits(object[[1]],"LMpred"))
-      cause <- object[[1]]$cause
+      cause <- as.numeric(object[[1]]$cause)
     else
-      cause <- object[[1]]$model$theCause
-  indicator <- cause
-  if (is.null(cause))
+      cause <- as.numeric(object[[1]]$model$theCause)
+  }
+  if (is.null(cause)){
+    cause <- 1
     indicator <- 1
+  }
+  indicator <- cause
   if (missing(formula))
     formula <- object[[1]]$LHS
 
@@ -177,8 +185,6 @@ check_evaluation_inputs <- function(
   else if (perform.boot){
     # pred.list <- parallel::mclapply(1:B,function(b){
     pred.list <- lapply(1:B,function(b){
-      outcome <- object[[1]]$outcome
-
       id_train_b <- split.idx[,b]
       id_train_b <- data[[ID_col]] %in% id_train_b
 

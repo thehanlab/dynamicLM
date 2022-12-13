@@ -139,10 +139,8 @@ LMcalPlot <-
     m <- match(c("object", "times", "formula", "data", "tLM", "ID_col",
                   "split.method", "B", "M", "cores", "seed", "cause"),
                names(checked_input), 0L)
-    checked_input <- checked_input[c(1L, m)]
-    checked_input[[1L]] <- quote(check_evaluation_inputs)
-    # print(checked_input)
-    checked_input <- eval(checked_input, parent.frame())
+    checked_input <- as.list(checked_input[m])
+    checked_input <- do.call(check_evaluation_inputs, checked_input)
 
     object = checked_input$object
     times = checked_input$times
