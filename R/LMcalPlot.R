@@ -132,7 +132,7 @@ LMcalPlot <-
       stop("Package \"pec\" must be installed to use function LMcalPlot.",
            call. = F)
     }
-    if (!(class(object)=="list")) stop("object must be a named list.")
+    if (!(inherits(object,"list"))) stop("object must be a named list.")
 
 
     checked_input <- match.call()

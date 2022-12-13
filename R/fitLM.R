@@ -84,8 +84,8 @@ fitLM <- function(formula,
 
   ID_col <- cluster
 
-  if(class(LMdata)!="LMdataframe"){
-    if(class(LMdata)!="data.frame"){stop("data must be of a data.frame or an object of class LMdataframe")}
+  if(!inherits(LMdata,"LMdataframe")){
+    if(!inherits(LMdata,"data.frame")){stop("data must be of a data.frame or an object of class LMdataframe")}
 
     if(missing(func_covars)) stop("For input data that is a data frame, arg func_covars must be specified.")
     if(missing(func_LMs)) stop("For input data that is a data frame, arg func_LMs must be specified.")

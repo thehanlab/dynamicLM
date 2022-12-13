@@ -70,7 +70,7 @@ predLMrisk <- function(object, newdata, tLM, cause, w, extend=F, silence=F, comp
   }
 
   if (!missing(newdata)){
-    if (class(newdata) == "LMdataframe"){
+    if (inherits(newdata,"LMdataframe")){
       tLM <- newdata$LM_col
       newdata <- newdata$LMdata
     }
@@ -81,7 +81,7 @@ predLMrisk <- function(object, newdata, tLM, cause, w, extend=F, silence=F, comp
       }
     }
 
-    if (class(tLM) == "character"){
+    if (inherits(tLM,"character")){
       tLM <- newdata[[tLM]]
       if (is.null(tLM)) {
         stop("As tLM is a string, it must be a column in newdata.")

@@ -40,7 +40,7 @@ check_evaluation_inputs <- function(
   for (i in 1:NF){
     name = names(object)[[i]]
     # check compatibility of object type with bootstrapping and predictions
-    if (class(object[[i]]) == "LMpred"){
+    if (inherits(object[[i]],"LMpred")){
       if (split.method != "none") {
         stop(paste("Cannot bootstrap with deterministic risk predictions:", name))
       }
@@ -50,7 +50,7 @@ check_evaluation_inputs <- function(
 
     }
     # TODO: update to include penalized classes
-    else if (!(class(object[[i]]) %in% c("LMCSC", "LMcoxph"))) {
+    else if (!(inherits(object[[i]],c("LMCSC", "LMcoxph")))) {
       stop(paste("all prediction models in object must be of class LMCSC, LMcoxph (i.e., output from fitLM) or LMpred (i.e., output from predLMrisk) but", name, "is of class",class(object[[i]])))
     }
     else { # We know it is of class LMCSC or LMcoxph
@@ -72,7 +72,7 @@ check_evaluation_inputs <- function(
       }
     }
     # only need the dataframe
-    if (class(data) == "LMdataframe") {
+    if (inherits(data,"LMdataframe")) {
       tLM <- data$LMdata[[data$LM_col]]
       data <- data$LMdata
     }
@@ -104,7 +104,7 @@ check_evaluation_inputs <- function(
     }
   }
   if (missing(cause))
-    if (class(object[[1]]) == "LMpred")
+    if (inherits(object[[1]],"LMpred"))
       cause <- object[[1]]$cause
     else
       cause <- object[[1]]$model$theCause
@@ -132,10 +132,10 @@ check_evaluation_inputs <- function(
 
   ### Create data we need: preds, preds_LM, data ###
 
-  if (class(object[[1]]) == "LMpred") {
+  if (inherits(object[[1]],"LMpred")) {
     if (NF > 1) {
       for (i in 2:NF) {
-        if (class(object[[i]]) != "LMpred")
+        if (!inherits(object[[i]],"LMpred"))
           stop("All prediction models must either be supermodels or of type LMpred")
       }
     }
@@ -226,7 +226,7 @@ check_evaluation_inputs <- function(
     pred_LMs <- pred.df[[LM_col]]
     data <- pred.df[c(outcome$time, outcome$status, LM_col, "b")]
     num_preds <- nrow(data)
-    type <- lapply(object, function(o) ifelse(class(o) == "LMcoxph", "coxph", "CSC"))
+    type <- lapply(object, function(o) ifelse(inherits(o), c("LMcoxph", "coxph", "CSC")))
 
     rm(pred.df)
   }

@@ -139,7 +139,7 @@ plotLMrisk <- function(object, data, format, LM_col, id_col, w,
         }
       }
 
-      if (class(y)=="logical"){
+      if (inherits(y,"logical")){
         message(paste0("Individual with ID=",id," could not be plotted as they have missing values"))
       } else {
         y <- c(y[1],y)
