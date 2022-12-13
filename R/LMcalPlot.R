@@ -180,7 +180,6 @@ LMcalPlot <-
       if (nrow(data_to_test) != length(risks_to_test[[1]])) {
         stop("nrow(data_to_test)!=length(risks_to_test)")
       }
-
       x = NULL
       x <- pec::calPlot(
         risks_to_test,

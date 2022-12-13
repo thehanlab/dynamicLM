@@ -104,7 +104,10 @@ check_evaluation_inputs <- function(
     }
   }
   if (missing(cause))
-    cause <- object[[1]]$model$theCause
+    if (class(object[[1]]) == "LMpred")
+      cause <- object[[1]]$cause
+    else
+      cause <- object[[1]]$model$theCause
   indicator <- cause
   if (is.null(cause))
     indicator <- 1
@@ -238,7 +241,6 @@ check_evaluation_inputs <- function(
       stop(paste("arg times (= ",times,") must be a subset of landmark prediction times (= ",pred_LMs,")"))
     }
   }
-
   out = list(
     object = object,
     times = times,
