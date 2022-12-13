@@ -175,10 +175,11 @@ check_evaluation_inputs <- function(
 
 
   else if (perform.boot){
-    pred.list <- parallel::mclapply(1:B,function(b){
+    # pred.list <- parallel::mclapply(1:B,function(b){
+    pred.list <- lapply(1:B,function(b){
       outcome <- object[[1]]$outcome
 
-      id_train_b <- split.method$index[,b]
+      id_train_b <- split.idx[,b]
       id_train_b <- data[[ID_col]] %in% id_train_b
 
       data_val_b <- data[!id_train_b, ]
@@ -187,6 +188,7 @@ check_evaluation_inputs <- function(
 
       data_train_b <- LMdata
       data_train_b$LMdata <- data[id_train_b, ]
+
       preds.b <- do.call("cbind",lapply(1:NF,function(f){
         original_model <- object[[f]]
         args <- original_model$args
@@ -220,7 +222,7 @@ check_evaluation_inputs <- function(
         colnames(preds.b) <- names(object)
         return(cbind(outcomes_val_b, preds.b, b=rep(b, nrow(outcomes_val_b))))
       }
-    }, mc.cores=cores)
+    })#, mc.cores=cores)
 
     pred.df <- do.call("rbind",pred.list)
     pred.df <- pred.df[stats::complete.cases(pred.df), ] # TODO: remove/fix
@@ -228,7 +230,7 @@ check_evaluation_inputs <- function(
     pred_LMs <- pred.df[[LM_col]]
     data <- pred.df[c(outcome$time, outcome$status, LM_col, "b")]
     num_preds <- nrow(data)
-    type <- lapply(object, function(o) ifelse(inherits(o), c("LMcoxph", "coxph", "CSC")))
+    type <- lapply(object, function(o) ifelse(inherits(o, "LMcoxph"), "coxph", "CSC"))
 
     rm(pred.df)
   }
