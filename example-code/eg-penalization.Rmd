@@ -1,0 +1,225 @@
+---
+title: 'Penalization in dynamicLM Example'
+author: "Anya Fries"
+output:
+  html_document:
+    toc: yes
+    toc_depth: 2
+    number_sections: yes
+    theme: united
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+---
+
+
+# Load libraries & data
+
+**TO DO before running this file:**
+
+The file is meant to be run using `dynamicLM` on the branch `extension/regularisation`.
+I.e., the following should be run before using this file:
+
+* `git clone https://github.com/thehanlab/dynamicLM.git`
+* `cd dynamicLM`
+* `git checkout extension/regularisation`
+
+Then paste the folder `example_code` (containing this file and the data) anywhere inside the folder `dynamicLM`.
+To use the code without knitting, one can also jsut call `devtools::load_all()` in the console (instead of manually loading the library).
+
+
+```{r libs}
+library(survival)
+#### manually load library
+prefix <- "../R/"
+
+files <- c("addLMtime.R", "checks.R", "cutLMsuper.R", "cv.penLM.R", "fitLM.R", "LMcalPlot.R", "LMScore.R", "penLM.R", "plot.R", "predLMrisk.R", "print.R", "riskScore.R", "utils.R")
+for (f in files){
+  source(paste0(prefix,f))
+}
+####
+
+#### To load Gensheimer's simulated data
+source("load_gensheimer_data.R")
+####
+```
+
+# Load data
+
+```{r data}
+tmp <- get_simulated_data()
+
+DAT <- tmp$df
+x_cols <- tmp$x_cols
+
+DAT[1,]
+```
+
+# Super dataset
+
+```{r super-setup}
+landmark_gap <- 365/2
+LMs <- seq(0,365,landmark_gap)
+t_hor <- 365*5
+outcome = list(time="time", status="status")
+covars = list(fixed=x_cols, varying=NULL)
+```
+
+Typical `dynamicLM` dataset:
+
+```{r cutlm}
+LMdata = cutLMsuper(DAT, outcome, LMs, t_hor, covars,  format="long", id="id", rtime="visit")
+```
+
+
+Alternate data format (more typical when considering `glmnet`):
+
+* `x`: matrix of covariates
+* `y`: `Surv` object, the outcome
+
+```{r xy}
+x = as.matrix(LMdata$LMdata[x_cols])
+y = Surv(LMdata$LMdata$LM, LMdata$LMdata$time, LMdata$LMdata$status)
+```
+
+
+# Fit a path
+
+## Without cross-validation
+Both data inputs give the same path, which can be printed and plotted
+
+```{r path1, eval=F}
+path = penLM(x, y)
+```
+
+```{r path2}
+path = penLM(LMdata, x_cols)
+```
+
+```{r}
+print(path)
+plot(path)
+```
+
+## With cross-validation
+Both data inputs give the same path, which can be printed and plotted
+
+```{r penlm1, eval=F}
+cv.path = cv.penLM(x, y)
+```
+
+```{r penlm2}
+cv.path = cv.penLM(LMdata, x_cols)
+```
+
+```{r}
+print(cv.path)
+plot(cv.path)
+```
+
+# Fit a model from the path
+
+For now, fitting a model can only be done when the path was fit using `LMdata` and `x_cols`. Using `x` and `y` will still be implemented, with additional arguments.
+
+## Without cross-validation
+Choice of lambda is done numerically.
+
+```{r fitlm1}
+model1 = fitLM(path, lambda=0.08)
+```
+
+## With cross-validation
+Three options: numeric input, `lambda.min` (the lambda that minimises the CV loss) or `lambda.1se` (the value of lambda that gives the most regularized model (largest lambda) such that the cross-validated error is within one standard error of the minimum)
+
+```{r fitlm2}
+model_num = fitLM(cv.path, lambda=0.08)
+model_min = fitLM(cv.path, lambda="lambda.min")
+model_1se = fitLM(cv.path, lambda="lambda.1se")
+```
+
+One can print the model
+
+```{r}
+print(model_1se)
+```
+
+The model's coefficients can also be plotted. Setting `single.plot = F` (default) creates two plots: one for the set of negative coefficients. The argument `max_coefs` (default is 10) determines how many coefficients to plot.
+
+```{r}
+plot(model_1se, single.plot = T, max_coefs = NULL)
+```
+
+
+# Make predictions & evaluate (as before)
+
+```{r predlm}
+preds_min = predLMrisk(model_min)
+preds_1se = predLMrisk(model_1se)
+```
+
+```{r score}
+LMScore(list("min" = preds_min, "1se" = preds_1se))
+```
+
+```{r calplot}
+# LMcalPlot(list("min" = preds_min, "1se" = preds_1se),
+#           method="quantile", q=10) # TODO: other params
+```
+
+# Competing risk
+
+Let's create some arificial competing risk data to show that the process remains the same.
+
+We use the same dataset as before and randomly assign events 0,1,2.
+
+```{r cr-data}
+DAT2 <- DAT
+DAT2$status <- sample(c(0,1,2), nrow(DAT), replace=T)
+```
+
+As before, both data forms are applicable: 
+```{r super-data}
+LMdata2 = cutLMsuper(DAT2, outcome, LMs, t_hor, covars,  format="long", id="id", rtime="visit")
+```
+
+```{r xy2}
+x2 = as.matrix(LMdata2$LMdata[x_cols])
+y2 = prodlim::Hist(LMdata2$LMdata$time, LMdata2$LMdata$status, LMdata2$LMdata$LM)
+```
+
+
+Separate paths are found for each cause-specific model, whether using cross-validation or not.
+```{r path3, eval=F}
+cv.path = cv.penLM(x2, y2)
+cv.path = cv.penLM(LMdata2, x_cols)
+```
+
+```{r path4, eval=F}
+cv.path = cv.penLM(x2, y2)
+cv.path = cv.penLM(LMdata2, x_cols)
+```
+
+
+```{r penlm3, include=FALSE}
+path = penLM(LMdata2, x_cols)
+```
+
+To print or plot for all cause-specific models, set `all_causes=T` in either function.
+
+```{r plot}
+par(mfrow=c(1,2))
+plot(path, all_causes=T)
+```
+
+To fit a model without cross-validation, a vector of lambdas must be input (of length number of causes).
+
+```{r model-cr, eval=F}
+model = fitLM(path, lambda = c(0.08, 0.08, 0.08))
+```
+
+For cross-validation, the strings `lambda.min` or `lambda.1se` can be used instead, as before.
+
+Model prediction and evaluation can then be performed as usual using `model` and as shown above.
+
+
+
