@@ -1,0 +1,452 @@
+---
+title: 'Penalization in dynamicLM'
+author: "Anya Fries"
+output:
+  html_document:
+    code_folding: hide
+    toc: yes
+    toc_depth: 2
+    number_sections: yes
+    theme: united
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+---
+
+
+```{r, include=FALSE}
+# TODO: install line
+library(dynamicLM)
+library(dplyr)
+
+source("SPLC-helper-functions.R")
+
+# Required packages and sources
+
+# library(riskRegression) # main FGR and CSR functions
+# library(cmprsk)
+# library(pec)
+# 
+# library(gmodels) # table
+# library(htmlTable) # table 
+# library(tables) # table
+# library(tableone) # table
+# library(Gmisc) # table
+
+# source("source_general.R")
+MYDAT <- read.csv("DAT_splcrat.csv")
+DAT <- MYDAT
+
+```
+
+```{r}
+dim(MYDAT)
+```
+
+```{r}
+colnames(MYDAT)
+```
+
+```{r}
+# Just keeping track
+dropped_cols <- c("X",                # ID again
+                  "histology_ix", "histology2_ix", "hist.ix", "hist2.ix", # use hist_final
+                  "stage.ix", # = 1+"stage2.ix"
+                  "surgery_ix", # = surgery1
+                  "race", #have race.cat
+                  "USPSTF2", #=USPSTF
+                  "ageg", # basically the same as ageg
+                  "quityears", # same as quityears2
+                  "smkstatus", #use smkstatus2
+                  
+                  # anything with sx, 
+                  
+                  "copd_bef_sx",
+                  
+                  "splc_dx",          
+                  "event2",
+                  "diff_fup_SPLC",
+                  
+                  "date_ix",          # this is baseline time
+                  "datefollowup_sx",  # latest time to check SPLC
+                  "dateDeath",        
+                  "causeDeath",
+                  "date_BL",
+                  "dob",
+                  "date_ix_year",
+                  "date_fup", "age_BL", "diff_BL_fup", "diff_BL_IPLC",
+                  
+                  
+                  "dod", # death status
+                  "study", #all are 2
+                  "ets", # all are NA
+                  "typeRadio_ix", # all are NA
+                  "geographic", # all are 3
+                   # where data is from
+                  "gwas_tricl", "gwas_oncoarray", "gwas_any",
+                  
+                  # NO DOCUMENTATION
+                  "synchronous.ix", 
+                  
+                  # Eunji's created variables
+                  "diff_smk_IPLC", 
+                  "ix.fup.beforeIPLC", "ix.fup.afterIPLC", "ix.fup.all"
+                  )
+```
+
+
+```{r}
+ID_col <- "Obs"
+time <- "Time"
+event <- "event"
+add_cols <- c("age_ix", "cigday_fup", "packyears_fup", 
+              "diff_fup_IPLC")
+x_cols_cat <- c("hist_final", "seer_stage_ix", "stage2.ix",
+                "surgery1", "radiation_ix", 
+                "chemo_ix", "typeChemo_ix", "otherTreat_ix",
+                "sex", "race.cat", "edu", "age.ix.cat", 
+                "smkstatus2", "smkstatus_fup", "copd", "copd_bef_ix",
+                "NLST", "USPSTF", "fh", "ph")
+x_cols_num <- c("tumor_ix", "bmi", "quityears2", 
+                "packyears", "packyears_fup", "packyears2",
+                "cigday", "cigday_fup", "cigday2")
+
+all_x <- c(add_cols, x_cols_cat, x_cols_num)
+cols_to_keep <- c(ID_col, time, event, all_x)
+
+
+DAT <- MYDAT[cols_to_keep]
+for (col in x_cols_cat){
+  DAT[[col]] <- as.factor(as.character(DAT[[col]]))
+}
+DAT$hist_final <- relevel(DAT$hist_final, ref="SQ")
+```
+
+
+```{r}
+mdfull = as.formula(paste(" ~ ",paste(cols_to_keep, collapse="+")))
+mat = data.frame(model.matrix.lm(mdfull, DAT, na.action = "na.pass"))[,-1] # remove intercept
+dim(mat)
+```
+
+```{r}
+colnames(mat)
+```
+
+```{r}
+mat <- mat %>% rename(sex=sex1, smkstatus2=smkstatus23, smkstatus_fup=smkstatus_fup3, 
+               NLST=NLST1, USPSTF=USPSTF1, fh=fh1, ph=ph1)
+```
+
+
+## Set up base data with relevant covariates
+```{r}
+MEC <- mat
+outcome <- list(time="Time", status="event")
+covs <- list(fixed=c(ID_col, colnames(mat)[-c(1,2)]), varying=NULL)  
+
+w <- 5        
+LMs <- seq(0, 3, by=0.5)  
+
+func_covars <- list(
+  function(t) t,
+  function(t) t^2
+  )
+func_LMs <- list(
+  function(t) t,
+  function(t) t^2
+)
+
+pred.covars <- all_x
+```
+
+# Creating landmarking super data set 
+
+```{r}
+# Stack datasets
+LMdata <- cutLMsuper(MEC, outcome, LMs, w, covs, format="wide", id="Obs")
+```
+
+```{r}
+# Update LM-varying covariates (MEC specific)
+  # Annual update: age_ix, quityears2 ///////
+  # One-time update at 10-yr f/up: smkstatus2, packyears2 //////
+  # Special case: USPSTF2
+LMdata <- update_df(LMdata) 
+```
+
+```{r}
+colnames(LMdata$LMdata)
+```
+
+
+```{r}
+pred_covars = c("age_ix", "hist_finalAD", "hist_finalLC", "hist_finalNSCLC_NOS", 
+                "hist_finalOTH", "hist_finalSC", "seer_stage_ix1", 
+                "seer_stage_ix2", "seer_stage_ix4", "stage2.ix1", "surgery11", 
+                "radiation_ix1", "chemo_ix1", "typeChemo_ix2", "typeChemo_ix3", 
+                "otherTreat_ix9", "sex", "race.catB", "race.catH", "race.catHW", 
+                "race.catO", "race.catW", "edu2", "edu3", "age.ix.cat56.60", 
+                "age.ix.cat61.70", "age.ix.cat71.80", "age.ix.cat80.", 
+                "smkstatus2", "copd1", "copd9", "copd_bef_ix1", "copd_bef_ix9", 
+                "NLST", "USPSTF", "fh", "ph", "tumor_ix", "bmi", "quityears2", 
+                "packyears2", "cigday2", "USPSTF2", "USPSTF.stage")
+```
+
+```{r}
+LMdata <- addLMtime(LMdata, pred_covars, func_covars, func_LMs)
+```
+
+
+
+
+
+
+# Model selection 
+
+## Add/Create LM-time interactions
+```{r}
+
+
+### Actually, I want to create LM_1 and LM_2 at this step because we need to include them for adjustment.
+### However, at this step, I don't know what specific variables I want to create the time-interaction.
+    ### which means, even though I can specify the selected variables that I want to make time-interaction using LMcovars, I anyway have to create the time-interaction for all variables. 
+
+
+colnames(LMdata$LMdata) 
+
+
+```
+
+
+# Set-up data
+```{r}
+MYDAT$stage2.ix <- as.factor(as.character(MYDAT$stage2.ix))
+MYDAT$hist_final <- as.factor(as.character(MYDAT$hist_final))
+MYDAT$ph <- as.factor(as.character(MYDAT$ph))
+MYDAT$USPSTF2 <- as.factor(as.character(MYDAT$USPSTF2))
+MYDAT$surgery1 <- as.factor(as.character(MYDAT$surgery1))
+```
+
+```{r}
+## Model formula
+mdfull = Hist(Time,event)~ stage2.ix +  hist_final + ph  + USPSTF2 + cigday2 + USPSTF2*stage2.ix + surgery1
+
+## Dat with dummy variables
+mat=data.frame(model.matrix(mdfull, DAT))
+```
+
+
+# Outcome variable (Time & Event)
+
+
+# Predictors included in the final model & modeling fitting code
+```{r}
+
+# Predictors included in the final model
+    #  stage2.ix     : stage of IPLC 
+    #  hist_final    : histology of IPLC
+    #  ph            : prior history of other cancer, before IPLC
+    #  USPSTF2       : USPSTF2013 LC screening eligibility (1: age 55-80, Pack-year>=30, Quit-year<=15; 0: others)
+    #  cigday2       : Smoking intensity, measured by cig smoked per day 
+    #  USPSTF2*stage2.ix   
+    #  surgery1      : Surgery for IPLC 
+
+
+
+
+      vars=c("stage2.ix", "hist_final", "ph", "USPSTF2", "cigday2", "surgery1")	
+      tab = CreateTableOne(vars = vars, strata = c("event"), includeNA=T, data = MYDAT, 
+                            test=TRUE,testApprox = chisq.test)#testExact = fisher.test)
+      tab
+
+
+# Model fitting code (CSC & FGR)
+      
+  
+  
+  ## Excluding any missing
+  ix.in = row.names(DAT) %in% row.names(mat)
+  mat$Time = DAT[ix.in, "Time"]
+  mat$event = DAT[ix.in, "event"]
+  DATA2=DAT[ix.in,]  ## these will be needed for later risk calculation
+  dim(DATA2) #[1] 5354   97
+  
+  ### make formula ##
+  tt=strCombine2(colnames(mat)[-c(1,(ncol(mat)-1):ncol(mat))], sep=" + ")
+  mdfullb = as.formula( strCombine2(c("Hist(Time,event)~", tt) ,sep=""))
+
+#summary(fit1)$coef
+fit1 = FGR(mdfullb, cause=1, data=mat)  # sensitivity analysis
+fit1
+fit2 = CSC(mdfullb, cause=1, data=mat)  # main results
+fit2
+      
+      
+```
+
+
+# Characteristic table for all other variables 
+```{r}
+
+MYDAT$sex <- as.factor(as.character(MYDAT$sex))
+MYDAT$edu <- as.factor(as.character(MYDAT$edu))
+MYDAT$smkstatus2 <- as.factor(as.character(MYDAT$smkstatus2))
+MYDAT$radiation_ix <- as.factor(as.character(MYDAT$radiation_ix))
+MYDAT$chemo_ix <- as.factor(as.character(MYDAT$chemo_ix))
+MYDAT$fh <- as.factor(as.character(MYDAT$fh))
+MYDAT$copd[which(MYDAT$copd == 9)] = NA
+MYDAT$copd <- as.factor(as.character(MYDAT$copd))
+MYDAT$synchronous.ix <- as.factor(as.character(MYDAT$synchronous.ix))
+
+getT1Stat <- function(varname, digits=1){
+  getDescriptionStatsBy(MYDAT[, varname],
+                        MYDAT$event,
+                        add_total_col=TRUE,
+                        show_all_values=TRUE, 
+                        hrzl_prop=FALSE,
+                        statistics=TRUE, 
+                        html=TRUE,
+                        digits=digits,
+                        header_count = TRUE
+                       )
+}
+
+table_data <- list()
+
+# Get the basic stats 
+table_data[["Follow-up time"]] <- getT1Stat("Time")
+table_data[["Age at IPLC (years)"]] <- getT1Stat("age_ix")
+table_data[["Age at IPLC (group)"]] <- getT1Stat("ageg")
+table_data[["Sex"]] <- getT1Stat("sex")
+table_data[["Race"]] <- getT1Stat("race.cat")
+table_data[["Education"]] <- getT1Stat("edu")
+
+table_data[["Stage of IPLC"]] <- getT1Stat("stage2.ix")
+table_data[["Histology of IPLC"]] <- getT1Stat("hist_final")
+table_data[["Synchronous cancer"]] <- getT1Stat("synchronous.ix")
+
+table_data[["Smoking status"]] <- getT1Stat("smkstatus2")
+table_data[["Cigs per day"]] <- getT1Stat("cigday2")
+table_data[["Packyears2"]] <- getT1Stat("packyears2")
+table_data[["Quit-years (former onlyl)"]] <- getT1Stat("quityears2")
+table_data[["USPSTF eligibility"]] <- getT1Stat("USPSTF2")
+table_data[["10-yr f/up"]] <- getT1Stat("ix.fup.all")
+table_data[["10-yr f/up before IPLC"]] <- getT1Stat("ix.fup.beforeIPLC")
+table_data[["10-yr f/up after IPLC"]] <- getT1Stat("ix.fup.afterIPLC")
+
+
+table_data[["ph"]] <- getT1Stat("ph")
+table_data[["fh"]] <- getT1Stat("fh")
+table_data[["copd"]] <- getT1Stat("copd")
+table_data[["bmi"]] <- getT1Stat("bmi")
+table_data[["Surgery"]] <- getT1Stat("surgery1")
+table_data[["Radiation"]] <- getT1Stat("radiation_ix")
+table_data[["Chemo"]] <- getT1Stat("chemo_ix")
+
+rgroup <- c()
+n.rgroup <- c()
+output_data <- NULL
+for (varlabel in names(table_data)) {
+  output_data <- rbind(
+    output_data,
+    table_data[[varlabel]]
+  )
+  rgroup <- c(
+    rgroup,
+    varlabel
+  )
+  n.rgroup <- c(
+    n.rgroup,
+    nrow(table_data[[varlabel]])
+  )
+}
+
+htmlTable(output_data,
+  align = "rrrr",
+  rgroup = rgroup, n.rgroup = n.rgroup,
+  rgroupCSSseparator = "",
+  rowlabel = "",
+  caption = "Patient characteristics",
+  ctable = TRUE )
+
+```
+
+
+# Little more information for smoking variables & USPSTF
+```{r}
+
+table(MYDAT$ix.fup.all); table(MYDAT$ix.fup.beforeIPLC); table(MYDAT$ix.fup.afterIPLC)
+    #  FALSE  TRUE 
+    #   3523  1831 
+    #  
+    #  FALSE  TRUE 
+    #   3838  1516 
+    #  
+    #  FALSE  TRUE 
+    #   5039   315 
+
+MYDAT$smkstatus <- as.factor(as.character(MYDAT$smkstatus))
+MYDAT$smkstatus_fup <- as.factor(as.character(MYDAT$smkstatus_fup))
+
+summary(MYDAT$smkstatus); summary(MYDAT$smkstatus_fup); summary(MYDAT$smkstatus2)
+      #   2    3 NA's   # smk status measured at 10-year f/up
+      #2478 2871    5 
+      #   2    3 NA's   # smk status for those who completed 10-year f/up survey
+      #1351  475 3528 
+      #   2    3        # smk status partly updated if 10-year f/up data is before IPLC diagnosis
+      #2801 2553        # This variable was used for SPLC-RAT model development.
+
+
+summary(MYDAT$packyears); summary(MYDAT$packyears_fup); summary(MYDAT$packyears2) # same as smkstatus, but for pack-year
+      # Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+      # 1.30   14.20   27.50   28.94   45.30   63.60      50 
+      # Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+      # 1.30   19.80   35.30   35.79   50.30   93.30    3537 
+      # Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+      # 1.30   16.40   27.50   30.71   45.30   93.30      22 
+
+
+summary(MYDAT$cigday); summary(MYDAT$cigday_fup); summary(MYDAT$cigday2)
+      # Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+      # 5.00   15.50   15.50   17.71   25.50   31.00      19 
+      # Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+      # 5.00    8.00   15.50   18.22   25.50   41.00    3533 
+      # Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      # 5.00    8.00   15.50   17.62   25.50   41.00 
+
+
+
+### How to create USPSTF eligibilty criteria 
+    
+    #View(myEligibility2)  # Function 
+    
+    agevar="age_ix" 
+    pyvar ="packyears2"
+    quitvar = "quityears2"
+    statvar="smkstatus2" # should be coded as 1, 2, 3 for never, former, and current smokers
+    
+    # We used USPSTF2013 at that time, so we used age 55-80, py=30 
+    # (qy=15 is already incorporated in the myEligibiltiy2 function)
+    # If you want to create USPSTF2021, then you can specify 50-80 age range, 20 pack-years
+    startage  = 55
+    stopage = 80
+    py.thred = 30
+    
+    USPSTF2013 = myEligibility2(agevar, pyvar, quitvar, statvar, MYDAT, startage, stopage, py.thred)
+    table(USPSTF2013)
+      
+    # MYDAT$USPSTF2 <- USPSTF13 if you want to attach the variable into the dat
+
+
+```
+
+
+
+
+
+
+
+
+
+
