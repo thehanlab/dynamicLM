@@ -1,0 +1,276 @@
+---
+title: 'Penalization in dynamicLM for SPLC prediction'
+author: "Anya Fries"
+output:
+  html_document:
+    code_folding: hide
+    toc: yes
+    toc_depth: 2
+    number_sections: yes
+    theme: united
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+---
+
+
+# Load libraries & data
+
+*TO DO before running this file:*
+
+This should be run inside the branch `extension/regularisation`.
+I.e., the following should be run before using this file:
+
+> `git clone https://github.com/thehanlab/dynamicLM.git`
+> `cd dynamicLM`
+> `git checkout extension/regularisation`
+
+Then paste the folder `example_code` and open this file there.
+To use the code without knitting, one can also not manually load the library, rather
+call `devtools::load_all()` in the console.
+
+
+```{r load-data, include=FALSE}
+library(dplyr)
+
+#### manually load library
+prefix <- "../R/"
+
+files <- c("addLMtime.R", "checks.R", "cutLMsuper.R", "cv.penLM.R", "fitLM.R", "LMcalPlot.R", "LMScore.R", "penLM.R", "plot.R", "predLMrisk.R", "print.R", "riskScore.R", "utils.R")
+for (f in files){
+  source(paste0(prefix,f))
+}
+####
+
+#### MEC specific functions and data
+source("SPLC-helper-functions.R")
+MYDAT <- read.csv("DAT_splcrat.csv")
+DAT <- MYDAT
+####
+```
+
+```{r}
+dim(DAT)
+```
+
+```{r}
+# colnames(DAT)
+```
+
+
+
+
+## Set up base data with relevant covariates
+
+```{r dropped-cols}
+# Just keeping track
+dropped_cols <- c( 
+  # Have data stored in other columns
+  "X", "Obs",      # ~ ID_secLung
+  "histology_ix", "histology2_ix", "hist.ix", "hist2.ix", # use hist_final
+  "stage.ix",      # = 1 + stage2.ix
+  "surgery_ix",    # = surgery1
+  "race",          # ~ race.cat
+  "USPSTF",        # ~ USPSTF2
+  "ageg",          # ~ ageg
+  "quityears",     # ~ quityears2
+  "smkstatus",     # ~ smkstatus2
+  "cigday",        # ~ cigday2
+  "packyears",     # ~ packyears2
+  
+  # Too many NAs
+  "copd", "copd_bef_ix", "tumor_ix", "typeRadio_ix",
+  # Too few values (all are one value, or a value & NA)
+  "study", "ets", "geographic", "otherTreat_ix",
+  
+  # Dates
+  "splc_dx", "diff_fup_SPLC", "date_ix", "datefollowup_sx",
+  "dateDeath", "date_BL", "dob", "date_ix_year",
+  "date_fup", "age_BL", "diff_BL_fup", "diff_BL_IPLC",
+  
+  # Other
+  "event2", "causeDeath", "dod", # Extra event columns
+  "gwas_tricl", "gwas_oncoarray", "gwas_any", # data info
+  "synchronous.ix",              # No documentation
+  
+  # Eunji's created variables - not needed
+  "diff_smk_IPLC", "ix.fup.beforeIPLC", "ix.fup.afterIPLC", "ix.fup.all"
+  
+  # anything with sx, 
+)
+```
+
+
+```{r keep-cols}
+ID_col <- "ID_secLung"
+time <- "Time"
+event <- "event"
+add_cols <- c("cigday_fup", "packyears_fup", "smkstatus_fup", 
+              "age_ix", "diff_fup_IPLC")
+x_cols_cat <- c("hist_final", "seer_stage_ix", "stage2.ix",
+                "surgery1", "radiation_ix", 
+                "chemo_ix", "typeChemo_ix", 
+                "sex", "race.cat", "edu", "age.ix.cat", 
+                "smkstatus2", 
+                "NLST", "USPSTF2", "fh", "ph")
+x_cols_num <- c( "bmi", "quityears2", 
+                "packyears2","cigday2")
+
+all_x <- c(x_cols_cat, x_cols_num)
+cols_to_keep <- c(time, event, all_x, add_cols)
+```
+
+Note that missing follow-up data is fine, we just cannot have missing predictors.
+
+```{r missing-data}
+DAT <- MYDAT
+### Handle NA ###
+# Make sure we use NA when we should
+DAT[x_cols_cat][DAT[x_cols_cat] == 9] <- NA
+DAT[-2][DAT[-2] == 999] <- NA
+
+# Impute some values
+DAT$quityears2[(DAT$smkstatus2 == 3) & (is.na(MYDAT$quityears2))] <- 0
+
+DAT$radiation_ix[is.na(DAT$radiation_ix)] <- median(DAT$radiation_ix, na.rm=T)
+DAT$chemo_ix[is.na(DAT$chemo_ix)] <- median(DAT$chemo_ix, na.rm=T)
+DAT$typeChemo_ix[is.na(DAT$typeChemo_ix)] <- median(DAT$typeChemo_ix, na.rm=T)
+DAT$edu[is.na(DAT$edu)] <- median(DAT$edu, na.rm=T)
+DAT$bmi[is.na(DAT$bmi)] <- median(DAT$bmi, na.rm=T)
+
+idx <- is.na(DAT$quityears2) | is.na(DAT$packyears2)
+IDS <- DAT[!idx, "ID_secLung"]
+DAT <- DAT[!idx, cols_to_keep]
+
+# summary(DAT)
+```
+
+```{r factors}
+### Convert to factors ###
+for (col in x_cols_cat){
+  DAT[[col]] <- as.factor(as.character(DAT[[col]]))
+}
+DAT$hist_final <- relevel(DAT$hist_final, ref="SQ")
+```
+
+```{r matrix}
+mdfull = as.formula(paste(" ~ ",paste(cols_to_keep, collapse="+")))
+mat = data.frame(model.matrix.lm(mdfull, DAT, na.action = "na.pass"))[,-1] # remove intercept
+
+mat$ID_secLung = IDS
+dim(mat)
+```
+
+```{r}
+colnames(mat)
+```
+
+```{r}
+mat <- mat %>% rename(sex=sex1, smkstatus2=smkstatus23, NLST=NLST1,
+  USPSTF2=USPSTF21, fh=fh1, ph=ph1)
+```
+
+
+## Create super dataset
+```{r super-setup}
+MEC <- mat
+outcome <- list(time="Time", status="event")
+covs <- list(fixed=colnames(mat)[-c(1,2)], varying=NULL)  
+
+w <- 5        
+LMs <- seq(0, 3, by=0.5)  
+
+func_covars <- list(
+  function(t) t,
+  function(t) t^2
+  )
+func_LMs <- list(
+  function(t) t,
+  function(t) t^2
+)
+
+pred.covars <- all_x
+```
+
+```{r super1}
+# Stack datasets
+LMdata <- cutLMsuper(MEC, outcome, LMs, w, covs, format="wide", id="ID_secLung")
+```
+
+```{r super2}
+# Update LM-varying covariates (MEC specific)
+  # Annual update: age_ix, quityears2 ///////
+  # One-time update at 10-yr f/up: smkstatus2, packyears2 //////
+  # Special case: USPSTF2
+LMdata <- update_df(LMdata) 
+```
+
+```{r}
+cols_can_drop <- c("cigday_fup", "packyears_fup", "smkstatus_fup", "diff_fup_IPLC")
+LMdata$LMdata[cols_can_drop] <- NULL
+colnames(LMdata$LMdata)
+```
+
+
+```{r}
+colnames(LMdata$LMdata)
+```
+
+
+```{r}
+pred_covars = c("age_ix", "hist_finalAD", "hist_finalLC", "hist_finalNSCLC_NOS", 
+                "hist_finalOTH", "hist_finalSC", "seer_stage_ix1", 
+                "seer_stage_ix2", "seer_stage_ix4", "stage2.ix1", "surgery11", 
+                "radiation_ix1", "chemo_ix1", "typeChemo_ix2", "typeChemo_ix3", 
+                "sex", "race.catB", "race.catH", "race.catHW", "race.catO", 
+                "race.catW", "edu2", "edu3", "age.ix.cat56.60", 
+                "age.ix.cat61.70", "age.ix.cat71.80", "age.ix.cat80.", 
+                "smkstatus2", "NLST", "USPSTF2", "fh", "ph", "bmi", "quityears2", 
+                "packyears2", "cigday2", "USPSTF.stage")
+```
+
+```{r super3}
+LMdata <- addLMtime(LMdata, pred_covars, func_covars, func_LMs)
+```
+
+
+# Penalized landmark supermodel
+
+Note we use `sm` to mean supermodel.
+
+```{r penlm}
+x_cols <- LMdata$allLMcovars
+path = penLM(LMdata, x_cols)
+plot(path)
+```
+
+```{r cvpenlm}
+cv.path = cv.penLM(LMdata, x_cols)
+plot(cv.path)
+```
+
+
+```{r fitlm}
+sm.pen.1se = fitLM(cv.path, lambda="lambda.1se")
+sm.pen.min = fitLM(cv.path, lambda="lambda.min")
+# print(sm.pen.min)
+```
+
+```{r predlm}
+preds.1se = predLMrisk(sm.pen.1se)
+preds.min = predLMrisk(sm.pen.min)
+```
+
+
+```{r score}
+LMScore(list("lambda.1se"=preds.1se, "lambda.min"=preds.min))
+```
+
+```{r calplot}
+# par(mfrow=c())
+x = LMcalPlot(
+  list("lambda.1se"=preds.1se, "lambda.min"=preds.min),
+  method="quantile", q=10, xlim=c(0, 0.18), ylim=c(0,0.18)
+)
+```
+
