@@ -55,7 +55,7 @@ check_penLM_inputs <- function(x, y, LMdata, xcols, ID_col=NULL, alpha=1, parent
     entry = LMdata$LMdata[[LMdata$LM_col]]
     exit = LMdata$LMdata[[LMdata$outcome$time]]
     status = LMdata$LMdata[[LMdata$outcome$status]]
-    y <- Hist(exit, status, entry)
+    y <- prodlim::Hist(exit, status, entry)
 
     if (missing(xcols)) {
       if (!is.null(LMdata$allLMcovars)) xcols <- LMdata$allLMcovars
@@ -90,7 +90,7 @@ check_penLM_inputs <- function(x, y, LMdata, xcols, ID_col=NULL, alpha=1, parent
         entry = y[, 1]
         exit = y[, 2]
         status = y[, 4] == states[i]
-        return(Surv(entry, exit, status))
+        return(survival::Surv(entry, exit, status))
       })
     }
   }
