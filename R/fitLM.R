@@ -369,6 +369,5 @@ fitLM.cv.penLM <- function(object, lambda="lambda.1se", ...){
     else if (lambda == "lambda.min")
       lambda <- lapply(object, function(o) o$lambda.min)
   }
-
   return(fitLM.penLM(object, lambda=lambda, ...))
 }

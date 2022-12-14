@@ -354,11 +354,11 @@ check_penLM_inputs <- function(x, y, LMdata, xcols, ID_col=NULL, alpha=1, parent
   }
 
   # if using an LMdataframe, create x and y for glmnet
-  if (use_lmdata){
-    entry = lmdata$data[[lmdata$LM_col]]
-    exit = lmdata$data[[lmdata$outcome$time]]
-    status = lmdata$data[[lmdata$outcome$status]]
-    y <- Hist(exit, status, entry)
+  if (use_LMdata){
+    entry = LMdata$LMdata[[LMdata$LM_col]]
+    exit = LMdata$LMdata[[LMdata$outcome$time]]
+    status = LMdata$LMdata[[LMdata$outcome$status]]
+    y <- prodlim::Hist(exit, status, entry)
 
     if (missing(xcols)) {
       if (!is.null(lmdata$all_covs)) xcols <- lmdata$all_covs
@@ -393,7 +393,7 @@ check_penLM_inputs <- function(x, y, LMdata, xcols, ID_col=NULL, alpha=1, parent
         entry = y[, 1]
         exit = y[, 2]
         status = y[, 4] == states[i]
-        return(Surv(entry, exit, status))
+        return(survival::Surv(entry, exit, status))
       })
     }
   }
