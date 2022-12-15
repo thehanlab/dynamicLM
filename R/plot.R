@@ -129,7 +129,7 @@ plot.coefs <- function(coefs, single.plot, max_coefs, ...) {
             col="blue",
             names.arg = c(names(pos_coefs),names(neg_coefs)),
             horiz = TRUE, las=1, xpd = F,
-            xlab = "Value")
+            xlab = "Value", ...)
   }
 }
 
@@ -182,5 +182,74 @@ plot.penLMCSC <- function(
   else {
     lapply(1:length(object$model),
            function(i) plot.coefs(object$model$models[[i]]$coefficients, single.plot, max_coefs, ...))
+  }
+}
+
+#' Plot an object output from `LMScore`: plot the landmark and time-dependent
+#' Brier and/or AUC of dynamic landmark supermodels.
+#'
+#' @param object An object of class "LMScore" output from `LMScore`
+#' @param metrics One or both of "auc" and "brier"
+#' @param xlab x label
+#' @param ylab y label
+#' @param x legend location
+#' @param pch size of points
+#' @param ...
+#'
+#' @export
+#'
+plot.LMScore <- function(object, metrics, xlab, ylab, x, pch, ...){
+  if (missing(metrics)){
+    metrics <- c()
+    if (!is.null(object$auct)) metrics <- c("auc")
+    if (!is.null(object$briert)) metrics <- c(metrics, "brier")
+  }
+
+  if (missing(xlab))
+    xlab <- "Landmark Time (tLM)"
+  if (missing(pch))
+    pch <- 19
+
+  set_ylab <- F
+  if (missing(ylab))
+    set_ylab <- T
+  set_x <- F
+  if (missing(x))
+    set_x <- T
+  plot.metric <- function(df, metric, loc){
+    if (set_ylab) ylab <- metric
+
+    num_models = length(unique(df$model))
+    model_names = df$model[1:num_models]
+    tLM = df$tLM
+    metric = df[[metric]]
+    models = df$model
+
+    plot(tLM, metric, col = models, pch = pch, xlab=xlab, ylab=ylab, ...)
+
+    for (i in 1:num_models){
+      idx = models == model_names[i]
+      lines(tLM[idx], metric[idx], col = models[idx], pch = pch)
+    }
+    legend(loc, legend = model_names, col = models, pch = pch, bty = "n")
+  }
+
+  if ("auc" %in% metrics){
+    if (is.null(object$auct)){
+      warning("AUC was not set as a metric when calling LMScore. No results to plot. Either call LMScore again with auc as a metric or do not include it as a metric here.")
+    }
+    else {
+      if(set_x) x <- "topright"
+      plot.metric(object$auct, "AUC", x)
+    }
+  }
+  if ("brier" %in% metrics){
+    if (is.null(object$briert)){
+      warning("Brier was not set as a metric when calling LMScore. No results to plot. Either call LMScore again with auc as a metric or do not include it as a metric here.")
+    }
+    else {
+      if(set_x) x <- "bottomright"
+      plot.metric(object$briert, "Brier", x)
+    }
   }
 }
