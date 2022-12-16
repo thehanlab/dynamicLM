@@ -106,8 +106,10 @@ check_evaluation_inputs <- function(
   outcome <- object[[1]]$outcome
   if (NF > 1) {
     for (i in 2:NF) {
-      if (object[[i]]$outcome != outcome)
-        stop("outcome is not the same for all prediction models.")
+      for (j in 1:length(outcome)){
+        if (object[[i]]$outcome[[j]] != outcome[[j]])
+          stop("outcome is not the same for all prediction models.")
+      }
     }
   }
   if (missing(cause)){
