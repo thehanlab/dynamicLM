@@ -61,7 +61,7 @@
 #' @param main Optional title to override default.
 #' @param sub If TRUE, add a subheading with the number of individuals at risk,
 #"   and the number that under the event of interest.
-#'   Default is TRUE. Set to FALSE for bootstrapping.
+#'   Default is FALSE
 #' @param ... Additional arguments to pass to calPlot (`pec` package).
 #'   These arguments have been included for user flexibility but have not been
 #'   tested and should be used with precaution.
@@ -123,7 +123,7 @@ LMcalPlot <-
            cause,
            plot = T,
            main,
-           sub = T,
+           sub = F,
            ...) {
 
     ### Check input and set up some initial variables ###
@@ -201,8 +201,7 @@ LMcalPlot <-
 
       if (plot) {
         if (add_title) {
-          title = paste0("Calibration of ",w,"-",unit,
-                         " risk \n measured at LM time ",tLM)
+          title = paste0("Risk calibration at LM time ",tLM)
           graphics::title(main = title)
         }
         else {
