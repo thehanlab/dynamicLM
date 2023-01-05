@@ -15,7 +15,7 @@
 #'   - LHS: the LHS of the input formula
 #'   - linear.predictors: the vector of linear predictors, one per subject. Note
 #'     that this vector has not been centered.
-#' @seealso `fitLM.LMdataframe`, `fitLM.LMpen`
+#' @seealso `fitLM.LMdataframe`, `fitLM.data.frame`,`fitLM.LMpen`, `fitLM.cv.LMpen`
 #' @export
 #'
 # TODO: regularized additions
@@ -294,6 +294,7 @@ fitLM.penLM <- function(object, lambda, ...){
     status = LMdata$outcome$status
     LHS <- paste0("Hist(",exit,",",status,",",entry,")")
     formula <- paste0(LHS, "~", paste0(xcols, collapse="+"))
+
     superfm <- CSC.fixed.coefs(as.formula(formula), data, method="breslow",
                                cause.specific.coefs=glmnet_coefs, ...)
 
@@ -362,7 +363,7 @@ fitLM.penLM <- function(object, lambda, ...){
 #' }
 #' @import survival glmnet
 #' @export
-fitLM.cv.penLM <- function(object, lambda="lambda.1se", ...){
+fitLM.cv.penLM <- function(object, lambda="lambda.1se", ...){ # TODO: change default
   if (class(lambda) == "character"){
     if (lambda == "lambda.1se")
       lambda <- lapply(object, function(o) o$lambda.1se)
