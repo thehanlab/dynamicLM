@@ -84,7 +84,7 @@ check_penLM_inputs <- function(x, y, LMdata, xcols, ID_col=NULL, alpha=1, parent
 
     states <- attr(y, "states")
     if (attr(y, "model") == "survival") {
-      y <- list(Surv(y[, 1], y[, 2], y[, 3]))
+      y <- list(survival::Surv(y[, 1], y[, 2], y[, 3]))
     } else {
       y <- lapply(1:length(states), function(i) {
         entry = y[, 1]
