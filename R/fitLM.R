@@ -5,7 +5,7 @@
 #'
 #' @details To fit coxph or cause-specific Cox models on a landmark super
 #' dataset, see `fitLM.LMdataframe`. To fit penalized Cox or penalized
-#' cause-specific Cox models see `fitLM.LMpen`.
+#' cause-specific Cox models see `fitLM.penLM`/`fitLM.cv.penLM`.
 #'
 #' @return An object of class "LMcoxph", "LMCSC", "penLMcoxph" or "penLMCSC"
 #'   with components:
@@ -15,7 +15,7 @@
 #'   - LHS: the LHS of the input formula
 #'   - linear.predictors: the vector of linear predictors, one per subject. Note
 #'     that this vector has not been centered.
-#' @seealso `fitLM.LMdataframe`, `fitLM.data.frame`,`fitLM.LMpen`, `fitLM.cv.LMpen`
+#' @seealso `fitLM.LMdataframe`, `fitLM.data.frame`,`fitLM.oenLM`, `fitLM.cv.penLM`
 #' @export
 #'
 # TODO: regularized additions

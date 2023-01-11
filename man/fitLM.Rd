@@ -25,8 +25,8 @@ regularization.
 \details{
 To fit coxph or cause-specific Cox models on a landmark super
 dataset, see \code{fitLM.LMdataframe}. To fit penalized Cox or penalized
-cause-specific Cox models see \code{fitLM.LMpen}.
+cause-specific Cox models see \code{fitLM.penLM}/\code{fitLM.cv.penLM}.
 }
 \seealso{
-\code{fitLM.LMdataframe}, \code{fitLM.LMpen}
+\code{fitLM.LMdataframe}, \code{fitLM.data.frame},\code{fitLM.oenLM}, \code{fitLM.cv.penLM}
 }
