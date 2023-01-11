@@ -19,6 +19,10 @@ check_evaluation_inputs <- function(
   split.method <- tolower(split.method)
   if (split.method == "none") B <- 1
 
+  if (!missing(cores)){
+    message("Argument cores is unused. Parallel implementation is not yet implemented.")
+  }
+
   # check naming of objects
   NF <- length(object)
   if (is.null(names(object))) {
@@ -80,6 +84,10 @@ check_evaluation_inputs <- function(
       stop("For external validation on new data, argumnet tLM must be specified.")
     }
 
+  } else {
+    if (!missing(tLM)){
+      warning("tLM is specified without the argument data. Did you mean to use argument times instead? See documentation for more information.")
+    }
   }
 
   # get data if bootstrapping
@@ -185,8 +193,8 @@ check_evaluation_inputs <- function(
 
 
   else if (perform.boot){
-    pred.list <- parallel::mclapply(1:B,function(b){
-    # pred.list <- lapply(1:B,function(b){
+    # pred.list <- parallel::mclapply(1:B,function(b){
+    pred.list <- lapply(1:B,function(b){
       id_train_b <- split.idx[,b]
       id_train_b <- data[[ID_col]] %in% id_train_b
 
