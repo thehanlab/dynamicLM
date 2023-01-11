@@ -25,7 +25,7 @@
 #'   If none is given, it is obtained from the prediction object.
 #' @param data Data for external validation.
 #' @param tLM Landmark times corresponding to the patient entries in data. Only
-#'   required if data is a dataframe.
+#'   required if data is specified and is a dataframe.
 #'   tLM can be a string (indicating a column in data), a vector of length
 #'   nrow(data), or a single value if all patient entries were obtained at the
 #'   same landmark time.
@@ -45,6 +45,7 @@
 #' @param M Subsample size for training in cross-validation. Entries not sampled
 #"   in the M subsamples are used for validation.
 #' @param cores To perform parallel computing, specifies the number of cores.
+#'   (Not yet implemented)
 #' @param seed Optional, integer passed to set.seed. If not given or NA, no seed
 #"   is set.
 #' @param regression_values Default is FALSE. If set to TRUE, the returned list
@@ -94,13 +95,12 @@
 #' @examples
 #' \dontrun{
 #' par(mfrow=c(2,2),pty="s")
-#' outlist = LMcalPlot(list("Model1"=p1),
-#'                     unit="month",            # for the title
-#'                     times=c(6,12,18,24),     # LMs at which to plot
-#'                     formula="Hist(event,Time,LM)~1",
+#' outlist = LMcalPlot(list("Model_1"=supermodel),
+#'                     unit="month",            # only used for the title
+#'                     times=c(6,12,18,24),     # landmark times at which to plot
 #'                     method="quantile", q=10, # method for calibration plot
-#'                     regression_values = TRUE,
-#'                     ylim=c(0,0.4), xlim=c(0,0.4))
+#'                     regression_values = TRUE,# output regression values
+#'                     ylim=c(0,0.4), xlim=c(0,0.4)) # optional
 #' outlist$regression_values
 #' }
 #' @import prodlim
@@ -192,7 +192,7 @@ LMcalPlot <-
       if (regression_values){
         for (i in 1:NF) {
           name = names(object)[i]
-          coefs = stats::lm(Pred ~ Obs, x$plotFrames[[name]])$coefficients
+          coefs = stats::lm(Obs ~ Pred, x$plotFrames[[name]])$coefficients
           coefs = c(tLM, coefs)
           names(coefs)[1] = "LM"
           reg_values_list[[name]] = rbind(reg_values_list[[name]], coefs)
