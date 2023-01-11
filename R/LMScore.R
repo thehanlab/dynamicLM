@@ -29,9 +29,10 @@
 #'   If none is given, it is obtained from the prediction object.
 #' @param data Data for external validation.
 #' @param tLM Landmark times corresponding to the patient entries in data. Only
-#'   required if data is a dataframe. tLM can be a string (indicating a column
-#'   in data), a vector of length nrow(data), or a single value if all patient
-#'   entries were obtained at the same landmark time.
+#'   required if data is specified and is a dataframe.
+#'   tLM can be a string (indicating a column in data), a vector of length
+#'   nrow(data), or a single value if all patient entries were obtained at the
+#'   same landmark time.
 #' @param ID_col Column name that identifies individuals in data. If omitted, it
 #'   is obtained from the prediction object.
 #' @param se.fit If FALSE or 0, no standard errors are calculated.
@@ -52,6 +53,7 @@
 #' @param M Subsample size for training in cross-validation. Entries not sampled
 #'   in the M subsamples are used for validation.
 #' @param cores To perform parallel computing, specifies the number of cores.
+#'   (Not yet implemented)
 #' @param seed Optional, integer passed to set.seed. If not given or NA, no seed
 #'   is set.
 #' @param unit Time unit for window of prediction, e.g., "year", "month", etc.
