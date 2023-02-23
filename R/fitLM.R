@@ -1,7 +1,7 @@
 #' Fit a coxph or CSC model to a LM super dataset
 #'
 #' @param formula The formula to be used, remember to include "+cluster(ID)" for the column that indicates the ID of the individual for robust error estimates.
-#' @param LMdata  An object of class "LMdataframe", this can be created by running cutLMsuper and addLMtime
+#' @param LMdata  An object of class "LMdataframe", this can be created by running stack_data and addLMtime
 #' @param type "coxph" or "CSC"/"CauseSpecificCox"
 #' @param method A character string specifying the method for tie handling. Default is "breslow". More information can be found in coxph.
 #' @param func_covars A list of functions to use for interactions between LMs and covariates.
@@ -37,7 +37,7 @@
 #' # Choose covariates that will have time interaction
 #' pred.covars <- c("age","male","stage","bmi","treatment")
 #' # Stack landmark datasets
-#' LMdata <- cutLMsuper(relapse, outcome, LMs, w, covs, format="long",
+#' LMdata <- stack_data(relapse, outcome, LMs, w, covs, format="long",
 #'                      id="ID", rtime="fup_time", right=F)
 #' # Update complex LM-varying covariates, note age is in years and LM is in months
 #' LMdata$LMdata$age <- LMdata$LMdata$age.at.time.0 + LMdata$LMdata$LM/12

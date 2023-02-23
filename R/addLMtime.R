@@ -2,8 +2,8 @@
 #' Add landmarking time interactions to a super dataset
 #'
 #' @param LMdata An object of class "LMdataframe".
-#'   This can be created by running cutLMsuper, or creating a stacked data set and storing it in a list with attributes outcome, w and end_time
-#'   (see cutLMsuper for further description of outcome and w), end_time is the largest landmarking time.
+#'   This can be created by running stack_data, or creating a stacked data set and storing it in a list with attributes outcome, w and end_time
+#'   (see stack_data for further description of outcome and w), end_time is the largest landmarking time.
 #' @param LMcovars Vector of strings indicating the columns that are to have a LM interaction
 #' @param func_covars A list of functions to use for interactions between LMs and covariates.
 #' @param func_LMs A list of functions to use for transformations of the landmark times.
@@ -36,7 +36,7 @@
 #' # Choose covariates that will have time interaction
 #' pred.covars <- c("age","male","stage","bmi","treatment")
 #' # Stack landmark datasets
-#' LMdata <- cutLMsuper(relapse, outcome, LMs, w, covs, format="long",
+#' LMdata <- stack_data(relapse, outcome, LMs, w, covs, format="long",
 #'                      id="ID", rtime="fup_time", right=F)
 #' # Update complex LM-varying covariates, note age is in years and LM is in months
 #' LMdata$LMdata$age <- LMdata$LMdata$age.at.time.0 + LMdata$LMdata$LM/12
