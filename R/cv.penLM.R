@@ -73,6 +73,7 @@ cv.penLM <- function(x, y,
                      nfolds=10,
                      type.measure="deviance",
                      seed=NULL,
+                     foldid=NULL,
                      ...
 ) {
   checked_input <- match.call()
@@ -93,9 +94,11 @@ cv.penLM <- function(x, y,
   unique.IDs = unique(IDs)
 
   # create foldids (as all instances of an individual must be in the same fold)
-  split.method <- paste0("cv",nfolds)
-  split.idx <- riskRegression::getSplitMethod(split.method, B=1, N=length(unique.IDs), seed=seed)$index
-  foldid <- split.idx[match(IDs, unique.IDs)]
+  if(missing(foldid)){
+    split.method <- paste0("cv",nfolds)
+    split.idx <- riskRegression::getSplitMethod(split.method, B=1, N=length(unique.IDs), seed=seed)$index
+    foldid <- split.idx[match(IDs, unique.IDs)]
+  }
 
   models <- lapply(y, function(yi) {
     glmnet::cv.glmnet(x = x, y = yi,
