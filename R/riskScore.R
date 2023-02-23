@@ -44,7 +44,7 @@ riskScore <- function(object, tLM, data, func_covars, func_LMs)
       covar <- sub("_\\d+$", "", coef_name)
       # Get associated function & multiply both by coef
       if (coef_name == covar) {
-        return(coefs[coef_name] * data[,covar])
+        return(as.numeric(coefs[coef_name] * data[,covar]))
       }
       else {
         if (not.null.co){
