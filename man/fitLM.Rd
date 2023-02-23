@@ -23,7 +23,7 @@ fitLM(
 \arguments{
 \item{formula}{The formula to be used, remember to include "+cluster(ID)" for the column that indicates the ID of the individual for robust error estimates.}
 
-\item{LMdata}{An object of class "LMdataframe", this can be created by running cutLMsuper and addLMtime}
+\item{LMdata}{An object of class "LMdataframe", this can be created by running stack_data and addLMtime}
 
 \item{type}{"coxph" or "CSC"/"CauseSpecificCox"}
 
@@ -76,7 +76,7 @@ func.LMs <- list( function(t) t, function(t) t^2)
 # Choose covariates that will have time interaction
 pred.covars <- c("age","male","stage","bmi","treatment")
 # Stack landmark datasets
-LMdata <- cutLMsuper(relapse, outcome, LMs, w, covs, format="long",
+LMdata <- stack_data(relapse, outcome, LMs, w, covs, format="long",
                      id="ID", rtime="fup_time", right=F)
 # Update complex LM-varying covariates, note age is in years and LM is in months
 LMdata$LMdata$age <- LMdata$LMdata$age.at.time.0 + LMdata$LMdata$LM/12
