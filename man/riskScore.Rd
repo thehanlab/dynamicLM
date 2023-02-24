@@ -2,7 +2,8 @@
 % Please edit documentation in R/riskScore.R
 \name{riskScore}
 \alias{riskScore}
-\title{Calcutes dynamic risk score at a time for an individual (helper to predLMrisk)}
+\title{Calcutes dynamic risk score at a time for an individual (helper to
+predict.dynamicLM)}
 \usage{
 riskScore(object, tLM, data, func_covars, func_lms)
 }
@@ -21,5 +22,6 @@ riskScore(object, tLM, data, func_covars, func_lms)
 Numeric risk score
 }
 \description{
-Calcutes dynamic risk score at a time for an individual (helper to predLMrisk)
+Calcutes dynamic risk score at a time for an individual (helper to
+predict.dynamicLM)
 }

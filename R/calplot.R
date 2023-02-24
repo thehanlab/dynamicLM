@@ -3,8 +3,8 @@
 #' There are three ways to perform calibration: apparent/internal, bootstrapped,
 #' and external. Accordingly, the named list of prediction models must be as
 #' follows:
-#' * For both apparent/internal calbration, objects output from [predLMrisk()]
-#'   for supermodels fit with [fitLM()] may be used as input.
+#' * For both apparent/internal calbration, objects output from
+#'   [predict.dynamicLM()] for supermodels fit with [fitLM()] may be used as input.
 #' * In order to bootstrap, supermodels fit with [fitLM()] may be used as input
 #'   (note that the argument `x=TRUE` must be specified when fitting the model
 #'   in [fitLM()]).
@@ -16,8 +16,8 @@
 #' models in `object` are fit on the same data.
 #'
 #' @param object A named list of prediction models, where allowed entries are
-#'   outputs from [predLMrisk()] or supermodels from [fitLM()] depending on the type
-#'   of calibration.
+#'   outputs from [predict.dynamicLM()] or supermodels from [fitLM()] depending
+#'   on the type of calibration.
 #' @param times Landmark times for which calibration must be plot. These must be
 #'   a subset of LM times used during the prediction
 #' @param formula A survival or event history formula (`Hist(...)`). The left

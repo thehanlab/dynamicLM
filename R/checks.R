@@ -55,7 +55,7 @@ check_evaluation_inputs <- function(
     }
     # TODO: update to include penalized classes
     else if (!(inherits(object[[i]],c("LMCSC", "LMcoxph")))) {
-      stop(paste("all prediction models in object must be of class LMCSC, LMcoxph (i.e., output from fitLM) or LMpred (i.e., output from predLMrisk) but", name, "is of class",class(object[[i]])))
+      stop(paste("all prediction models in object must be of class LMCSC, LMcoxph (i.e., output from fitLM) or LMpred (i.e., output from predict.dynamicLM) but", name, "is of class",class(object[[i]])))
     }
     else { # We know it is of class LMCSC or LMcoxph
       if (split.method == "bootcv"){
@@ -181,9 +181,9 @@ check_evaluation_inputs <- function(
 
 
   else if (!perform.boot) {
-    # TODO: consider including w, extend, silence, complete as args to predLMrisk
-    if (!missing(data)) preds = lapply(object, function(o) predLMrisk(o, data, tLM, cause))
-    else preds = lapply(object, function(o) predLMrisk(o, cause=cause))
+    # TODO: consider including w, extend, silence, complete as args to predict
+    if (!missing(data)) preds = lapply(object, function(o) predict.dynamicLM(o, data, tLM, cause))
+    else preds = lapply(object, function(o) predict.dynamicLM(o, cause=cause))
     args = match.call()
     args$data = NULL
     args$tLM = NULL
@@ -213,9 +213,9 @@ check_evaluation_inputs <- function(
         model.b <- eval(args)
         base_data = 0 * model.b$model$coefficients
         pred.b <- try(
-          # TODO: consider including w, extend, silence, complete as args to predLMrisk
+          # TODO: consider including w, extend, silence, complete as args to predict.dynamicLM
           # TODO: use complete=T
-          predLMrisk(model.b,newdata=data_val_b,tLM=tLMs_b,cause=model.b$cause, complete=F),
+          predict.dynamicLM(model.b,newdata=data_val_b,tLM=tLMs_b,cause=model.b$cause, complete=F),
           silent = F
         )
 

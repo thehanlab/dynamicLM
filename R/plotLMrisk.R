@@ -120,7 +120,7 @@ plotLMrisk <- function(object, data, format, lm_col, id_col, w,
       x <- data_ind[[lm_col]]
       idx <- x <= end_time
       x <- x[idx]
-      y <- predLMrisk(object, data_ind[idx,], x, cause, extend=extend, silence=T, complete=F)$preds$risk
+      y <- predict.dynamicLM(object, data_ind[idx,], x, cause, extend=extend, silence=T, complete=F)$preds$risk
 
       ## if some entries have missing values we want to replace them by the most recent score...
       if (sum(is.na(y))!=0){

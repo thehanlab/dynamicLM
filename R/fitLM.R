@@ -178,7 +178,7 @@ fitLM <- function(formula,
            args=args
   )
   if (x == TRUE) out$data = lmdata
-  class(out)=cl
+  class(out)=c(cl, "dynamicLM")
 
   return(out)
 }

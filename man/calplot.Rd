@@ -27,8 +27,8 @@ calplot(
 }
 \arguments{
 \item{object}{A named list of prediction models, where allowed entries are
-outputs from \code{\link[=predLMrisk]{predLMrisk()}} or supermodels from \code{\link[=fitLM]{fitLM()}} depending on the type
-of calibration.}
+outputs from \code{\link[=predict.dynamicLM]{predict.dynamicLM()}} or supermodels from \code{\link[=fitLM]{fitLM()}} depending
+on the type of calibration.}
 
 \item{times}{Landmark times for which calibration must be plot. These must be
 a subset of LM times used during the prediction}
@@ -100,8 +100,8 @@ There are three ways to perform calibration: apparent/internal, bootstrapped,
 and external. Accordingly, the named list of prediction models must be as
 follows:
 \itemize{
-\item For both apparent/internal calbration, objects output from \code{\link[=predLMrisk]{predLMrisk()}}
-for supermodels fit with \code{\link[=fitLM]{fitLM()}} may be used as input.
+\item For both apparent/internal calbration, objects output from
+\code{\link[=predict.dynamicLM]{predict.dynamicLM()}} for supermodels fit with \code{\link[=fitLM]{fitLM()}} may be used as input.
 \item In order to bootstrap, supermodels fit with \code{\link[=fitLM]{fitLM()}} may be used as input
 (note that the argument \code{x=TRUE} must be specified when fitting the model
 in \code{\link[=fitLM]{fitLM()}}).
