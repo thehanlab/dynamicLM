@@ -19,7 +19,7 @@
 #'   survival outcome
 #' @param w Scalar, the value of the prediction window (ie predict w-year/other
 #'   time period risk from the LM points)
-#' @param LMcovars Vector of strings indicating the columns that are to have a
+#' @param lm_covs Vector of strings indicating the columns that are to have a
 #'   LM interaction
 #' @param cluster Variable which clusters the observations (for e.g., identifies
 #'   repeated patient IDs), for the purposes of a robust variance.
@@ -30,7 +30,7 @@
 #' @return An object of class "LMcoxph" or "LMCSC" with components:
 #'   - model: fitted model
 #'   - type: as input
-#'   - w, func_covars, func_lms, LMcovars, allLMcovars, outcome: as in `lmdata`
+#'   - w, func_covars, func_lms, lm_covs, allLMcovars, outcome: as in `lmdata`
 #'   - LHS: the LHS of the input formula
 #'   - linear.predictors: the vector of linear predictors, one per subject.
 #'     Note that this vector has not been centered.
@@ -74,7 +74,7 @@ fitLM <- function(formula,
                   LM_col,
                   outcome,
                   w,
-                  LMcovars,
+                  lm_covs,
                   cluster,
                   x = FALSE,
                   ...) {
@@ -106,9 +106,9 @@ fitLM <- function(formula,
     if(missing(LM_col)) stop("For input data that is a data frame, arg LM_col must be specified.")
     if(missing(outcome)) stop("For input data that is a data frame, arg outcome must be specified.")
     if(missing(w)) stop("For input data that is a data frame, arg w must be specified.")
-    if(missing(LMcovars)) stop("For input data that is a data frame, arg LMcovars must be specified.")
+    if(missing(lm_covs)) stop("For input data that is a data frame, arg lm_covs must be specified.")
 
-    allLMcovars <- c(sapply(1:length(func_covars), function(i) paste0(LMcovars,"_",i)),
+    allLMcovars <- c(sapply(1:length(func_covars), function(i) paste0(lm_covs,"_",i)),
                      sapply(1:length(func_lms), function(i) paste0("LM_",i)))
     if (!all(allLMcovars %in% colnames(lmdata))){
       stop(paste0("The data should have all of the following column names: ",paste0(allLMcovars, collapse=", ")))
@@ -126,10 +126,10 @@ fitLM <- function(formula,
     end_time <- lmdata$end_time
     outcome <- lmdata$outcome
     w <- lmdata$w
-    LMcovars <- lmdata$LMcovars
+    lm_covs <- lmdata$lm_covs
     allLMcovars <- lmdata$allLMcovars
   }
-  LMcovars <- intersect(sub("_[^_]+$", "", all.vars(formula[[3]])), LMcovars)
+  lm_covs <- intersect(sub("_[^_]+$", "", all.vars(formula[[3]])), lm_covs)
 
   num_preds <- nrow(data)
 
@@ -168,7 +168,7 @@ fitLM <- function(formula,
            end_time=end_time,
            func_covars=func_covars,
            func_lms=func_lms,
-           LMcovars=LMcovars,
+           lm_covs=lm_covs,
            allLMcovars=allLMcovars,
            outcome=outcome,
            LHS=LHS,

@@ -7,8 +7,8 @@
 #'   stacked data set and storing it in a list with attributes outcome, w and
 #'   end_time (see [dynamicLM::stack_data()] for further description of outcome
 #'   and w), end_time is the largest landmarking time.
-#' @param LMcovars Vector of strings indicating the columns that are to have a
-#'   LM interaction
+#' @param lm_covs Vector of strings indicating the columns (covariates) that are
+#'   to have a LM interaction
 #' @param func_covars A list of functions to use for interactions between LMs
 #'   and covariates.
 #' @param func_lms A list of functions to use for transformations of the
@@ -16,7 +16,7 @@
 #' @param LM_col Character string specifying the column name that indicates the
 #'   landmark time point for a row.
 #' @param keep Boolean value to indicate whether or not to keep the columns
-#'   given by LMcovars without the time interactions or not. Default=FALSE.
+#'   given by `lm_covs` without the time interactions or not. Default=FALSE.
 #'
 #' @return An object of class "LMdataframe" which now also contains LM
 #'   time-interactions.
@@ -24,11 +24,11 @@
 #'   - w, outcome: as the input (obtained from lmdata)
 #'   - func_covars: as the input
 #'   - func_lms: as the input
-#'   - LMcovars: as the input
+#'   - lm_covs: as the input
 #'   - allLMcovars: a list of the new columns added
 #'   - LM_col: as the input
 #'
-#' @details For each variable "var" in `LMcovars`, new columns var_1,...,var_i
+#' @details For each variable "var" in `lm_covs`, new columns var_1,...,var_i
 #'   (length(func_covars) == i) are added; one column for each interaction given
 #'   in func_covars is added
 #'
@@ -60,7 +60,7 @@
 #' }
 #'
 #' @export
-add_interactions <- function(lmdata, LMcovars, func_covars, func_lms, LM_col="LM",keep=T){
+add_interactions <- function(lmdata, lm_covs, func_covars, func_lms, LM_col="LM",keep=T){
   if (LM_col %in% func_covars){
     stop(paste0("arg LM_col (given as ",LM_col,") should not be in arg func_covars."))
   }
@@ -78,14 +78,14 @@ add_interactions <- function(lmdata, LMcovars, func_covars, func_lms, LM_col="LM
     func_lms <- list(g1,g2)
   }
 
-  allLMcovars <- c(LMcovars)
+  allLMcovars <- c(lm_covs)
   data_LM <- data[[LM_col]]
   # Add func_covarss: covariate LM interactions
-  for(i in 1:length(LMcovars)){
+  for(i in 1:length(lm_covs)){
     for (j in 1:length(func_covars)){
       f <- func_covars[[j]]
-      name <- paste0(LMcovars[i],"_",j)
-      data[[name]]  <- data[[LMcovars[i]]]*f(data_LM)
+      name <- paste0(lm_covs[i],"_",j)
+      data[[name]]  <- data[[lm_covs[i]]]*f(data_LM)
       allLMcovars <- c(allLMcovars, name)
     }
   }
@@ -98,14 +98,14 @@ add_interactions <- function(lmdata, LMcovars, func_covars, func_lms, LM_col="LM
   }
 
   if(!keep){
-    remaining = colnames(data)[! colnames(data)  %in% LMcovars]
+    remaining = colnames(data)[! colnames(data)  %in% lm_covs]
     data <- data[remaining]
   }
   lmdata$data <- data
 
   lmdata$func_covars <- func_covars
   lmdata$func_lms <- func_lms
-  lmdata$LMcovars <- LMcovars
+  lmdata$lm_covs <- lm_covs
   lmdata$allLMcovars <- unique(allLMcovars)
   lmdata$LM_col <- LM_col
 
