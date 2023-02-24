@@ -4,37 +4,50 @@
 \alias{predict.dynamicLM}
 \title{Calculate w-year risk from a landmark time point}
 \usage{
-\method{predict}{dynamicLM}(object, newdata, tLM, cause, w, extend = F, silence = F, complete = T)
+\method{predict}{dynamicLM}(object, newdata, lms, cause, w, extend = F, silence = F, complete = T)
 }
 \arguments{
 \item{object}{fitted landmarking supermodel}
 
-\item{newdata}{Either a dataframe of individuals to make predictions for which must contain the original covariates (i.e., without landmark interaction) or an object of class LMdataframe (e.g., from \code{\link[=stack_data]{stack_data()}} and \code{\link[=add_interactions]{add_interactions()}}).}
+\item{newdata}{Either a dataframe of individuals to make predictions for or
+an object of class LMdataframe (e.g., created by calling \code{\link[=stack_data]{stack_data()}} and
+\code{\link[=add_interactions]{add_interactions()}}). If it is a dataframe, it must contain the
+original covariates (i.e., without landmark interaction).}
 
-\item{tLM}{time points at which to predict risk of w more years.
-Note tLM must be one value for newdata or must have the same length as the number of rows of newdata
-(i.e., each datapoint is associated with one LM/prediction time point).
-Alternatively, it can be a character string indicating a column in newdata.
-It is only required when newdata is a dataframe.}
+\item{lms}{landmark time points at which to predict risk of w more years.
+Only required when \code{newdata} is a data.frame.
+\code{lms} is either a time point, a vector or character string.
+\itemize{
+\item For a single time, w-year risk is predicted from this time, assuming
+all data comes from this time.
+\item For a vector, \code{lms} must have the same length as the number of rows of
+\code{newdata} (i.e., each datapoint is associated with one LM/prediction
+time point).
+\item A character string indicates a column in \code{newdata}.
+}}
 
-\item{cause}{Cause of interest if under competing risks.}
+\item{cause}{Cause of interest for competing risks.}
 
-\item{w}{Prediction window, i.e., predict w-year (/month/..) risk from each of the tLMs.
-Defaults to the w used in model fitting.
-If w > than that used in model fitting, results are unreliable, but can be produced by setting extend=T.}
+\item{w}{Prediction window, i.e., predict w-year (/month/..) risk from each
+of the \code{lms}. Defaults to the w used in model fitting.
+If \code{w} > than that used in model fitting, results are unreliable, but can
+be produced by setting \code{extend = T}.}
 
-\item{extend}{Argument to allow for predictions at landmark times that are greater than those used in model fitting,
-or prediction windows greater than the o?ne used in model fitting.
+\item{extend}{Argument to allow for predictions at landmark times that are
+later than those used in model fitting, or prediction windows greater
+than the one used in model fitting.
 Default is FALSE. If set to TRUE, predictions may be unreliable.}
 
 \item{silence}{Silence the warning message when extend is set to TRUE.}
 
-\item{complete}{Only make predictions for data entries with non-NA entries (i.e., non-NA predictions). Default is TRUE.}
+\item{complete}{Only make predictions for data entries with non-NA entries
+(i.e., non-NA predictions). Default is TRUE.}
 }
 \value{
 An object of class "LMpred" with components:
 \itemize{
-\item preds: a dataframe with columns LM and risk, each entry corresponds to one individual and prediction time point (landmark)
+\item preds: a dataframe with columns LM and risk, each entry corresponds to
+one individual and prediction time point (landmark)
 \item w, type, LHS: as in the fitted super model
 \item data: the newdata given in input
 }
@@ -43,9 +56,10 @@ An object of class "LMpred" with components:
 Calculate w-year risk from a landmark time point
 }
 \details{
-See the Github for example code
+See our \href{https://github.com/thehanlab/dynamicLM}{GitHub} for
+examples
 }
 \references{
-van Houwelingen HC, Putter H (2012). Dynamic Prediction in Clinical Survival
-Analysis. Chapman & Hall.
+van Houwelingen HC, Putter H (2012). Dynamic Prediction in
+Clinical Survival Analysis. Chapman & Hall.
 }
