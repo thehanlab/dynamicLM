@@ -122,8 +122,8 @@ which variables are fixed or landmark-varying. When there are no
 landmark-varying variables, set `varying=NULL`.
 
 ```{r}
-outcome = list(time="Time", status="event")
-covars = list(fixed=c("ID","age.at.time.0","male","stage","bmi"),
+outcome <- list(time="Time", status="event")
+covars <- list(fixed=c("ID","age.at.time.0","male","stage","bmi"),
               varying=c("treatment"))
 ```
 
@@ -139,8 +139,8 @@ covariates that should have these landmark interactions are given in
 
 
 ```{r}
-w = 5*12                  # risk prediction window (risk within time w)
-lms = seq(0,36,by=6)      # landmarks on which to build the model
+w <- 60                    # risk prediction window (risk within time w)
+lms <- seq(0,36,by=6)      # landmarks on which to build the model
 
 # Covariate-landmark time interactions
 func_covars <- list( function(t) t, function(t) t^2)
@@ -181,9 +181,9 @@ our case, only treatment varies).
 
 ```{r}
 # Stack landmark datasets
-LMdata <- stack_data(relapse, outcome, lms, w, covars, format="long",
-                     id="ID", rtime="T_txgiven", right=F)
-data = LMdata$data
+LMdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
+                     id = "ID", rtime = "T_txgiven", right = F)
+data <- LMdata$data
 print(data[data$ID == "ID1029",])
 ```
 
@@ -192,7 +192,7 @@ create an age covariate, based on age at time 0.
 
 ```{r}
 LMdata$data$age <- LMdata$data$age.at.time.0 + LMdata$data$LM/12 # age is in years and LM is in months
-data = LMdata$data
+data <- LMdata$data
 print(data[data$ID == "ID1029",])
 ```
 
@@ -204,7 +204,7 @@ covariates that will have landmark time interactions.
 
 ```{r}
 LMdata <- add_interactions(LMdata, pred_covars, func_covars, func_lms) 
-data = LMdata$data
+data <- LMdata$data
 print(data[data$ID == "ID1029",])
 ```
 
@@ -240,7 +240,7 @@ ratio using the argument `logHR`. Only certain plots can also be
 provided using the `covars` argument.
 
 ```{r dynhr}
-par(mfrow=c(2,3))
+par(mfrow = c(2,3))
 plotDynamicHR(supermodel)
 ```
 
@@ -258,7 +258,7 @@ Predictions for the training data can easily be obtained. This provides
 landmarks they are still alive.
 
 ```{r}
-p1 = predLMrisk(supermodel)
+p1 <- predict(supermodel)
 ```
 
 ### For new data
@@ -273,15 +273,15 @@ using an entry from the very original data frame.
 
 ```{r}
 # Prediction time
-landmark_times = c(0,0)
+landmark_times <- c(0,0)
 # Individuals with covariate values at 0
-individuals = relapse[1:2,]
-individuals$age = individuals$age.at.time.0
+individuals <- relapse[1:2,]
+individuals$age <- individuals$age.at.time.0
 print(individuals)
 ```
 
 ```{r}
-p0 = predLMrisk(supermodel, individuals, landmark_times, cause=1)
+p0 <- predict(supermodel, individuals, landmark_times, cause=1)
 p0$preds
 ```
 
@@ -290,12 +290,12 @@ p0$preds
 Calibration plots, which assess the agreement between predictions and
 observations in different percentiles of the predicted values, can be
 plotted for each of the landmarks used for prediction. Entering a named
-list of prediction objects from `predLMrisk` in the first argument
+list of prediction objects (created by calling `predict`) in the first argument
 allows for comparison between models.
 
 ```{r calplot}
 par(mfrow=c(2,3), pty="s", mar = c(4, 4, 4, 1))
-outlist = LMcalPlot(list("Model1"=p1), 
+outlist <- calplot(list("Model1"=p1), 
                     unit="month",            # for the titles
                     times=c(0,6,12,18,24,30),# landmarks at which to provide calibration plots
                     method="quantile", q=10, # method for calibration plot
@@ -316,7 +316,7 @@ Brier score (BSt).
     estimates by that time point.
     
 ```{r}
-scores = LMScore(list("Model1"=p1),
+scores <- Score(list("Model1"=p1),
                      times=c(6,12,18,24), # landmarks at which to provide calibration plots
                      unit="month")      # for the print out
 scores
@@ -324,7 +324,7 @@ scores
 
 ### Visualize individual dynamic risk trajectories
 
-Individual risk score trajectories can be plotted. As with `predLMrisk`,
+Individual risk score trajectories can be plotted. As with `predict`,
 the data input is in the form of the original data. For example, we can
 consider two individuals of similar age, bmi, and treatment status at
 baseline, but of different gender.
@@ -341,7 +341,7 @@ data can be used too if there are no complex variables involved.*
 
 ```{r}
 # Prediction time points 
-x = seq(0,36,by=6)
+x <- seq(0,36,by=6)
 
 # Stack landmark datasets
 dat <- stack_data(relapse[idx,], outcome, x, w, covars, format="long", 
@@ -352,8 +352,8 @@ head(dat)
 ```
 
 ```{r plotrisk}
-plotLMrisk(supermodel, dat, format="long", lm_col = "LM", id_col="ID", 
-           ylim=c(0, 0.7), x.legend="bottom", unit="month")
+plotLMrisk(supermodel, dat, format="long", lm_col = "LM", id_col = "ID", 
+           ylim = c(0, 0.7), x.legend="bottom", unit="month")
 ```
 
 We can see that the male has a much higher and increasing 5-year risk of
