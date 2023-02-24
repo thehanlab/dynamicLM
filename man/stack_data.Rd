@@ -7,7 +7,7 @@
 stack_data(
   data,
   outcome,
-  LMs,
+  lms,
   w,
   covs,
   format = c("wide", "long"),
@@ -21,7 +21,7 @@ stack_data(
 
 \item{outcome}{List with items time and status, containing character strings identifying the names of time and status variables, respectively, of the survival outcome}
 
-\item{LMs}{vector, the value of the landmark time points (points at which prediction is made)}
+\item{lms}{vector, the value of the landmark time points (points at which prediction is made)}
 
 \item{w}{Scalar, the value of the prediction window (ie predict w-year/other time period risk from the LM points)}
 
@@ -38,7 +38,7 @@ stack_data(
 \value{
 An object of class "LMdataframe". This the following components:
 \itemize{
-\item LMdata: containing the stacked data set, i.e., the outcome and the values of time-fixed and time-varying covariates taken at the landmark time points. The value of the landmark time point is stored in column LM.
+\item data: containing the stacked data set, i.e., the outcome and the values of time-fixed and time-varying covariates taken at the landmark time points. The value of the landmark time point is stored in column LM.
 \item outcome: same as input
 \item w: same as input
 \item end_time: final landmarking point used in training
@@ -48,7 +48,7 @@ An object of class "LMdataframe". This the following components:
 Build a stacked super dataset from original dataset (wide or long format)
 }
 \details{
-This function calls cutLM from the library dynpred, more documentation can be found there. Note that for every landmark tLM given in LMs, there must be at least one patient alive after tLM.
+This function calls cutLM from the library dynpred, more documentation can be found there. Note that for every landmark tLM given in \code{lms}, there must be at least one patient alive after tLM.
 }
 \examples{
 \dontrun{
@@ -56,15 +56,10 @@ data(relapse)
 outcome = list(time="Time", status="event")
 covars = list(fixed=c("ID","age.at.time.0","male","stage","bmi"),
               varying=c("treatment"))
-w = 60; LMs = c(0,12,24)
-# Covariate-landmark time interactions
-func.covars <- list( function(t) t, function(t) t^2)
-# let hazard depend on landmark time
-func.LMs <- list( function(t) t, function(t) t^2)
-# Choose covariates that will have time interaction
-pred.covars <- c("age","male","stage","bmi","treatment")
+w = 60; lms = c(0,12,24)
 # Stack landmark datasets
-LMdata <- stack_data(relapse, outcome, LMs, w, covs, format="long",
-                     id="ID", rtime="fup_time", right=F)
+LMdata <- stack_data(relapse, outcome, lms, w, covs, format="long",
+                     id="ID", rtime="T_txgiven", right=F)
+head(LMdata$data)
 }
 }
