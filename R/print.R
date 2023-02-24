@@ -48,7 +48,7 @@ print.LMdataframe <- function(x, ...){
 
   cat("$data\n")
   print(utils::head(x$data))
-  if(nrow(x$LMdata) > 5) cat(paste0(" [ omitted ",nrow(x$LMdata)-5," rows ]\n"))
+  if(nrow(x$data) > 5) cat(paste0(" [ omitted ",nrow(x$data)-5," rows ]\n"))
   cat("\n")
   cat("\n")
 
