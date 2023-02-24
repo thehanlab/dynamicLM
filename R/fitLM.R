@@ -1,17 +1,30 @@
 #' Fit a coxph or CSC model to a LM super dataset
 #'
-#' @param formula The formula to be used, remember to include "+cluster(ID)" for the column that indicates the ID of the individual for robust error estimates.
-#' @param LMdata  An object of class "LMdataframe", this can be created by running stack_data and addLMtime
+#' @param formula The formula to be used, remember to include "+cluster(ID)" for
+#'  the column that indicates the ID of the individual for robust error
+#'  estimates.
+#' @param LMdata  An object of class "LMdataframe", this can be created by
+#'   running [dynamicLM::stack_data()] and [dynamicLM::add_interactions()]
 #' @param type "coxph" or "CSC"/"CauseSpecificCox"
-#' @param method A character string specifying the method for tie handling. Default is "breslow". More information can be found in coxph.
-#' @param func_covars A list of functions to use for interactions between LMs and covariates.
-#' @param func_LMs A list of functions to use for transformations of the landmark times.
-#' @param LM_col Character string specifying the column name that indicates the landmark time point for a row.
-#' @param outcome List with items time and status, containing character strings identifying the names of time and status variables, respectively, of the survival outcome
-#' @param w Scalar, the value of the prediction window (ie predict w-year/other time period risk from the LM points)
-#' @param LMcovars Vector of strings indicating the columns that are to have a LM interaction
-#' @param cluster Variable which clusters the observations (for e.g., identifies repeated patient IDs), for the purposes of a robust variance.
-#' @param x Logical value. If set to true, the LMdata is stored in the returned object. This is required for internal validation.
+#' @param method A character string specifying the method for tie handling.
+#'   Default is "breslow". More information can be found in coxph.
+#' @param func_covars A list of functions to use for interactions between LMs
+#'   and covariates.
+#' @param func_LMs A list of functions to use for transformations of the
+#'   landmark times.
+#' @param LM_col Character string specifying the column name that indicates the
+#'   landmark time point for a row.
+#' @param outcome List with items time and status, containing character strings
+#'   identifying the names of time and status variables, respectively, of the
+#'   survival outcome
+#' @param w Scalar, the value of the prediction window (ie predict w-year/other
+#'   time period risk from the LM points)
+#' @param LMcovars Vector of strings indicating the columns that are to have a
+#'   LM interaction
+#' @param cluster Variable which clusters the observations (for e.g., identifies
+#'   repeated patient IDs), for the purposes of a robust variance.
+#' @param x Logical value. If set to true, the LMdata is stored in the returned
+#'   object. This is required for internal validation.
 #' @param ... Arguments given to coxph or CSC.
 #'
 #' @return An object of class "LMcoxph" or "LMCSC" with components:
@@ -19,9 +32,10 @@
 #'   - type: as input
 #'   - w, func_covars, func_LMs, LMcovars, allLMcovars, outcome: as in LMdata
 #'   - LHS: the LHS of the input formula
-#'   - linear.predictors: the vector of linear predictors, one per subject. Note that this vector has not been centered.
+#'   - linear.predictors: the vector of linear predictors, one per subject.
+#'     Note that this vector has not been centered.
 #'   - args: arguments used to call model fitting
-#'   - ID_col: the cluster argument, usually specifies the column with patient ID
+#'   - ID_col: the cluster argument, often specifies the column with patient ID
 #'
 #' @examples
 #' \dontrun{
