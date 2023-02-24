@@ -1,33 +1,50 @@
 #' Calculate w-year risk from a landmark time point
 #'
 #' @param object fitted landmarking supermodel
-#' @param newdata Either a dataframe of individuals to make predictions for which must contain the original covariates (i.e., without landmark interaction) or an object of class LMdataframe (e.g., from [stack_data()] and [add_interactions()]).
-#' @param tLM time points at which to predict risk of w more years.
-#'   Note tLM must be one value for newdata or must have the same length as the number of rows of newdata
-#'   (i.e., each datapoint is associated with one LM/prediction time point).
-#'   Alternatively, it can be a character string indicating a column in newdata.
-#'   It is only required when newdata is a dataframe.
-#' @param cause Cause of interest if under competing risks.
-#' @param w Prediction window, i.e., predict w-year (/month/..) risk from each of the tLMs.
-#'   Defaults to the w used in model fitting.
-#'   If w > than that used in model fitting, results are unreliable, but can be produced by setting extend=T.
-#' @param extend Argument to allow for predictions at landmark times that are greater than those used in model fitting,
-#'   or prediction windows greater than the o?ne used in model fitting.
+#' @param newdata Either a dataframe of individuals to make predictions for or
+#'  an object of class LMdataframe (e.g., created by calling [stack_data()] and
+#'  [add_interactions()]). If it is a dataframe, it must contain the
+#'  original covariates (i.e., without landmark interaction).
+#' @param lms landmark time points at which to predict risk of w more years.
+#'  Only required when `newdata` is a data.frame.
+#'  `lms` is either a time point, a vector or character string.
+#'
+#'  * For a single time, w-year risk is predicted from this time, assuming
+#'  all data comes from this time.
+#'  * For a vector, `lms` must have the same length as the number of rows of
+#'  `newdata` (i.e., each datapoint is associated with one LM/prediction
+#'  time point).
+#'  * A character string indicates a column in `newdata`.
+#'
+#' @param cause Cause of interest for competing risks.
+#' @param w Prediction window, i.e., predict w-year (/month/..) risk from each
+#'   of the `lms`. Defaults to the w used in model fitting.
+#'   If `w` > than that used in model fitting, results are unreliable, but can
+#'   be produced by setting `extend = T`.
+#' @param extend Argument to allow for predictions at landmark times that are
+#'   later than those used in model fitting, or prediction windows greater
+#'   than the one used in model fitting.
 #'   Default is FALSE. If set to TRUE, predictions may be unreliable.
 #' @param silence Silence the warning message when extend is set to TRUE.
-#' @param complete Only make predictions for data entries with non-NA entries (i.e., non-NA predictions). Default is TRUE.
+#' @param complete Only make predictions for data entries with non-NA entries
+#'   (i.e., non-NA predictions). Default is TRUE.
 #'
 #' @return An object of class "LMpred" with components:
-#'   - preds: a dataframe with columns LM and risk, each entry corresponds to one individual and prediction time point (landmark)
+#'   - preds: a dataframe with columns LM and risk, each entry corresponds to
+#'     one individual and prediction time point (landmark)
 #'   - w, type, LHS: as in the fitted super model
 #'   - data: the newdata given in input
-#' @references van Houwelingen HC, Putter H (2012). Dynamic Prediction in Clinical Survival
-#' Analysis. Chapman & Hall.
-#' @details See the Github for example code
+#'
+#' @references van Houwelingen HC, Putter H (2012). Dynamic Prediction in
+#'   Clinical Survival Analysis. Chapman & Hall.
+#'
+#' @details See our [GitHub](https://github.com/thehanlab/dynamicLM) for
+#'   examples
 #' @import survival
 #' @export
 #'
-predict.dynamicLM <- function(object, newdata, tLM, cause, w, extend=F, silence=F, complete=T)
+predict.dynamicLM <- function(object, newdata, lms, cause, w, extend=F,
+                              silence=F, complete=T)
 {
   func_covars <- object$func_covars
   func_lms <- object$func_lms
@@ -65,52 +82,52 @@ predict.dynamicLM <- function(object, newdata, tLM, cause, w, extend=F, silence=
          \nOnly supported classes are CauseSpecificCox and coxph")
   }
 
-  if (missing(newdata) & !missing(tLM)) {
+  if (missing(newdata) & !missing(lms)) {
     stop("newdata must be specified")
   }
 
   if (!missing(newdata)){
     if (inherits(newdata,"LMdataframe")){
-      tLM <- newdata$lm_col
+      lms <- newdata$lm_col
       newdata <- newdata$data
     }
-    else if (missing(tLM)) {
-      tLM <- newdata$LM
-      if (is.null(tLM)) {
-        stop("tLM must be specified")
+    else if (missing(lms)) {
+      lms <- newdata$LM
+      if (is.null(lms)) {
+        stop("lms must be specified")
       }
     }
 
-    if (inherits(tLM,"character")){
-      tLM <- newdata[[tLM]]
-      if (is.null(tLM)) {
-        stop("As tLM is a string, it must be a column in newdata.")
+    if (inherits(lms,"character")){
+      lms <- newdata[[lms]]
+      if (is.null(lms)) {
+        stop("As lms is a string, it must be a column in newdata.")
       }
     }
 
     ## Check prediction times match with LMs used in training
-    if (max(tLM) > object$end_time & !extend){
-      stop(paste0("Landmark/prediction time points tLM contains values later than the last LM used in model fitting
-                (last LM used in model fitting=",object$end_time," and max tLM value=",max(tLM),").
+    if (max(lms) > object$end_time & !extend){
+      stop(paste0("Landmark/prediction time points lms contains values later than the last LM used in model fitting
+                (last LM used in model fitting=",object$end_time," and max lms value=",max(lms),").
                 If you wish to still make predictions at these times, set arg extend=T but note that results may be unreliable."))
     }
-    else if (max(tLM) > object$end_time & extend){
-      if (!silence) message(paste0("NOTE:landmark/prediction time points tLM contains values later (max value=",max(tLM),") than the last LM used in model fitting (=",object$end_time,").",
+    else if (max(lms) > object$end_time & extend){
+      if (!silence) message(paste0("NOTE:landmark/prediction time points lms contains values later (max value=",max(lms),") than the last LM used in model fitting (=",object$end_time,").",
                                    "\nPredictions at times after ",object$end_time," may be unreliable."))
     }
     ## Check prediction times & newdata given are coherent with each other
     num_preds <- nrow(newdata)
-    if(!(length(tLM)==num_preds)){
-      if (length(tLM) == 1){
-        tLM<-rep(tLM,num_preds)
+    if(!(length(lms)==num_preds)){
+      if (length(lms) == 1){
+        lms<-rep(lms,num_preds)
       } else {
-        stop("Error in newdata or tLM. Must have length(tLM) == nrow(newdata) or tLM be one landmarking point.")
+        stop("Error in newdata or lms. Must have length(lms) == nrow(newdata) or lms be one landmarking point.")
       }
     }
 
     ## Get risk scores
     risks <- matrix(sapply(1:num_preds, function(i){
-      tLMi <- tLM[i]
+      tLMi <- lms[i]
       newdatai <- newdata[i,]
       sapply(1:num_causes, function(c) riskScore(models[[c]], tLMi, newdatai, func_covars, func_lms))
     }),nrow=num_causes)
@@ -119,12 +136,12 @@ predict.dynamicLM <- function(object, newdata, tLM, cause, w, extend=F, silence=
   } else {
     ## Get risk scores
     ## Note that linear predictors are centered, so need to un-center them for correct comparison.
-    tLM <- object$original.landmarks
+    lms <- object$original.landmarks
     risks <- object$linear.predictors
     num_preds <- ncol(risks)
     # sanity check
     if (num_preds == 0){stop("Newdata must be specified.")}
-    if (length(tLM) != num_preds){ stop("Error in newdata or tLM. Must have length(tLM) == nrow(newdata) or tLM be one landmarking point.") }
+    if (length(lms) != num_preds){ stop("Error in newdata or lms. Must have length(lms) == nrow(newdata) or lms be one landmarking point.") }
     data <- fm$call$data
   }
 
@@ -135,7 +152,7 @@ predict.dynamicLM <- function(object, newdata, tLM, cause, w, extend=F, silence=
     })
   sf <- lapply(sf, function(s) data.frame(time=s$time,surv=s$surv,Haz=-log(s$surv)))
 
-  Fw <- rep(0, length(tLM))
+  Fw <- rep(0, length(lms))
 
   sf1 <-sf[[cause]]
   Fw <- rep(NA, num_preds)
@@ -143,7 +160,7 @@ predict.dynamicLM <- function(object, newdata, tLM, cause, w, extend=F, silence=
     if (is.na(risks[cause,i])){
       Fw[i] <- NA
     } else {
-      tLMi <- tLM[i]
+      tLMi <- lms[i]
       pred_window <- (tLMi <= sf1$time & sf1$time <= tLMi+w)
       n_times <- sum(pred_window)
 
@@ -174,10 +191,10 @@ predict.dynamicLM <- function(object, newdata, tLM, cause, w, extend=F, silence=
 
   if(complete){
     idx = !is.na(Fw)
-    preds = data.frame(LM=tLM[idx],risk=Fw[idx])
+    preds = data.frame(LM=lms[idx],risk=Fw[idx])
     data = data[idx,]
   } else {
-    preds = data.frame(LM=tLM,risk=Fw)
+    preds = data.frame(LM=lms,risk=Fw)
     data = data
   }
 
