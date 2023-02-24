@@ -1,4 +1,7 @@
-#' Fit a coxph or CSC model to a LM super dataset
+#' Fit a coxph or CSC model to a landmark super dataset, i.e., fit a dynamic
+#' landmark supermodel
+#'
+#' dynamic (dyn) landmark (l) supermodel (s) --> dynls
 #'
 #' @param formula The formula to be used, remember to include "+cluster(ID)" for
 #'  the column that indicates the ID of the individual for robust error
@@ -60,12 +63,12 @@
 #' formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment +
 #'            age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 +
 #'            bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
-#' supermodel <- fitLM(as.formula(formula), lmdata, "CSC")
+#' supermodel <- dynls(as.formula(formula), lmdata, "CSC")
 #' }
 #' @import survival
 #' @export
 #'
-fitLM <- function(formula,
+dynls <- function(formula,
                   lmdata,
                   type = "coxph",
                   method = "breslow",
