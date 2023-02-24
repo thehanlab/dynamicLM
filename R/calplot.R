@@ -95,7 +95,7 @@
 #' @examples
 #' \dontrun{
 #' par(mfrow=c(2,2),pty="s")
-#' outlist = LMcalPlot(list("Model_1"=supermodel),
+#' outlist = calplot(list("Model_1"=supermodel),
 #'                     unit="month",            # only used for the title
 #'                     times=c(6,12,18,24),     # landmark times at which to plot
 #'                     method="quantile", q=10, # method for calibration plot
@@ -106,7 +106,7 @@
 #' @import prodlim
 #' @export
 #'
-LMcalPlot <-
+calplot <-
   function(object,
            times,
            formula,
@@ -129,7 +129,7 @@ LMcalPlot <-
     ### Check input and set up some initial variables ###
 
     if (!requireNamespace("pec", quietly = T)) {
-      stop("Package \"pec\" must be installed to use function LMcalPlot.",
+      stop("Package \"pec\" must be installed to use function calplot",
            call. = F)
     }
     if (!(inherits(object,"list"))) stop("object must be a named list.")
