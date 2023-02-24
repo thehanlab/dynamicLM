@@ -4,12 +4,12 @@
 #' @param tLM Landmarking time point at which to calculate risk score (time at which the prediction is made)
 #' @param data Dataframe (single row) of individual. Must contain the original covariates.
 #' @param func_covars A list of functions to use for interactions between LMs and covariates.
-#' @param func_LMs A list of functions to use for transformations of the landmark times.
+#' @param func_lms A list of functions to use for transformations of the landmark times.
 #'
 #' @return Numeric risk score
 #' @export
 #'
-riskScore <- function(object, tLM, data, func_covars, func_LMs)
+riskScore <- function(object, tLM, data, func_covars, func_lms)
 {
   coefs <- object$coefficients
   pred_covars <- names(coefs)
@@ -22,7 +22,7 @@ riskScore <- function(object, tLM, data, func_covars, func_LMs)
     sapply(LM_covars, function(coef_name){
       # Get associated function
       idx <-  as.numeric(sub(".*\\D+", "\\1", coef_name))
-      return(func_LMs[[idx]](tLM) * coefs[coef_name])
+      return(func_lms[[idx]](tLM) * coefs[coef_name])
     })
     # X1*coef + X1*t*coef + X1*t^2*coef + ..
   ) + sum(

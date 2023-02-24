@@ -8,7 +8,7 @@ add_interactions(
   lmdata,
   LMcovars,
   func_covars,
-  func_LMs,
+  func_lms,
   LM_col = "LM",
   keep = T
 )
@@ -27,7 +27,7 @@ LM interaction}
 \item{func_covars}{A list of functions to use for interactions between LMs
 and covariates.}
 
-\item{func_LMs}{A list of functions to use for transformations of the
+\item{func_lms}{A list of functions to use for transformations of the
 landmark times.}
 
 \item{LM_col}{Character string specifying the column name that indicates the
@@ -43,7 +43,7 @@ The object has the following components:
 \itemize{
 \item w, outcome: as the input (obtained from lmdata)
 \item func_covars: as the input
-\item func_LMs: as the input
+\item func_lms: as the input
 \item LMcovars: as the input
 \item allLMcovars: a list of the new columns added
 \item LM_col: as the input
@@ -58,7 +58,7 @@ For each variable "var" in \code{LMcovars}, new columns var_1,...,var_i
 in func_covars is added
 
 Transformations of the LM column are added and labelled as LM_1,...,LM_j
-(length(func_LMs) == j); one column for each interaction given in func_LMs
+(length(func_lms) == j); one column for each interaction given in func_lms
 is added
 }
 \examples{
@@ -69,18 +69,18 @@ covars = list(fixed=c("ID","age.at.time.0","male","stage","bmi"),
               varying=c("treatment"))
 w = 60; LMs = c(0,12,24)
 # Covariate-landmark time interactions
-func.covars <- list( function(t) t, function(t) t^2)
+func_covars <- list( function(t) t, function(t) t^2)
 # let hazard depend on landmark time
-func.lms <- list( function(t) t, function(t) t^2)
+func_lms <- list( function(t) t, function(t) t^2)
 # Choose covariates that will have time interaction
-pred.covars <- c("age","male","stage","bmi","treatment")
+pred_covars <- c("age","male","stage","bmi","treatment")
 # Stack landmark datasets
 lmdata <- stack_data(relapse, outcome, LMs, w, covars, format="long",
                      id="ID", rtime="T_txgiven", right=F)
 # Update complex LM-varying covariates, note age is in years and LM is in months
 lmdata$data$age <- lmdata$data$age.at.time.0 + lmdata$data$LM/12
 # Add LM-time interactions
-lmdata <- add_interactions(lmdata, pred.covars, func.covars, func.lms)
+lmdata <- add_interactions(lmdata, pred_covars, func_covars, func_lms)
 head(lmdata$data)
 }
 

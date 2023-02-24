@@ -10,7 +10,7 @@ fitLM(
   type = "coxph",
   method = "breslow",
   func_covars,
-  func_LMs,
+  func_lms,
   LM_col,
   outcome,
   w,
@@ -36,7 +36,7 @@ Default is "breslow". More information can be found in coxph.}
 \item{func_covars}{A list of functions to use for interactions between LMs
 and covariates.}
 
-\item{func_LMs}{A list of functions to use for transformations of the
+\item{func_lms}{A list of functions to use for transformations of the
 landmark times.}
 
 \item{LM_col}{Character string specifying the column name that indicates the
@@ -65,7 +65,7 @@ An object of class "LMcoxph" or "LMCSC" with components:
 \itemize{
 \item model: fitted model
 \item type: as input
-\item w, func_covars, func_LMs, LMcovars, allLMcovars, outcome: as in \code{lmdata}
+\item w, func_covars, func_lms, LMcovars, allLMcovars, outcome: as in \code{lmdata}
 \item LHS: the LHS of the input formula
 \item linear.predictors: the vector of linear predictors, one per subject.
 Note that this vector has not been centered.
