@@ -158,7 +158,7 @@ There are three steps:
 1.  `stack_data`: stacks the landmark data sets
 2.  An **optional** additional update for more complex columns that vary
     with landmark-times: For example, here we update the value of age.
-3.  `addLMtime`: Landmark time interactions are added, note the
+3.  `add_interactions`: Landmark time interactions are added, note the
     additional columns created.
 
 *Note that these return an object of class `LMdataframe`. This has a
@@ -203,7 +203,7 @@ interaction in `func.covars`, `_2` refers to the second interaction in
 covariates that will have landmark time interactions.
 
 ```{r}
-LMdata <- addLMtime(LMdata, pred.covars, func.covars, func.lms) 
+LMdata <- add_interactions(LMdata, pred.covars, func.covars, func.lms) 
 data = LMdata$data
 print(data[data$ID == "ID1029",])
 ```
@@ -226,7 +226,7 @@ It is then easy to fit a landmark supermodel using `fitLM`. A formula,
 super dataset and method need to be provided. If the super dataset is
 not of class `LMdataframe` (i.e., is a self-created R dataframe), then
 additional parameters must be specified. In this case, see the details
-section of the documentation of `addLMtime(...)` for information on how
+section of the documentation of `add_interactions(...)` for information on how
 the landmark interaction terms must be named.
 
 ```{r}
