@@ -44,7 +44,7 @@ print.LMpred <- function(x, ...){
 #'
 print.LMdataframe <- function(x, ...){
   if (!requireNamespace("data.table", quietly = TRUE)) {
-    stop("Package \"data.table\" must be installed to use function LMScore.", call. = FALSE)}
+    stop("Package \"data.table\" must be installed to use function score.", call. = FALSE)}
 
   cat("$data\n")
   print(utils::head(x$data))
