@@ -4,13 +4,13 @@
 #' There are three ways to perform assess the predictive performance:
 #' apparent/internal, bootstrapped, and external. Accordingly, the named list of
 #' prediction models must be as follows:
-#' * For both apparent/internal evaluation, objects output from `predLMrisk` or
-#'   supermodels fit with `fitLM` may be used as input.
-#' * In order to bootstrap, supermodels fit with `fitLM` may be used as input
+#' * For both apparent/internal evaluation, objects output from [predLMrisk()]
+#'   or supermodels fit with [fitLM()] may be used as input.
+#' * In order to bootstrap, supermodels fit with [fitLM()] may be used as input
 #'   (note that the argument `x=TRUE` must be specified when fitting the model
-#'   in `fitLM`).
-#' * For external calibration, supermodels fit with `fitLM` are input along with
-#'   new data in the `data` argument. This data can be a LMdataframe or a
+#'   in `[fitLM()]).
+#' * For external calibration, supermodels fit with [fitLM()] are input along
+#'   with new data in the `data` argument. This data can be a LMdataframe or a
 #'   dataframe (in which case `tLM` must be specified).
 #'
 #' For both internal evaluation and bootstrapping, it is assumed that all
@@ -18,8 +18,8 @@
 #'
 #'
 #' @param object A named list of prediction models, where allowed entries are
-#'   outputs from `predLMrisk` or supermodels from `fitLM` depending on the type
-#'   of calibration.
+#'   outputs from [predLMrisk()] or supermodels from [fitLM()] depending on the
+#'   type of calibration.
 #' @param times Landmark times for which calibration must be plot. These must be
 #'   a subset of LM times used during the prediction
 #' @param metrics  Character vector specifying which metrics to apply. Choices
@@ -38,12 +38,13 @@
 #' @param se.fit If FALSE or 0, no standard errors are calculated.
 #' @param conf.int Confidence interval (CI) coverage. Default is 0.95. If
 #'   bootstrapping, CIs are calculated from empirical quantiles. If not, for
-#'   right censored data, they are calculated by the package `riskRegression` as
+#'   right censored data, they are calculated by the package [riskRegression] as
 #'   in Blanche et al (references).
-#' @param split.method Defines the internal validation design as in
-#'   `pec::calPlot`. Options are currently "none" or "bootcv".
+#' @param split.method Defines the internal validation design. Options are
+#'   currently "none" or "bootcv".
 #'
-#'   "none": assess the model in the test data (`data` argument)/data it was trained on.
+#'   "none": assess the model in the test data (`data` argument)/data it was
+#'   trained on.
 #'
 #'   "bootcv": `B` models are trained on boostrap samples either drawn with
 #'     replacement of the same size as the original data or without replacement
@@ -60,15 +61,15 @@
 #'   Only used for printing results.
 #' @param cause Cause of interest if considering competing risks. If left blank,
 #'   this is inferred from object.
-#' @param ... Additional arguments to pass to Score (`riskRegression` package).
+#' @param ... Additional arguments to pass to [riskRegression::Score()].
 #'   These arguments have been included for user flexibility but have not been
-#'  tested and should be used with precaution.
+#'   tested and should be used with precaution.
 #' @param silent Show any error messages when computing `Score` for each
-#'  landmark time (and potentially bootstrap iteration)
+#'   landmark time (and potentially bootstrap iteration)
 #' @param na.rm Ignore bootstraps where there are errors (for example not
-#'  enough datasamples) and calculate metrics on remaining values. This is not
-#'  recommended. For example, if only one bootstrap sampling has enough data
-#'  that live to the prediction window, the standard error will be zero.
+#'   enough datasamples) and calculate metrics on remaining values. This is not
+#'   recommended. For example, if only one bootstrap sampling has enough data
+#'   that live to the prediction window, the standard error will be zero.
 #' @return An object of class "LMScore", which has components:
 #'   - `auct`: dataframe containing time-dependent AUC if "auc" was
 #'     included as a metric
@@ -77,11 +78,11 @@
 #' @details See the Github for example code.
 #'
 #'   If data at late evaluation times is sparse, certain bootstrap samples may
-#'   have patients that live long enough to perform evaluation. In this case,
-#'   a message "Upper limit of followup in bootstrap samples, was too low.
+#'   not have patients that live long enough to perform evaluation leading to
+#'   the message "Upper limit of followup in bootstrap samples, was too low.
 #'   Results at evaluation time(s) beyond these points could not be computed
 #'   and are left as NA". In this case, consider only evaluating for earlier
-#'   landmarks or performing prediction with a smaller window as datapoints are
+#'   landmarks or performing prediction with a smaller window as data points are
 #'   slim. If you wish to see which model/bootstrap/landmark times failed, set
 #'   SILENT=FALSE. Set na.rm = TRUE ignores these bootstraps and calculate
 #'   metrics from the bootstrap samples that worked (not recommended).
@@ -93,9 +94,17 @@
 #'   that input data should be complete otherwise this may occur
 #'   unintentionally.
 #'
-#' @references Paul Blanche, Cecile Proust-Lima, Lucie Loubere, Claudine Berr, Jean- Francois Dartigues, and Helene Jacqmin-Gadda. Quantifying and comparing dynamic predictive accuracy of joint models for longitudinal marker and time-to-event in presence of censoring and competing risks. Biometrics, 71 (1):102–113, 2015.
+#' @references Paul Blanche, Cecile Proust-Lima, Lucie Loubere, Claudine Berr,
+#'   Jean- Francois Dartigues, and Helene Jacqmin-Gadda. Quantifying and
+#'   comparing dynamic predictive accuracy of joint models for longitudinal
+#'   marker and time-to-event in presence of censoring and competing risks.
+#'   Biometrics, 71 (1):102–113, 2015.
 #'
-#' P. Blanche, J-F Dartigues, and H. Jacqmin-Gadda. Estimating and comparing time-dependent areas under receiver operating characteristic curves for censored event times with competing risks. Statistics in Medicine, 32(30):5381–5397, 2013.
+#'   P. Blanche, J-F Dartigues, and H. Jacqmin-Gadda. Estimating and comparing
+#'   time-dependent areas under receiver operating characteristic curves for
+#'   censored event times with competing risks. Statistics in Medicine,
+#'   32(30):5381–5397, 2013.
+#'
 #' @import riskRegression
 #' @importFrom data.table .SD
 #' @export

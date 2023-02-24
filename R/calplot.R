@@ -3,12 +3,12 @@
 #' There are three ways to perform calibration: apparent/internal, bootstrapped,
 #' and external. Accordingly, the named list of prediction models must be as
 #' follows:
-#' * For both apparent/internal calbration, objects output from `predLMrisk`
-#'   for supermodels fit with `fitLM` may be used as input.
-#' * In order to bootstrap, supermodels fit with `fitLM` may be used as input
+#' * For both apparent/internal calbration, objects output from [predLMrisk()]
+#'   for supermodels fit with [fitLM()] may be used as input.
+#' * In order to bootstrap, supermodels fit with [fitLM()] may be used as input
 #'   (note that the argument `x=TRUE` must be specified when fitting the model
-#'   in `fitLM`).
-#' * For external calibration, supermodels fit with `fitLM` are input along with
+#'   in [fitLM()]).
+#' * For external calibration, supermodels fit with [fitLM()] are input along with
 #'   new data in the `data` argument. This data can be a LMdataframe or a
 #'   dataframe (in which case `tLM` must be specified).
 #'
@@ -16,7 +16,7 @@
 #' models in `object` are fit on the same data.
 #'
 #' @param object A named list of prediction models, where allowed entries are
-#'   outputs from `predLMrisk` or supermodels from `fitLM` depending on the type
+#'   outputs from [predLMrisk()] or supermodels from [fitLM()] depending on the type
 #'   of calibration.
 #' @param times Landmark times for which calibration must be plot. These must be
 #'   a subset of LM times used during the prediction
@@ -29,10 +29,10 @@
 #'   tLM can be a string (indicating a column in data), a vector of length
 #'   nrow(data), or a single value if all patient entries were obtained at the
 #'   same landmark time.
-#' @param ID_col Column name that identifies individuals in data. If omitted, it
+#' @param id_col Column name that identifies individuals in data. If omitted, it
 #'   is obtained from the prediction object.
 #' @param split.method Defines the internal validation design as in
-#'   `pec::calPlot`. Options are currently "none" or "bootcv".
+#'   [pec::calPlot()]. Options are currently "none" or "bootcv".
 #'
 #'   "none": assess the model in the test data (`data` argument)/data it was
 #"   trained on.
@@ -49,7 +49,7 @@
 #' @param seed Optional, integer passed to set.seed. If not given or NA, no seed
 #"   is set.
 #' @param regression_values Default is FALSE. If set to TRUE, the returned list
-#'   is appended by a list `regression_values`,
+#'   is appended by another list `regression_values`,
 #'   which contains the intercept and slope of a linear regression of each model
 #'   for each landmark time (i.e., each calibration plot).
 #'   Note that perfect calibration has a slope of 1 and an intercept of 0.
@@ -68,7 +68,11 @@
 #'   tested and should be used with precaution.
 #'
 #' @return List of plots of w-year risk, one entry per prediction/landmark time
-#'   point
+#'   point. List has a component `$regression_values` (if argument
+#'   regression_values is set to TRUE) which is a list of which contains the
+#'   intercept and slope of a linear regression of each model
+#'   for each landmark time (i.e., each calibration plot).
+#'
 #' @details When collecting bootstrap samples, the same individuals are
 #'   considered across landmarks.
 #'   I.e., sample `M` unique individuals, train on the super dataset formed by
@@ -112,7 +116,7 @@ calplot <-
            formula,
            data,
            tLM,
-           ID_col="ID",
+           id_col="ID",
            split.method = "none",
            B = 1,
            M,
@@ -136,7 +140,7 @@ calplot <-
 
 
     checked_input <- match.call()
-    m <- match(c("object", "times", "formula", "data", "tLM", "ID_col",
+    m <- match(c("object", "times", "formula", "data", "tLM", "id_col",
                   "split.method", "B", "M", "cores", "seed", "cause"),
                names(checked_input), 0L)
     checked_input <- as.list(checked_input[m])

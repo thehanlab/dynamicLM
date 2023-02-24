@@ -10,7 +10,7 @@ calplot(
   formula,
   data,
   tLM,
-  ID_col = "ID",
+  id_col = "ID",
   split.method = "none",
   B = 1,
   M,
@@ -27,7 +27,7 @@ calplot(
 }
 \arguments{
 \item{object}{A named list of prediction models, where allowed entries are
-outputs from \code{predLMrisk} or supermodels from \code{fitLM} depending on the type
+outputs from \code{\link[=predLMrisk]{predLMrisk()}} or supermodels from \code{\link[=fitLM]{fitLM()}} depending on the type
 of calibration.}
 
 \item{times}{Landmark times for which calibration must be plot. These must be
@@ -44,11 +44,11 @@ tLM can be a string (indicating a column in data), a vector of length
 nrow(data), or a single value if all patient entries were obtained at the
 same landmark time.}
 
-\item{ID_col}{Column name that identifies individuals in data. If omitted, it
+\item{id_col}{Column name that identifies individuals in data. If omitted, it
 is obtained from the prediction object.}
 
 \item{split.method}{Defines the internal validation design as in
-\code{pec::calPlot}. Options are currently "none" or "bootcv".
+\code{\link[pec:calPlot]{pec::calPlot()}}. Options are currently "none" or "bootcv".
 
 "none": assess the model in the test data (\code{data} argument)/data it was
 
@@ -65,7 +65,7 @@ size \code{M}. Models are then assessed in observations not in the sample.}
 \item{seed}{Optional, integer passed to set.seed. If not given or NA, no seed}
 
 \item{regression_values}{Default is FALSE. If set to TRUE, the returned list
-is appended by a list \code{regression_values},
+is appended by another list \code{regression_values},
 which contains the intercept and slope of a linear regression of each model
 for each landmark time (i.e., each calibration plot).
 Note that perfect calibration has a slope of 1 and an intercept of 0.}
@@ -90,19 +90,22 @@ tested and should be used with precaution.}
 }
 \value{
 List of plots of w-year risk, one entry per prediction/landmark time
-point
+point. List has a component \verb{$regression_values} (if argument
+regression_values is set to TRUE) which is a list of which contains the
+intercept and slope of a linear regression of each model
+for each landmark time (i.e., each calibration plot).
 }
 \description{
 There are three ways to perform calibration: apparent/internal, bootstrapped,
 and external. Accordingly, the named list of prediction models must be as
 follows:
 \itemize{
-\item For both apparent/internal calbration, objects output from \code{predLMrisk}
-for supermodels fit with \code{fitLM} may be used as input.
-\item In order to bootstrap, supermodels fit with \code{fitLM} may be used as input
+\item For both apparent/internal calbration, objects output from \code{\link[=predLMrisk]{predLMrisk()}}
+for supermodels fit with \code{\link[=fitLM]{fitLM()}} may be used as input.
+\item In order to bootstrap, supermodels fit with \code{\link[=fitLM]{fitLM()}} may be used as input
 (note that the argument \code{x=TRUE} must be specified when fitting the model
-in \code{fitLM}).
-\item For external calibration, supermodels fit with \code{fitLM} are input along with
+in \code{\link[=fitLM]{fitLM()}}).
+\item For external calibration, supermodels fit with \code{\link[=fitLM]{fitLM()}} are input along with
 new data in the \code{data} argument. This data can be a LMdataframe or a
 dataframe (in which case \code{tLM} must be specified).
 }
