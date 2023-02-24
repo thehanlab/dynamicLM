@@ -215,7 +215,7 @@ check_evaluation_inputs <- function(
         pred.b <- try(
           # TODO: consider including w, extend, silence, complete as args to predict.dynamicLM
           # TODO: use complete=T
-          predict.dynamicLM(model.b,newdata=data_val_b,tLM=tLMs_b,cause=model.b$cause, complete=F),
+          predict.dynamicLM(model.b,newdata=data_val_b,lms=tLMs_b,cause=model.b$cause, complete=F),
           silent = F
         )
 
