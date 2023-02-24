@@ -3,7 +3,7 @@
 #' @param formula The formula to be used, remember to include "+cluster(ID)" for
 #'  the column that indicates the ID of the individual for robust error
 #'  estimates.
-#' @param LMdata  An object of class "LMdataframe", this can be created by
+#' @param lmdata  An object of class "LMdataframe", this can be created by
 #'   running [dynamicLM::stack_data()] and [dynamicLM::add_interactions()]
 #' @param type "coxph" or "CSC"/"CauseSpecificCox"
 #' @param method A character string specifying the method for tie handling.
@@ -23,14 +23,14 @@
 #'   LM interaction
 #' @param cluster Variable which clusters the observations (for e.g., identifies
 #'   repeated patient IDs), for the purposes of a robust variance.
-#' @param x Logical value. If set to true, the LMdata is stored in the returned
+#' @param x Logical value. If set to true, the `lmdata` is stored in the returned
 #'   object. This is required for internal validation.
 #' @param ... Arguments given to coxph or CSC.
 #'
 #' @return An object of class "LMcoxph" or "LMCSC" with components:
 #'   - model: fitted model
 #'   - type: as input
-#'   - w, func_covars, func_LMs, LMcovars, allLMcovars, outcome: as in LMdata
+#'   - w, func_covars, func_LMs, LMcovars, allLMcovars, outcome: as in `lmdata`
 #'   - LHS: the LHS of the input formula
 #'   - linear.predictors: the vector of linear predictors, one per subject.
 #'     Note that this vector has not been centered.
@@ -51,22 +51,22 @@
 #' # Choose covariates that will have time interaction
 #' pred.covars <- c("age","male","stage","bmi","treatment")
 #' # Stack landmark datasets
-#' LMdata <- stack_data(relapse, outcome, LMs, w, covs, format="long",
+#' lmdata <- stack_data(relapse, outcome, LMs, w, covs, format="long",
 #'                      id="ID", rtime="fup_time", right=F)
 #' # Update complex LM-varying covariates, note age is in years and LM is in months
-#' LMdata$data$age <- LMdata$data$age.at.time.0 + LMdata$data$LM/12
+#' lmdata$data$age <- lmdata$data$age.at.time.0 + lmdata$data$LM/12
 #' # Add LM-time interactions
-#' LMdata <- addLMtime(LMdata, pred.covars, func.covars, func.LMs)
+#' lmdata <- addLMtime(lmdata, pred.covars, func.covars, func.LMs)
 #' formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment +
 #'            age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 +
 #'            bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
-#' supermodel <- fitLM(as.formula(formula), LMdata, "CSC")
+#' supermodel <- fitLM(as.formula(formula), lmdata, "CSC")
 #' }
 #' @import survival
 #' @export
 #'
 fitLM <- function(formula,
-                  LMdata,
+                  lmdata,
                   type = "coxph",
                   method = "breslow",
                   func_covars,
@@ -81,7 +81,7 @@ fitLM <- function(formula,
 
   # store arguments but not the data (heavy)
   args = match.call()
-  args$LMdata = NULL
+  args$lmdata = NULL
 
   # extra LHS of formula
   LHS = getLHS(formula)
@@ -98,8 +98,8 @@ fitLM <- function(formula,
 
   ID_col <- cluster
 
-  if(!inherits(LMdata,"LMdataframe")){
-    if(!inherits(LMdata,"data.frame")){stop("data must be of a data.frame or an object of class LMdataframe")}
+  if(!inherits(lmdata,"LMdataframe")){
+    if(!inherits(lmdata,"data.frame")){stop("data must be of a data.frame or an object of class LMdataframe")}
 
     if(missing(func_covars)) stop("For input data that is a data frame, arg func_covars must be specified.")
     if(missing(func_LMs)) stop("For input data that is a data frame, arg func_LMs must be specified.")
@@ -110,24 +110,24 @@ fitLM <- function(formula,
 
     allLMcovars <- c(sapply(1:length(func_covars), function(i) paste0(LMcovars,"_",i)),
                      sapply(1:length(func_LMs), function(i) paste0("LM_",i)))
-    if (!all(allLMcovars %in% colnames(LMdata))){
+    if (!all(allLMcovars %in% colnames(lmdata))){
       stop(paste0("The data should have all of the following column names: ",paste0(allLMcovars, collapse=", ")))
     }
 
-    data <- LMdata
+    data <- lmdata
     original.landmarks <- data[[LM_col]]
     end_time <- max(original.landmarks)
 
   } else {
-    data <- LMdata$data
-    func_covars <- LMdata$func_covars
-    func_LMs <- LMdata$func_LMs
-    original.landmarks <- data[[LMdata$LM_col]]
-    end_time <- LMdata$end_time
-    outcome <- LMdata$outcome
-    w <- LMdata$w
-    LMcovars <- LMdata$LMcovars
-    allLMcovars <- LMdata$allLMcovars
+    data <- lmdata$data
+    func_covars <- lmdata$func_covars
+    func_LMs <- lmdata$func_LMs
+    original.landmarks <- data[[lmdata$LM_col]]
+    end_time <- lmdata$end_time
+    outcome <- lmdata$outcome
+    w <- lmdata$w
+    LMcovars <- lmdata$LMcovars
+    allLMcovars <- lmdata$allLMcovars
   }
   LMcovars <- intersect(sub("_[^_]+$", "", all.vars(formula[[3]])), LMcovars)
 
@@ -177,7 +177,7 @@ fitLM <- function(formula,
            original.landmarks=original.landmarks,
            args=args
   )
-  if (x == TRUE) out$data = LMdata
+  if (x == TRUE) out$data = lmdata
   class(out)=cl
 
   return(out)
