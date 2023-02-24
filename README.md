@@ -79,7 +79,7 @@ You can install the development version of `dynamicLM` from
 devtools::install_github("thehanlab/dynamicLM", ref = "proposed-updates")
 #> Downloading GitHub repo thehanlab/dynamicLM@proposed-updates
 #> 
-#>      checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpwDb423/remotesd2f369d5b87/thehanlab-dynamicLM-41e8cc3/DESCRIPTION’ ...  ✔  checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpwDb423/remotesd2f369d5b87/thehanlab-dynamicLM-41e8cc3/DESCRIPTION’
+#>      checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpQ4YnaL/remotes1af36c5579e2/thehanlab-dynamicLM-77b905d/DESCRIPTION’ ...  ✔  checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpQ4YnaL/remotes1af36c5579e2/thehanlab-dynamicLM-77b905d/DESCRIPTION’
 #>   ─  preparing ‘dynamicLM’:
 #>    checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
 #>   ─  checking for LF line-endings in source and make files and shell scripts
@@ -310,7 +310,7 @@ print(all_covs)
 #> [16] "LM_1"        "LM_2"
 ```
 
-It is then easy to fit a landmark supermodel using `fitLM`. A formula,
+It is then easy to fit a landmark supermodel using `dynls`. A formula,
 super dataset and method need to be provided. If the super dataset is
 not of class `LMdataframe` (i.e., is a self-created R dataframe), then
 additional parameters must be specified. In this case, see the details
@@ -319,7 +319,7 @@ on how the landmark interaction terms must be named.
 
 ``` r
 formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment + age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 + bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
-supermodel <- fitLM(as.formula(formula), LMdata, "CSC") 
+supermodel <- dynls(as.formula(formula), LMdata, "CSC") 
 #> Warning in agreg.fit(X, Y, istrat, offset, init, control, weights = weights, :
 #> Loglik converged before variable 8,9 ; beta may be infinite.
 print(supermodel)
@@ -378,11 +378,11 @@ print(supermodel)
 #> $func_covars
 #> $func_covars$[[1]]
 #> function(t) t
-#> <bytecode: 0x10f1c31c8>
+#> <bytecode: 0x11a4136d8>
 #> 
 #> $func_covars$[[2]]
 #> function(t) t^2
-#> <bytecode: 0x10e586f58>
+#> <bytecode: 0x11b0dea58>
 #> 
 #> $func_lms
 #> $func_lms$[[1]]
@@ -407,14 +407,14 @@ provided using the `covars` argument.
 
 ``` r
 par(mfrow = c(2,3))
-plotDynamicHR(supermodel)
+plot(supermodel)
 ```
 
 <img src="man/figures/README-dynhr-1.png" width="100%" />
 
 ``` r
 # To create only two plots:
-plotDynamicHR(supermodel, covars=c("age","male"))
+plot(supermodel, covars=c("age","male"))
 ```
 
 ## 3.4 Obtain predictions
@@ -577,7 +577,7 @@ head(dat)
 ```
 
 ``` r
-plotLMrisk(supermodel, dat, format="long", lm_col = "LM", id_col = "ID", 
+plotrisk(supermodel, dat, format="long", lm_col = "LM", id_col = "ID", 
            ylim = c(0, 0.7), x.legend="bottom", unit="month")
 ```
 
