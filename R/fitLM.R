@@ -12,7 +12,7 @@
 #'   and covariates.
 #' @param func_lms A list of functions to use for transformations of the
 #'   landmark times.
-#' @param LM_col Character string specifying the column name that indicates the
+#' @param lm_col Character string specifying the column name that indicates the
 #'   landmark time point for a row.
 #' @param outcome List with items time and status, containing character strings
 #'   identifying the names of time and status variables, respectively, of the
@@ -30,7 +30,7 @@
 #' @return An object of class "LMcoxph" or "LMCSC" with components:
 #'   - model: fitted model
 #'   - type: as input
-#'   - w, func_covars, func_lms, lm_covs, allLMcovars, outcome: as in `lmdata`
+#'   - w, func_covars, func_lms, lm_covs, all_covs, outcome: as in `lmdata`
 #'   - LHS: the LHS of the input formula
 #'   - linear.predictors: the vector of linear predictors, one per subject.
 #'     Note that this vector has not been centered.
@@ -71,7 +71,7 @@ fitLM <- function(formula,
                   method = "breslow",
                   func_covars,
                   func_lms,
-                  LM_col,
+                  lm_col,
                   outcome,
                   w,
                   lm_covs,
@@ -103,31 +103,31 @@ fitLM <- function(formula,
 
     if(missing(func_covars)) stop("For input data that is a data frame, arg func_covars must be specified.")
     if(missing(func_lms)) stop("For input data that is a data frame, arg func_lms must be specified.")
-    if(missing(LM_col)) stop("For input data that is a data frame, arg LM_col must be specified.")
+    if(missing(lm_col)) stop("For input data that is a data frame, arg lm_col must be specified.")
     if(missing(outcome)) stop("For input data that is a data frame, arg outcome must be specified.")
     if(missing(w)) stop("For input data that is a data frame, arg w must be specified.")
     if(missing(lm_covs)) stop("For input data that is a data frame, arg lm_covs must be specified.")
 
-    allLMcovars <- c(sapply(1:length(func_covars), function(i) paste0(lm_covs,"_",i)),
+    all_covs <- c(sapply(1:length(func_covars), function(i) paste0(lm_covs,"_",i)),
                      sapply(1:length(func_lms), function(i) paste0("LM_",i)))
-    if (!all(allLMcovars %in% colnames(lmdata))){
-      stop(paste0("The data should have all of the following column names: ",paste0(allLMcovars, collapse=", ")))
+    if (!all(all_covs %in% colnames(lmdata))){
+      stop(paste0("The data should have all of the following column names: ",paste0(all_covs, collapse=", ")))
     }
 
     data <- lmdata
-    original.landmarks <- data[[LM_col]]
+    original.landmarks <- data[[lm_col]]
     end_time <- max(original.landmarks)
 
   } else {
     data <- lmdata$data
     func_covars <- lmdata$func_covars
     func_lms <- lmdata$func_lms
-    original.landmarks <- data[[lmdata$LM_col]]
+    original.landmarks <- data[[lmdata$lm_col]]
     end_time <- lmdata$end_time
     outcome <- lmdata$outcome
     w <- lmdata$w
     lm_covs <- lmdata$lm_covs
-    allLMcovars <- lmdata$allLMcovars
+    all_covs <- lmdata$all_covs
   }
   lm_covs <- intersect(sub("_[^_]+$", "", all.vars(formula[[3]])), lm_covs)
 
@@ -169,7 +169,7 @@ fitLM <- function(formula,
            func_covars=func_covars,
            func_lms=func_lms,
            lm_covs=lm_covs,
-           allLMcovars=allLMcovars,
+           all_covs=all_covs,
            outcome=outcome,
            LHS=LHS,
            ID_col = ID_col,

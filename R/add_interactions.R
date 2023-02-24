@@ -13,7 +13,7 @@
 #'   and covariates.
 #' @param func_lms A list of functions to use for transformations of the
 #'   landmark times.
-#' @param LM_col Character string specifying the column name that indicates the
+#' @param lm_col Character string specifying the column name that indicates the
 #'   landmark time point for a row.
 #' @param keep Boolean value to indicate whether or not to keep the columns
 #'   given by `lm_covs` without the time interactions or not. Default=FALSE.
@@ -25,8 +25,8 @@
 #'   - func_covars: as the input
 #'   - func_lms: as the input
 #'   - lm_covs: as the input
-#'   - allLMcovars: a list of the new columns added
-#'   - LM_col: as the input
+#'   - all_covs: a list of the new columns added
+#'   - lm_col: as the input
 #'
 #' @details For each variable "var" in `lm_covs`, new columns var_1,...,var_i
 #'   (length(func_covars) == i) are added; one column for each interaction given
@@ -60,9 +60,9 @@
 #' }
 #'
 #' @export
-add_interactions <- function(lmdata, lm_covs, func_covars, func_lms, LM_col="LM",keep=T){
-  if (LM_col %in% func_covars){
-    stop(paste0("arg LM_col (given as ",LM_col,") should not be in arg func_covars."))
+add_interactions <- function(lmdata, lm_covs, func_covars, func_lms, lm_col="LM",keep=T){
+  if (lm_col %in% func_covars){
+    stop(paste0("arg lm_col (given as ",lm_col,") should not be in arg func_covars."))
   }
   data <- lmdata$data
   if (missing(func_covars)){
@@ -78,15 +78,15 @@ add_interactions <- function(lmdata, lm_covs, func_covars, func_lms, LM_col="LM"
     func_lms <- list(g1,g2)
   }
 
-  allLMcovars <- c(lm_covs)
-  data_LM <- data[[LM_col]]
+  all_covs <- c(lm_covs)
+  data_LM <- data[[lm_col]]
   # Add func_covarss: covariate LM interactions
   for(i in 1:length(lm_covs)){
     for (j in 1:length(func_covars)){
       f <- func_covars[[j]]
       name <- paste0(lm_covs[i],"_",j)
       data[[name]]  <- data[[lm_covs[i]]]*f(data_LM)
-      allLMcovars <- c(allLMcovars, name)
+      all_covs <- c(all_covs, name)
     }
   }
   # Add func_lms: LM interactions
@@ -94,7 +94,7 @@ add_interactions <- function(lmdata, lm_covs, func_covars, func_lms, LM_col="LM"
     g <- func_lms[[k]]
     name <- paste0("LM_",k)
     data[[name]]  <- g(data_LM)
-    allLMcovars <- c(allLMcovars, name)
+    all_covs <- c(all_covs, name)
   }
 
   if(!keep){
@@ -106,8 +106,8 @@ add_interactions <- function(lmdata, lm_covs, func_covars, func_lms, LM_col="LM"
   lmdata$func_covars <- func_covars
   lmdata$func_lms <- func_lms
   lmdata$lm_covs <- lm_covs
-  lmdata$allLMcovars <- unique(allLMcovars)
-  lmdata$LM_col <- LM_col
+  lmdata$all_covs <- unique(all_covs)
+  lmdata$lm_col <- lm_col
 
   return(lmdata)
 }

@@ -99,14 +99,14 @@ print.LMdataframe <- function(x, ...){
     print(x$lm_covs)
     cat("\n")
   }
-  if("allLMcovars" %in% names.LMdata){
-    cat("$allLMcovars\n")
-    print(x$allLMcovars)
+  if("all_covs" %in% names.LMdata){
+    cat("$all_covs\n")
+    print(x$all_covs)
     cat("\n")
   }
-  if("LM_col" %in% names.LMdata){
-    cat("$LM_col\n")
-    print(x$LM_col)
+  if("lm_col" %in% names.LMdata){
+    cat("$lm_col\n")
+    print(x$lm_col)
     cat("\n")
   }
 }

@@ -30,7 +30,7 @@
 predLMrisk <- function(object, newdata, tLM, cause, w, extend=F, silence=F, complete=T)
 {
   func_covars <- object$func_covars
-  func_LM <- object$func_LM
+  func_lms <- object$func_lms
   model_w <- object$w
   if(missing(w)){w <- model_w}
   else{
@@ -71,7 +71,7 @@ predLMrisk <- function(object, newdata, tLM, cause, w, extend=F, silence=F, comp
 
   if (!missing(newdata)){
     if (inherits(newdata,"LMdataframe")){
-      tLM <- newdata$LM_col
+      tLM <- newdata$lm_col
       newdata <- newdata$data
     }
     else if (missing(tLM)) {
@@ -112,7 +112,7 @@ predLMrisk <- function(object, newdata, tLM, cause, w, extend=F, silence=F, comp
     risks <- matrix(sapply(1:num_preds, function(i){
       tLMi <- tLM[i]
       newdatai <- newdata[i,]
-      sapply(1:num_causes, function(c) riskScore(models[[c]], tLMi, newdatai, func_covars, func_LM))
+      sapply(1:num_causes, function(c) riskScore(models[[c]], tLMi, newdatai, func_covars, func_lms))
     }),nrow=num_causes)
     data <- newdata
 

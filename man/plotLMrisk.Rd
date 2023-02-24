@@ -8,7 +8,7 @@ plotLMrisk(
   object,
   data,
   format,
-  LM_col,
+  lm_col,
   id_col,
   w,
   cause,
@@ -38,7 +38,7 @@ plotLMrisk(
 
 \item{format}{Character string specifying whether the data are in wide (default) or in long format}
 
-\item{LM_col}{Character string specifying the column name in data containing the (running) time variable
+\item{lm_col}{Character string specifying the column name in data containing the (running) time variable
 associated with the time-varying covariate(s); only needed if format="long"}
 
 \item{id_col}{Character string specifying the column name in data containing the subject id; only needed if format="long"}

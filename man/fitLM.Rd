@@ -11,7 +11,7 @@ fitLM(
   method = "breslow",
   func_covars,
   func_lms,
-  LM_col,
+  lm_col,
   outcome,
   w,
   lm_covs,
@@ -39,7 +39,7 @@ and covariates.}
 \item{func_lms}{A list of functions to use for transformations of the
 landmark times.}
 
-\item{LM_col}{Character string specifying the column name that indicates the
+\item{lm_col}{Character string specifying the column name that indicates the
 landmark time point for a row.}
 
 \item{outcome}{List with items time and status, containing character strings
@@ -65,7 +65,7 @@ An object of class "LMcoxph" or "LMCSC" with components:
 \itemize{
 \item model: fitted model
 \item type: as input
-\item w, func_covars, func_lms, lm_covs, allLMcovars, outcome: as in \code{lmdata}
+\item w, func_covars, func_lms, lm_covs, all_covs, outcome: as in \code{lmdata}
 \item LHS: the LHS of the input formula
 \item linear.predictors: the vector of linear predictors, one per subject.
 Note that this vector has not been centered.
