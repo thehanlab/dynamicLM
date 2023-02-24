@@ -2,6 +2,7 @@
 #' Add landmarking time interactions to a super dataset
 #'
 #' @param lmdata An object of class "LMdataframe".
+#'
 #'   This can be created by running [dynamicLM::stack_data()], or creating a
 #'   stacked data set and storing it in a list with attributes outcome, w and
 #'   end_time (see [dynamicLM::stack_data()] for further description of outcome
@@ -49,12 +50,13 @@
 #' # Choose covariates that will have time interaction
 #' pred.covars <- c("age","male","stage","bmi","treatment")
 #' # Stack landmark datasets
-#' lmdata <- stack_data(relapse, outcome, LMs, w, covs, format="long",
+#' lmdata <- stack_data(relapse, outcome, LMs, w, covars, format="long",
 #'                      id="ID", rtime="T_txgiven", right=F)
 #' # Update complex LM-varying covariates, note age is in years and LM is in months
 #' lmdata$data$age <- lmdata$data$age.at.time.0 + lmdata$data$LM/12
 #' # Add LM-time interactions
 #' lmdata <- add_interactions(lmdata, pred.covars, func.covars, func.lms)
+#' head(lmdata$data)
 #' }
 #'
 #' @export

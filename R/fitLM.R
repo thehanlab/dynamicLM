@@ -56,7 +56,7 @@
 #' # Update complex LM-varying covariates, note age is in years and LM is in months
 #' lmdata$data$age <- lmdata$data$age.at.time.0 + lmdata$data$LM/12
 #' # Add LM-time interactions
-#' lmdata <- addLMtime(lmdata, pred.covars, func.covars, func.LMs)
+#' lmdata <- add_interactions(lmdata, pred.covars, func.covars, func.LMs)
 #' formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment +
 #'            age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 +
 #'            bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
