@@ -32,7 +32,7 @@
 #' @details See the Github for example code
 #' @export
 #'
-plotLMrisk <- function(object, data, format, lm_col, id_col, w,
+plotrisk <- function(object, data, format, lm_col, id_col, w,
                      cause, varying,
                      end_time, extend=F, silence=F,
                      unit,
@@ -194,7 +194,7 @@ plotLMrisk <- function(object, data, format, lm_col, id_col, w,
 
     long_form = rbind(no_change, change1, change2)
 
-    plotLMrisk(object, long_form, format="long", lm_col="LM", id_col,
+    plotrisk(object, long_form, format="long", lm_col="LM", id_col,
                            cause, varying,
                            end_time, extend, silence,
                            unit, pch,lty,lwd,col,main,xlab,ylab,xlim,ylim,x.legend,y.legend,...)
