@@ -45,9 +45,10 @@ If none is given, it is obtained from the prediction object.}
 \item{data}{Data for external validation.}
 
 \item{tLM}{Landmark times corresponding to the patient entries in data. Only
-required if data is a dataframe. tLM can be a string (indicating a column
-in data), a vector of length nrow(data), or a single value if all patient
-entries were obtained at the same landmark time.}
+required if data is specified and is a dataframe.
+tLM can be a string (indicating a column in data), a vector of length
+nrow(data), or a single value if all patient entries were obtained at the
+same landmark time.}
 
 \item{ID_col}{Column name that identifies individuals in data. If omitted, it
 is obtained from the prediction object.}
@@ -73,7 +74,8 @@ of size \code{M}. Models are then assessed in observations not in the sample.}
 \item{M}{Subsample size for training in cross-validation. Entries not sampled
 in the M subsamples are used for validation.}
 
-\item{cores}{To perform parallel computing, specifies the number of cores.}
+\item{cores}{To perform parallel computing, specifies the number of cores.
+(Not yet implemented)}
 
 \item{seed}{Optional, integer passed to set.seed. If not given or NA, no seed
 is set.}
