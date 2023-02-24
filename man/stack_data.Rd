@@ -58,8 +58,8 @@ covars = list(fixed=c("ID","age.at.time.0","male","stage","bmi"),
               varying=c("treatment"))
 w = 60; lms = c(0,12,24)
 # Stack landmark datasets
-LMdata <- stack_data(relapse, outcome, lms, w, covs, format="long",
+lmdata <- stack_data(relapse, outcome, lms, w, covs, format="long",
                      id="ID", rtime="T_txgiven", right=F)
-head(LMdata$data)
+head(lmdata$data)
 }
 }
