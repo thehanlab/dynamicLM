@@ -24,7 +24,8 @@
 #' @param ... Additional arguments passed to plot
 #'
 #' @return Plots for each variable in covars showing the dynamic hazard ratio
-#' @details See the Github for example code
+#' @details See our [GitHub](https://github.com/thehanlab/dynamicLM) for example
+#'   code
 #' @export
 #'
 plot.dynamicLM <- function(object, covars, conf_int=T, cause, end_time, logHR=T,

@@ -89,5 +89,6 @@ Single plot the absolute w-year risk of individuals
 Plots the absolute w-year risk of individuals for different LM points for an event of interest within a window
 }
 \details{
-See the Github for example code
+See our \href{https://github.com/thehanlab/dynamicLM}{GitHub} for example
+code
 }

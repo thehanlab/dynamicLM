@@ -84,7 +84,7 @@
 #'  formula is not given. Formulas can look like `Hist(Time,event,LM)~1` /
 #'  similar...
 #'
-#'  See the [github](https://github.com/thehanlab/dynamicLM) for detailed
+#'  See our [GitHub](https://github.com/thehanlab/dynamicLM) for detailed
 #'  example code.
 #'
 #'  A comment on the following message:
