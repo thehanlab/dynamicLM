@@ -77,8 +77,16 @@ You can install the development version of `dynamicLM` from
 ``` r
 # install.packages("devtools")
 devtools::install_github("thehanlab/dynamicLM", ref = "proposed-updates")
-#> Skipping install of 'dynamicLM' from a github remote, the SHA1 (9f19de7d) has not changed since last install.
-#>   Use `force = TRUE` to force installation
+#> Downloading GitHub repo thehanlab/dynamicLM@proposed-updates
+#> 
+#>      checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/Rtmpgty0KD/remotes1860772174294/thehanlab-dynamicLM-a852092/DESCRIPTION’ ...  ✔  checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/Rtmpgty0KD/remotes1860772174294/thehanlab-dynamicLM-a852092/DESCRIPTION’
+#>   ─  preparing ‘dynamicLM’:
+#>      checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
+#>   ─  checking for LF line-endings in source and make files and shell scripts
+#>   ─  checking for empty or unneeded directories
+#>   ─  building ‘dynamicLM_0.3.0.tar.gz’
+#>      
+#> 
 ```
 
 Requirements for the package can be found in the description file.
@@ -170,7 +178,7 @@ There are three steps:
 1.  `stack_data`: stacks the landmark data sets
 2.  An **optional** additional update for more complex columns that vary
     with landmark-times: For example, here we update the value of age.
-3.  `addLMtime`: Landmark time interactions are added, note the
+3.  `add_interactions`: Landmark time interactions are added, note the
     additional columns created.
 
 *Note that these return an object of class `LMdataframe`. This has a
@@ -250,7 +258,7 @@ interaction in `func.covars`, `_2` refers to the second interaction in
 covariates that will have landmark time interactions.
 
 ``` r
-LMdata <- addLMtime(LMdata, pred.covars, func.covars, func.lms) 
+LMdata <- add_interactions(LMdata, pred.covars, func.covars, func.lms) 
 data = LMdata$data
 print(data[data$ID == "ID1029",])
 #>         ID     Time event   ID.1 age.at.time.0 male stage  bmi treatment
@@ -301,8 +309,8 @@ It is then easy to fit a landmark supermodel using `fitLM`. A formula,
 super dataset and method need to be provided. If the super dataset is
 not of class `LMdataframe` (i.e., is a self-created R dataframe), then
 additional parameters must be specified. In this case, see the details
-section of the documentation of `addLMtime(...)` for information on how
-the landmark interaction terms must be named.
+section of the documentation of `add_interactions(...)` for information
+on how the landmark interaction terms must be named.
 
 ``` r
 formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment + age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 + bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
@@ -365,11 +373,11 @@ print(supermodel)
 #> $func_covars
 #> $func_covars$[[1]]
 #> function(t) t
-#> <bytecode: 0x1233795a0>
+#> <bytecode: 0x10a0397e8>
 #> 
 #> $func_covars$[[2]]
 #> function(t) t^2
-#> <bytecode: 0x1233ff3f8>
+#> <bytecode: 0x10a0d8fd0>
 #> 
 #> $func_LMs
 #> $func_LMs$[[1]]
