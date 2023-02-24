@@ -46,8 +46,8 @@ print.LMdataframe <- function(x, ...){
   if (!requireNamespace("data.table", quietly = TRUE)) {
     stop("Package \"data.table\" must be installed to use function LMScore.", call. = FALSE)}
 
-  cat("$LMdata\n")
-  print(utils::head(x$LMdata))
+  cat("$data\n")
+  print(utils::head(x$data))
   if(nrow(x$LMdata) > 5) cat(paste0(" [ omitted ",nrow(x$LMdata)-5," rows ]\n"))
   cat("\n")
   cat("\n")

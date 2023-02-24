@@ -72,7 +72,7 @@ predLMrisk <- function(object, newdata, tLM, cause, w, extend=F, silence=F, comp
   if (!missing(newdata)){
     if (inherits(newdata,"LMdataframe")){
       tLM <- newdata$LM_col
-      newdata <- newdata$LMdata
+      newdata <- newdata$data
     }
     else if (missing(tLM)) {
       tLM <- newdata$LM

@@ -40,7 +40,7 @@
 #' LMdata <- stack_data(relapse, outcome, LMs, w, covs, format="long",
 #'                      id="ID", rtime="fup_time", right=F)
 #' # Update complex LM-varying covariates, note age is in years and LM is in months
-#' LMdata$LMdata$age <- LMdata$LMdata$age.at.time.0 + LMdata$LMdata$LM/12
+#' LMdata$data$age <- LMdata$data$age.at.time.0 + LMdata$data$LM/12
 #' # Add LM-time interactions
 #' LMdata <- addLMtime(LMdata, pred.covars, func.covars, func.LMs)
 #' formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment +
@@ -105,7 +105,7 @@ fitLM <- function(formula,
     end_time <- max(original.landmarks)
 
   } else {
-    data <- LMdata$LMdata
+    data <- LMdata$data
     func_covars <- LMdata$func_covars
     func_LMs <- LMdata$func_LMs
     original.landmarks <- data[[LMdata$LM_col]]
@@ -163,7 +163,7 @@ fitLM <- function(formula,
            original.landmarks=original.landmarks,
            args=args
   )
-  if (x == TRUE) out$LMdata = LMdata
+  if (x == TRUE) out$data = LMdata
   class(out)=cl
 
   return(out)

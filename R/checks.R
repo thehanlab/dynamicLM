@@ -59,7 +59,7 @@ check_evaluation_inputs <- function(
     }
     else { # We know it is of class LMCSC or LMcoxph
       if (split.method == "bootcv"){
-        LMdata <- object[[i]]$LMdata
+        LMdata <- object[[i]]$data
         if (is.null(LMdata)) {
           model.class = class(object[[i]])
           stop(paste("Prediction object",name,"does not have data stored. In order to bootstrap, objects of class", model.class,"must be fit with argument x=TRUE."))
@@ -77,8 +77,8 @@ check_evaluation_inputs <- function(
     }
     # only need the dataframe
     if (inherits(data,"LMdataframe")) {
-      tLM <- data$LMdata[[data$LM_col]]
-      data <- data$LMdata
+      tLM <- data$data[[data$LM_col]]
+      data <- data$data
     }
     else if (missing(tLM)) {
       stop("For external validation on new data, argumnet tLM must be specified.")
@@ -92,9 +92,9 @@ check_evaluation_inputs <- function(
 
   # get data if bootstrapping
   if (split.method == "bootcv") {
-    LMdata <- object[[1]]$LMdata
-    LMdata$LMdata <- LMdata$LMdata[stats::complete.cases(LMdata$LMdata), ]
-    data <- LMdata$LMdata
+    LMdata <- object[[1]]$data
+    LMdata$data <- LMdata$data[stats::complete.cases(LMdata$data), ]
+    data <- LMdata$data
     LM_col <- LMdata$LM_col
 
     if (!is.null(object[[1]]$ID_col)){ ID_col <- object[[1]]$ID_col }
@@ -203,13 +203,13 @@ check_evaluation_inputs <- function(
       outcomes_val_b <- data_val_b[c(outcome$time, outcome$status, LM_col)]
 
       data_train_b <- LMdata
-      data_train_b$LMdata <- data[id_train_b, ]
+      data_train_b$data <- data[id_train_b, ]
 
       preds.b <- do.call("cbind",lapply(1:NF,function(f){
         original_model <- object[[f]]
         args <- original_model$args
-        args$LMdata <- NULL
-        args$LMdata <- data_train_b
+        args$data <- NULL
+        args$data <- data_train_b
         model.b <- eval(args)
         base_data = 0 * model.b$model$coefficients
         pred.b <- try(
