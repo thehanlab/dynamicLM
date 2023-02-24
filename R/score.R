@@ -5,11 +5,11 @@
 #' apparent/internal, bootstrapped, and external. Accordingly, the named list of
 #' prediction models must be as follows:
 #' * For both apparent/internal evaluation, objects output from
-#'   [predict.dynamicLM()] or supermodels fit with [fitLM()] may be used as input.
-#' * In order to bootstrap, supermodels fit with [fitLM()] may be used as input
+#'   [predict.dynamicLM()] or supermodels fit with [dynls()] may be used as input.
+#' * In order to bootstrap, supermodels fit with [dynls()] may be used as input
 #'   (note that the argument `x=TRUE` must be specified when fitting the model
-#'   in `[fitLM()]).
-#' * For external calibration, supermodels fit with [fitLM()] are input along
+#'   in `[dynls()]).
+#' * For external calibration, supermodels fit with [dynls()] are input along
 #'   with new data in the `data` argument. This data can be a LMdataframe or a
 #'   dataframe (in which case `tLM` must be specified).
 #'
@@ -18,7 +18,7 @@
 #'
 #'
 #' @param object A named list of prediction models, where allowed entries are
-#'   outputs from [predict.dynamicLM()] or supermodels from [fitLM()] depending on the
+#'   outputs from [predict.dynamicLM()] or supermodels from [dynls()] depending on the
 #'   type of calibration.
 #' @param times Landmark times for which calibration must be plot. These must be
 #'   a subset of LM times used during the prediction

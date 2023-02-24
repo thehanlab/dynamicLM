@@ -27,7 +27,7 @@ calplot(
 }
 \arguments{
 \item{object}{A named list of prediction models, where allowed entries are
-outputs from \code{\link[=predict.dynamicLM]{predict.dynamicLM()}} or supermodels from \code{\link[=fitLM]{fitLM()}} depending
+outputs from \code{\link[=predict.dynamicLM]{predict.dynamicLM()}} or supermodels from \code{\link[=dynls]{dynls()}} depending
 on the type of calibration.}
 
 \item{times}{Landmark times for which calibration must be plot. These must be
@@ -101,11 +101,11 @@ and external. Accordingly, the named list of prediction models must be as
 follows:
 \itemize{
 \item For both apparent/internal calbration, objects output from
-\code{\link[=predict.dynamicLM]{predict.dynamicLM()}} for supermodels fit with \code{\link[=fitLM]{fitLM()}} may be used as input.
-\item In order to bootstrap, supermodels fit with \code{\link[=fitLM]{fitLM()}} may be used as input
+\code{\link[=predict.dynamicLM]{predict.dynamicLM()}} for supermodels fit with \code{\link[=dynls]{dynls()}} may be used as input.
+\item In order to bootstrap, supermodels fit with \code{\link[=dynls]{dynls()}} may be used as input
 (note that the argument \code{x=TRUE} must be specified when fitting the model
-in \code{\link[=fitLM]{fitLM()}}).
-\item For external calibration, supermodels fit with \code{\link[=fitLM]{fitLM()}} are input along with
+in \code{\link[=dynls]{dynls()}}).
+\item For external calibration, supermodels fit with \code{\link[=dynls]{dynls()}} are input along with
 new data in the \code{data} argument. This data can be a LMdataframe or a
 dataframe (in which case \code{tLM} must be specified).
 }
