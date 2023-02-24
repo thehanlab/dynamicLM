@@ -99,7 +99,7 @@
 #' @import riskRegression
 #' @importFrom data.table .SD
 #' @export
-LMScore <-
+score <-
   function(object,
            times,
            metrics = c("auc", "brier"),
@@ -121,7 +121,7 @@ LMScore <-
            ...) {
 
     if (!requireNamespace("data.table", quietly = TRUE)) {
-      stop("Package \"data.table\" must be installed to use function LMScore.",
+      stop("Package \"data.table\" must be installed to use function score",
            call. = FALSE)
     }
 
