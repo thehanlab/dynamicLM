@@ -39,7 +39,7 @@
 #' LMdata <- stack_data(relapse, outcome, LMs, w, covs, format="long",
 #'                      id="ID", rtime="fup_time", right=F)
 #' # Update complex LM-varying covariates, note age is in years and LM is in months
-#' LMdata$LMdata$age <- LMdata$LMdata$age.at.time.0 + LMdata$LMdata$LM/12
+#' LMdata$data$age <- LMdata$data$age.at.time.0 + LMdata$data$LM/12
 #' # Add LM-time interactions
 #' LMdata <- addLMtime(LMdata, pred.covars, func.covars, func.LMs)
 #' }
@@ -49,7 +49,7 @@ addLMtime <- function(LMdata, LMcovars, func_covars, func_LMs, LM_col="LM",keep=
   if (LM_col %in% func_covars){
     stop(paste0("arg LM_col (given as ",LM_col,") should not be in arg func_covars."))
   }
-  data <- LMdata$LMdata
+  data <- LMdata$data
   if (missing(func_covars)){
     # f gives covariate-time interactions
     f1 <- function(t) t
@@ -86,7 +86,7 @@ addLMtime <- function(LMdata, LMcovars, func_covars, func_LMs, LM_col="LM",keep=
     remaining = colnames(data)[! colnames(data)  %in% LMcovars]
     data <- data[remaining]
   }
-  LMdata$LMdata <- data
+  LMdata$data <- data
 
   LMdata$func_covars <- func_covars
   LMdata$func_LMs <- func_LMs
