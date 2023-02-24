@@ -6,7 +6,7 @@
 \usage{
 add_interactions(
   lmdata,
-  LMcovars,
+  lm_covs,
   func_covars,
   func_lms,
   LM_col = "LM",
@@ -21,8 +21,8 @@ stacked data set and storing it in a list with attributes outcome, w and
 end_time (see \code{\link[=stack_data]{stack_data()}} for further description of outcome
 and w), end_time is the largest landmarking time.}
 
-\item{LMcovars}{Vector of strings indicating the columns that are to have a
-LM interaction}
+\item{lm_covs}{Vector of strings indicating the columns (covariates) that are
+to have a LM interaction}
 
 \item{func_covars}{A list of functions to use for interactions between LMs
 and covariates.}
@@ -34,7 +34,7 @@ landmark times.}
 landmark time point for a row.}
 
 \item{keep}{Boolean value to indicate whether or not to keep the columns
-given by LMcovars without the time interactions or not. Default=FALSE.}
+given by \code{lm_covs} without the time interactions or not. Default=FALSE.}
 }
 \value{
 An object of class "LMdataframe" which now also contains LM
@@ -44,7 +44,7 @@ The object has the following components:
 \item w, outcome: as the input (obtained from lmdata)
 \item func_covars: as the input
 \item func_lms: as the input
-\item LMcovars: as the input
+\item lm_covs: as the input
 \item allLMcovars: a list of the new columns added
 \item LM_col: as the input
 }
@@ -53,7 +53,7 @@ The object has the following components:
 Add landmarking time interactions to a super dataset
 }
 \details{
-For each variable "var" in \code{LMcovars}, new columns var_1,...,var_i
+For each variable "var" in \code{lm_covs}, new columns var_1,...,var_i
 (length(func_covars) == i) are added; one column for each interaction given
 in func_covars is added
 

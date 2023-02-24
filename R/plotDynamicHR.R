@@ -2,7 +2,7 @@
 #'
 #' @param object An object of class "LMcoxph" or "LMCSC", i.e. a fitted supermodel
 #' @param covars Vector or list of strings indicating the variables to plot the HR of
-#'   (note these must be given without time interaction label, for e.g., as in LMcovars).
+#'   (note these must be given without time interaction label, for e.g., as in `lm_covs`).
 #' @param CI Include confidence intervals or not, default is TRUE
 #' @param cause Cause of interest if considering competing risks
 #' @param end_time Final time point to plot HR, defaults to the last landmark point used in model fitting.
@@ -29,7 +29,7 @@ plotDynamicHR <- function(object, covars, CI=T, cause, end_time, extend=F, silen
       stop("Package \"msm\" must be installed to use this function.", call. = FALSE)}
   }
 
-  if (missing(covars)){ covars <- object$LMcovars }
+  if (missing(covars)){ covars <- object$lm_covs }
   if(missing(main)){
     if(is.null(names(covars))) { main <- covars }
     else { main <- names(covars) }

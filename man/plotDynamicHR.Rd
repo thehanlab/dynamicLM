@@ -24,7 +24,7 @@ plotDynamicHR(
 \item{object}{An object of class "LMcoxph" or "LMCSC", i.e. a fitted supermodel}
 
 \item{covars}{Vector or list of strings indicating the variables to plot the HR of
-(note these must be given without time interaction label, for e.g., as in LMcovars).}
+(note these must be given without time interaction label, for e.g., as in \code{lm_covs}).}
 
 \item{CI}{Include confidence intervals or not, default is TRUE}
 

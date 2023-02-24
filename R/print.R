@@ -94,9 +94,9 @@ print.LMdataframe <- function(x, ...){
       cat("\n")
     }
   }
-  if("LMcovars" %in% names.LMdata){
-    cat("$LMcovars\n")
-    print(x$LMcovars)
+  if("lm_covs" %in% names.LMdata){
+    cat("$lm_covs\n")
+    print(x$lm_covs)
     cat("\n")
   }
   if("allLMcovars" %in% names.LMdata){

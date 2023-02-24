@@ -14,7 +14,7 @@ fitLM(
   LM_col,
   outcome,
   w,
-  LMcovars,
+  lm_covs,
   cluster,
   x = FALSE,
   ...
@@ -49,7 +49,7 @@ survival outcome}
 \item{w}{Scalar, the value of the prediction window (ie predict w-year/other
 time period risk from the LM points)}
 
-\item{LMcovars}{Vector of strings indicating the columns that are to have a
+\item{lm_covs}{Vector of strings indicating the columns that are to have a
 LM interaction}
 
 \item{cluster}{Variable which clusters the observations (for e.g., identifies
@@ -65,7 +65,7 @@ An object of class "LMcoxph" or "LMCSC" with components:
 \itemize{
 \item model: fitted model
 \item type: as input
-\item w, func_covars, func_lms, LMcovars, allLMcovars, outcome: as in \code{lmdata}
+\item w, func_covars, func_lms, lm_covs, allLMcovars, outcome: as in \code{lmdata}
 \item LHS: the LHS of the input formula
 \item linear.predictors: the vector of linear predictors, one per subject.
 Note that this vector has not been centered.
