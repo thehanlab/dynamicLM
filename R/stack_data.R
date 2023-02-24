@@ -63,17 +63,17 @@ stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"), 
     }
     LMdata = dynpred::cutLM(data=data,
                     outcome=outcome,
-                    LM=LMs[1],
-                    horizon=LMs[1]+w,
+                    LM=lms[1],
+                    horizon=lms[1]+w,
                     covs=covs,
                     format="wide",
                     right=right)
-    if (length(LMs) > 1){
-      for (i in 2:length(LMs))
+    if (length(lms) > 1){
+      for (i in 2:length(lms))
         LMdata = rbind(LMdata,dynpred::cutLM(data=data,
                                      outcome=outcome,
-                                     LM=LMs[i],
-                                     horizon=LMs[i]+w,
+                                     LM=lms[i],
+                                     horizon=lms[i]+w,
                                      covs=covs,
                                      format="wide",
                                      right=right))
@@ -91,21 +91,21 @@ stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"), 
     # call cutLM
     LMdata = dynpred::cutLM(data=data,
                     outcome=outcome,
-                    LM=LMs[1],
-                    horizon=LMs[1]+w,
+                    LM=lms[1],
+                    horizon=lms[1]+w,
                     covs=covs,
                     format, id, rtime, right)
-    if (length(LMs) > 1){
-      for (i in 2:length(LMs))
+    if (length(lms) > 1){
+      for (i in 2:length(lms))
         LMdata = rbind(LMdata,dynpred::cutLM(data=data,
                                      outcome=outcome,
-                                     LM=LMs[i],
-                                     horizon=LMs[i]+w,
+                                     LM=lms[i],
+                                     horizon=lms[i]+w,
                                      covs=covs,
                                      format, id, rtime, right))
     }
   }
-  out=list(data=LMdata, outcome=outcome, w=w, end_time=LMs[length(LMs)])
+  out=list(data=LMdata, outcome=outcome, w=w, end_time=lms[length(lms)])
   class(out)="LMdataframe"
   return(out)
 }
