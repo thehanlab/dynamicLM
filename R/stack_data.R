@@ -2,7 +2,7 @@
 #'
 #' @param data Data frame from which to construct landmark super dataset
 #' @param outcome List with items time and status, containing character strings identifying the names of time and status variables, respectively, of the survival outcome
-#' @param LMs vector, the value of the landmark time points (points at which prediction is made)
+#' @param lms vector, the value of the landmark time points (points at which prediction is made)
 #' @param w Scalar, the value of the prediction window (ie predict w-year/other time period risk from the LM points)
 #' @param covs  List with items fixed and varying, containing character strings specifying column names in the data containing time-fixed and time-varying covariates, respectively
 #' @param format Character string specifying whether the original data are in wide (default) or in long format
@@ -15,14 +15,14 @@
 #'   - outcome: same as input
 #'   - w: same as input
 #'   - end_time: final landmarking point used in training
-#' @details This function calls cutLM from the library dynpred, more documentation can be found there. Note that for every landmark tLM given in LMs, there must be at least one patient alive after tLM.
+#' @details This function calls cutLM from the library dynpred, more documentation can be found there. Note that for every landmark tLM given in `lms`, there must be at least one patient alive after tLM.
 #' @examples
 #' \dontrun{
 #' data(relapse)
 #' outcome = list(time="Time", status="event")
 #' covars = list(fixed=c("ID","age.at.time.0","male","stage","bmi"),
 #'               varying=c("treatment"))
-#' w = 60; LMs = c(0,12,24)
+#' w = 60; lms = c(0,12,24)
 #' # Covariate-landmark time interactions
 #' func.covars <- list( function(t) t, function(t) t^2)
 #' # let hazard depend on landmark time
@@ -30,15 +30,38 @@
 #' # Choose covariates that will have time interaction
 #' pred.covars <- c("age","male","stage","bmi","treatment")
 #' # Stack landmark datasets
-#' LMdata <- stack_data(relapse, outcome, LMs, w, covs, format="long",
+#' LMdata <- stack_data(relapse, outcome, lms, w, covs, format="long",
 #'                      id="ID", rtime="fup_time", right=F)
 #' }
 #' @import dynpred
 #' @export
 #'
-stack_data <- function(data, outcome, LMs, w, covs, format = c("wide", "long"), id, rtime, right=T){
+stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"), id, rtime, right=T){
+  if(!all(covs$fixed %in% colnames(data))){
+    stop(paste("Fixed column(s): ",
+               paste(covs$fixed[!(covs$fixed %in% colnames(data))], collapse=","),
+               "are not in the data."))
+  }
+  if (!is.null(covs$varying)){
+    if(!all(covs$varying %in% colnames(data))){
+      stop(paste("Varying column(s): ",
+                 paste(covs$varying[!(covs$varying %in% colnames(data))], collapse=","),
+                 "are not in the data."))
+    }
+  }
+  if (missing(id)){
+    if ("ID" %in% colnames(data))
+      id = "ID"
+  }
+  if (!(id %in% colnames(data))){
+    stop(paste("ID column ", id,"is not in the data."))
+  }
+
   if (format == "wide"){
-    LMdata <- dynpred::cutLM(data=data,
+    if (!(id %in% covs$fixed)){
+      covs$fixed = c(id, covs$fixed)
+    }
+    LMdata = dynpred::cutLM(data=data,
                     outcome=outcome,
                     LM=LMs[1],
                     horizon=LMs[1]+w,
@@ -47,7 +70,7 @@ stack_data <- function(data, outcome, LMs, w, covs, format = c("wide", "long"), 
                     right=right)
     if (length(LMs) > 1){
       for (i in 2:length(LMs))
-        LMdata <- rbind(LMdata,dynpred::cutLM(data=data,
+        LMdata = rbind(LMdata,dynpred::cutLM(data=data,
                                      outcome=outcome,
                                      LM=LMs[i],
                                      horizon=LMs[i]+w,
@@ -55,9 +78,18 @@ stack_data <- function(data, outcome, LMs, w, covs, format = c("wide", "long"), 
                                      format="wide",
                                      right=right))
     }
+    LMdata = LMdata[,c(which(colnames(LMdata)==id),
+                       which(colnames(LMdata)!=id))]
 
   } else if (format == "long"){
-    LMdata <- dynpred::cutLM(data=data,
+    # guard against errors in cutLM
+    if (is.null(covs$varying)) {
+      covs$varying = "fake_column1234"
+      data["fake_column1234"] = NA
+    }
+
+    # call cutLM
+    LMdata = dynpred::cutLM(data=data,
                     outcome=outcome,
                     LM=LMs[1],
                     horizon=LMs[1]+w,
@@ -65,7 +97,7 @@ stack_data <- function(data, outcome, LMs, w, covs, format = c("wide", "long"), 
                     format, id, rtime, right)
     if (length(LMs) > 1){
       for (i in 2:length(LMs))
-        LMdata <- rbind(LMdata,dynpred::cutLM(data=data,
+        LMdata = rbind(LMdata,dynpred::cutLM(data=data,
                                      outcome=outcome,
                                      LM=LMs[i],
                                      horizon=LMs[i]+w,
@@ -73,7 +105,7 @@ stack_data <- function(data, outcome, LMs, w, covs, format = c("wide", "long"), 
                                      format, id, rtime, right))
     }
   }
-  out=list(LMdata=LMdata, outcome=outcome, w=w, end_time=LMs[length(LMs)])
+  out=list(data=LMdata, outcome=outcome, w=w, end_time=LMs[length(LMs)])
   class(out)="LMdataframe"
   return(out)
 }
