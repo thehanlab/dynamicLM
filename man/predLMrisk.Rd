@@ -18,7 +18,7 @@ predLMrisk(
 \arguments{
 \item{object}{fitted landmarking supermodel}
 
-\item{newdata}{Either a dataframe of individuals to make predictions for which must contain the original covariates (i.e., without landmark interaction) or an object of class LMdataframe (e.g., from stack_data and addLMtime).}
+\item{newdata}{Either a dataframe of individuals to make predictions for which must contain the original covariates (i.e., without landmark interaction) or an object of class LMdataframe (e.g., from \code{\link[=stack_data]{stack_data()}} and \code{\link[=add_interactions]{add_interactions()}}).}
 
 \item{tLM}{time points at which to predict risk of w more years.
 Note tLM must be one value for newdata or must have the same length as the number of rows of newdata
