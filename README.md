@@ -79,7 +79,7 @@ You can install the development version of `dynamicLM` from
 devtools::install_github("thehanlab/dynamicLM", ref = "proposed-updates")
 #> Downloading GitHub repo thehanlab/dynamicLM@proposed-updates
 #> 
-#>      checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/Rtmpgty0KD/remotes1860772174294/thehanlab-dynamicLM-a852092/DESCRIPTION’ ...  ✔  checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/Rtmpgty0KD/remotes1860772174294/thehanlab-dynamicLM-a852092/DESCRIPTION’
+#>      checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpYUUYfY/remotesb078090fe1/thehanlab-dynamicLM-9ac58a7/DESCRIPTION’ ...  ✔  checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpYUUYfY/remotesb078090fe1/thehanlab-dynamicLM-9ac58a7/DESCRIPTION’
 #>   ─  preparing ‘dynamicLM’:
 #>      checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
 #>   ─  checking for LF line-endings in source and make files and shell scripts
@@ -154,7 +154,7 @@ the model. This means we are only interested in prediction between 0 and
 3 years.
 
 We will consider linear and quadratic landmark interactions with the
-covariates (given in `func_covars`) and the landmarks (`func_LMs`). The
+covariates (given in `func_covars`) and the landmarks (`func_lms`). The
 covariates that should have these landmark interactions are given in
 `pred.covars`.
 
@@ -163,11 +163,11 @@ w = 5*12                  # risk prediction window (risk within time w)
 lms = seq(0,36,by=6)      # landmarks on which to build the model
 
 # Covariate-landmark time interactions
-func.covars <- list( function(t) t, function(t) t^2)
+func_covars <- list( function(t) t, function(t) t^2)
 # let hazard depend on landmark time
-func.lms <- list( function(t) t, function(t) t^2)
+func_lms <- list( function(t) t, function(t) t^2)
 # Choose variables that will have time interaction
-pred.covars <- c("age","male","stage","bmi","treatment") 
+pred_covars <- c("age","male","stage","bmi","treatment") 
 ```
 
 With this, we are ready to build the super data set that will train the
@@ -258,7 +258,7 @@ interaction in `func.covars`, `_2` refers to the second interaction in
 covariates that will have landmark time interactions.
 
 ``` r
-LMdata <- add_interactions(LMdata, pred.covars, func.covars, func.lms) 
+LMdata <- add_interactions(LMdata, pred_covars, func_covars, func_lms) 
 data = LMdata$data
 print(data[data$ID == "ID1029",])
 #>         ID     Time event   ID.1 age.at.time.0 male stage  bmi treatment
@@ -373,11 +373,11 @@ print(supermodel)
 #> $func_covars
 #> $func_covars$[[1]]
 #> function(t) t
-#> <bytecode: 0x10a0397e8>
+#> <bytecode: 0x1113ab0a8>
 #> 
 #> $func_covars$[[2]]
 #> function(t) t^2
-#> <bytecode: 0x10a0d8fd0>
+#> <bytecode: 0x111443978>
 #> 
 #> $func_LMs
 #> $func_LMs$[[1]]

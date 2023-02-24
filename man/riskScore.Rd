@@ -4,7 +4,7 @@
 \alias{riskScore}
 \title{Calcutes dynamic risk score at a time for an individual (helper to predLMrisk)}
 \usage{
-riskScore(object, tLM, data, func_covars, func_LMs)
+riskScore(object, tLM, data, func_covars, func_lms)
 }
 \arguments{
 \item{object}{A coxph object}
@@ -15,7 +15,7 @@ riskScore(object, tLM, data, func_covars, func_LMs)
 
 \item{func_covars}{A list of functions to use for interactions between LMs and covariates.}
 
-\item{func_LMs}{A list of functions to use for transformations of the landmark times.}
+\item{func_lms}{A list of functions to use for transformations of the landmark times.}
 }
 \value{
 Numeric risk score

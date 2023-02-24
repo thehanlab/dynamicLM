@@ -83,14 +83,14 @@ print.LMdataframe <- function(x, ...){
       cat("\n")
     }
   }
-  if("func_LMs" %in% names.LMdata){
-    cat("$func_LMs\n")
-    names.fc = names(x$func_LMs)
-    for (i in 1:length(x$func_LMs)){
+  if("func_lms" %in% names.LMdata){
+    cat("$func_lms\n")
+    names.fc = names(x$func_lms)
+    for (i in 1:length(x$func_lms)){
       if (is.null(names.fc[i])) label <- paste0("[[",i,"]]")
       else paste0("$",names.fc[i])
-      cat(paste0("$func_LMs$",label,"\n"))
-      print(x$func_LMs[[i]])
+      cat(paste0("$func_lms$",label,"\n"))
+      print(x$func_lms[[i]])
       cat("\n")
     }
   }
@@ -198,13 +198,13 @@ print.LMCSC <- function(x, ...) {
     print(x$func_covars[[i]])
     cat("\n")
   }
-  cat("$func_LMs\n")
-  names.fc = names(x$func_LMs)
-  for (i in 1:length(x$func_LMs)){
+  cat("$func_lms\n")
+  names.fc = names(x$func_lms)
+  for (i in 1:length(x$func_lms)){
     if (is.null(names.fc[i])) label <- paste0("[[",i,"]]")
     else paste0("$",names.fc[i])
-    cat(paste0("$func_LMs$",label,"\n"))
-    print(x$func_LMs[[i]])
+    cat(paste0("$func_lms$",label,"\n"))
+    print(x$func_lms[[i]])
     cat("\n")
   }
 
@@ -249,13 +249,13 @@ print.LMcoxph <- function(x, ...) {
     print(x$func_covars[[i]])
     cat("\n")
   }
-  cat("$func_LMs\n")
-  names.fc = names(x$func_LMs)
-  for (i in 1:length(x$func_LMs)){
+  cat("$func_lms\n")
+  names.fc = names(x$func_lms)
+  for (i in 1:length(x$func_lms)){
     if (is.null(names.fc[i])) label <- paste0("[[",i,"]]")
     else paste0("$",names.fc[i])
-    cat(paste0("$func_LMs$",label,"\n"))
-    print(x$func_LMs[[i]])
+    cat(paste0("$func_lms$",label,"\n"))
+    print(x$func_lms[[i]])
     cat("\n")
   }
 

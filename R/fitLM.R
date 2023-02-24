@@ -10,7 +10,7 @@
 #'   Default is "breslow". More information can be found in coxph.
 #' @param func_covars A list of functions to use for interactions between LMs
 #'   and covariates.
-#' @param func_LMs A list of functions to use for transformations of the
+#' @param func_lms A list of functions to use for transformations of the
 #'   landmark times.
 #' @param LM_col Character string specifying the column name that indicates the
 #'   landmark time point for a row.
@@ -30,7 +30,7 @@
 #' @return An object of class "LMcoxph" or "LMCSC" with components:
 #'   - model: fitted model
 #'   - type: as input
-#'   - w, func_covars, func_LMs, LMcovars, allLMcovars, outcome: as in `lmdata`
+#'   - w, func_covars, func_lms, LMcovars, allLMcovars, outcome: as in `lmdata`
 #'   - LHS: the LHS of the input formula
 #'   - linear.predictors: the vector of linear predictors, one per subject.
 #'     Note that this vector has not been centered.
@@ -70,7 +70,7 @@ fitLM <- function(formula,
                   type = "coxph",
                   method = "breslow",
                   func_covars,
-                  func_LMs,
+                  func_lms,
                   LM_col,
                   outcome,
                   w,
@@ -102,14 +102,14 @@ fitLM <- function(formula,
     if(!inherits(lmdata,"data.frame")){stop("data must be of a data.frame or an object of class LMdataframe")}
 
     if(missing(func_covars)) stop("For input data that is a data frame, arg func_covars must be specified.")
-    if(missing(func_LMs)) stop("For input data that is a data frame, arg func_LMs must be specified.")
+    if(missing(func_lms)) stop("For input data that is a data frame, arg func_lms must be specified.")
     if(missing(LM_col)) stop("For input data that is a data frame, arg LM_col must be specified.")
     if(missing(outcome)) stop("For input data that is a data frame, arg outcome must be specified.")
     if(missing(w)) stop("For input data that is a data frame, arg w must be specified.")
     if(missing(LMcovars)) stop("For input data that is a data frame, arg LMcovars must be specified.")
 
     allLMcovars <- c(sapply(1:length(func_covars), function(i) paste0(LMcovars,"_",i)),
-                     sapply(1:length(func_LMs), function(i) paste0("LM_",i)))
+                     sapply(1:length(func_lms), function(i) paste0("LM_",i)))
     if (!all(allLMcovars %in% colnames(lmdata))){
       stop(paste0("The data should have all of the following column names: ",paste0(allLMcovars, collapse=", ")))
     }
@@ -121,7 +121,7 @@ fitLM <- function(formula,
   } else {
     data <- lmdata$data
     func_covars <- lmdata$func_covars
-    func_LMs <- lmdata$func_LMs
+    func_lms <- lmdata$func_lms
     original.landmarks <- data[[lmdata$LM_col]]
     end_time <- lmdata$end_time
     outcome <- lmdata$outcome
@@ -167,7 +167,7 @@ fitLM <- function(formula,
            w=w,
            end_time=end_time,
            func_covars=func_covars,
-           func_LMs=func_LMs,
+           func_lms=func_lms,
            LMcovars=LMcovars,
            allLMcovars=allLMcovars,
            outcome=outcome,

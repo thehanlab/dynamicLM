@@ -11,7 +11,7 @@
 #'   LM interaction
 #' @param func_covars A list of functions to use for interactions between LMs
 #'   and covariates.
-#' @param func_LMs A list of functions to use for transformations of the
+#' @param func_lms A list of functions to use for transformations of the
 #'   landmark times.
 #' @param LM_col Character string specifying the column name that indicates the
 #'   landmark time point for a row.
@@ -23,7 +23,7 @@
 #'   The object has the following components:
 #'   - w, outcome: as the input (obtained from lmdata)
 #'   - func_covars: as the input
-#'   - func_LMs: as the input
+#'   - func_lms: as the input
 #'   - LMcovars: as the input
 #'   - allLMcovars: a list of the new columns added
 #'   - LM_col: as the input
@@ -33,7 +33,7 @@
 #'   in func_covars is added
 #'
 #'   Transformations of the LM column are added and labelled as LM_1,...,LM_j
-#'   (length(func_LMs) == j); one column for each interaction given in func_LMs
+#'   (length(func_lms) == j); one column for each interaction given in func_lms
 #'   is added
 #'
 #' @examples
@@ -44,23 +44,23 @@
 #'               varying=c("treatment"))
 #' w = 60; LMs = c(0,12,24)
 #' # Covariate-landmark time interactions
-#' func.covars <- list( function(t) t, function(t) t^2)
+#' func_covars <- list( function(t) t, function(t) t^2)
 #' # let hazard depend on landmark time
-#' func.lms <- list( function(t) t, function(t) t^2)
+#' func_lms <- list( function(t) t, function(t) t^2)
 #' # Choose covariates that will have time interaction
-#' pred.covars <- c("age","male","stage","bmi","treatment")
+#' pred_covars <- c("age","male","stage","bmi","treatment")
 #' # Stack landmark datasets
 #' lmdata <- stack_data(relapse, outcome, LMs, w, covars, format="long",
 #'                      id="ID", rtime="T_txgiven", right=F)
 #' # Update complex LM-varying covariates, note age is in years and LM is in months
 #' lmdata$data$age <- lmdata$data$age.at.time.0 + lmdata$data$LM/12
 #' # Add LM-time interactions
-#' lmdata <- add_interactions(lmdata, pred.covars, func.covars, func.lms)
+#' lmdata <- add_interactions(lmdata, pred_covars, func_covars, func_lms)
 #' head(lmdata$data)
 #' }
 #'
 #' @export
-add_interactions <- function(lmdata, LMcovars, func_covars, func_LMs, LM_col="LM",keep=T){
+add_interactions <- function(lmdata, LMcovars, func_covars, func_lms, LM_col="LM",keep=T){
   if (LM_col %in% func_covars){
     stop(paste0("arg LM_col (given as ",LM_col,") should not be in arg func_covars."))
   }
@@ -71,11 +71,11 @@ add_interactions <- function(lmdata, LMcovars, func_covars, func_LMs, LM_col="LM
     f2 <- function(t) t^2
     func_covars <- list(f1,f2)
   }
-  if (missing(func_LMs)){
+  if (missing(func_lms)){
     # g lets the hazard depend on time
     g1 <- function(t) f1(t)
     g2 <- function(t) f2(t)
-    func_LMs <- list(g1,g2)
+    func_lms <- list(g1,g2)
   }
 
   allLMcovars <- c(LMcovars)
@@ -89,9 +89,9 @@ add_interactions <- function(lmdata, LMcovars, func_covars, func_LMs, LM_col="LM
       allLMcovars <- c(allLMcovars, name)
     }
   }
-  # Add func_LMs: LM interactions
-  for (k in 1:length(func_LMs)){
-    g <- func_LMs[[k]]
+  # Add func_lms: LM interactions
+  for (k in 1:length(func_lms)){
+    g <- func_lms[[k]]
     name <- paste0("LM_",k)
     data[[name]]  <- g(data_LM)
     allLMcovars <- c(allLMcovars, name)
@@ -104,7 +104,7 @@ add_interactions <- function(lmdata, LMcovars, func_covars, func_LMs, LM_col="LM
   lmdata$data <- data
 
   lmdata$func_covars <- func_covars
-  lmdata$func_LMs <- func_LMs
+  lmdata$func_lms <- func_lms
   lmdata$LMcovars <- LMcovars
   lmdata$allLMcovars <- unique(allLMcovars)
   lmdata$LM_col <- LM_col

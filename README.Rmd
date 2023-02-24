@@ -133,7 +133,7 @@ the model. This means we are only interested in prediction between 0 and
 3 years.
 
 We will consider linear and quadratic landmark interactions with the
-covariates (given in `func_covars`) and the landmarks (`func_LMs`). The
+covariates (given in `func_covars`) and the landmarks (`func_lms`). The
 covariates that should have these landmark interactions are given in
 `pred.covars`.
 
@@ -143,11 +143,11 @@ w = 5*12                  # risk prediction window (risk within time w)
 lms = seq(0,36,by=6)      # landmarks on which to build the model
 
 # Covariate-landmark time interactions
-func.covars <- list( function(t) t, function(t) t^2)
+func_covars <- list( function(t) t, function(t) t^2)
 # let hazard depend on landmark time
-func.lms <- list( function(t) t, function(t) t^2)
+func_lms <- list( function(t) t, function(t) t^2)
 # Choose variables that will have time interaction
-pred.covars <- c("age","male","stage","bmi","treatment") 
+pred_covars <- c("age","male","stage","bmi","treatment") 
 ```
 
 With this, we are ready to build the super data set that will train the
@@ -203,7 +203,7 @@ interaction in `func.covars`, `_2` refers to the second interaction in
 covariates that will have landmark time interactions.
 
 ```{r}
-LMdata <- add_interactions(LMdata, pred.covars, func.covars, func.lms) 
+LMdata <- add_interactions(LMdata, pred_covars, func_covars, func_lms) 
 data = LMdata$data
 print(data[data$ID == "ID1029",])
 ```
