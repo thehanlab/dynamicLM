@@ -3,7 +3,7 @@
 #' @param object Fitted LM supermodel
 #' @param data Data frame of individuals from which to plot risk
 #' @param format Character string specifying whether the data are in wide (default) or in long format
-#' @param LM_col Character string specifying the column name in data containing the (running) time variable
+#' @param lm_col Character string specifying the column name in data containing the (running) time variable
 #'   associated with the time-varying covariate(s); only needed if format="long"
 #' @param id_col Character string specifying the column name in data containing the subject id; only needed if format="long"
 #' @param w Prediction window, i.e., predict w-year (/month/..) risk from each of the tLMs.
@@ -32,7 +32,7 @@
 #' @details See the Github for example code
 #' @export
 #'
-plotLMrisk <- function(object, data, format, LM_col, id_col, w,
+plotLMrisk <- function(object, data, format, lm_col, id_col, w,
                      cause, varying,
                      end_time, extend=F, silence=F,
                      unit,
@@ -52,9 +52,9 @@ plotLMrisk <- function(object, data, format, LM_col, id_col, w,
   if (missing(unit)){unit="year"}
   if(format=="long"){
     if(missing(id_col)) stop("argument 'id_col' should be specified for long format data")
-    if(missing(LM_col)) stop("argument 'LM_col' should be specified for long format data")
+    if(missing(lm_col)) stop("argument 'lm_col' should be specified for long format data")
     if(! id_col %in% colnames(data)) stop("arg 'id_col' is not a column in data")
-    if(! LM_col %in% colnames(data)) stop("arg 'LM_col' is not a column in data")
+    if(! lm_col %in% colnames(data)) stop("arg 'lm_col' is not a column in data")
     unique_ids <- unique(data[[id_col]])
     NF <- length(unique_ids)
   } else if (format=="wide"){
@@ -117,7 +117,7 @@ plotLMrisk <- function(object, data, format, LM_col, id_col, w,
     for (i in 1:NF){
       id = unique_ids[i]
       data_ind <- data[data[[id_col]] == id,]
-      x <- data_ind[[LM_col]]
+      x <- data_ind[[lm_col]]
       idx <- x <= end_time
       x <- x[idx]
       y <- predLMrisk(object, data_ind[idx,], x, cause, extend=extend, silence=T, complete=F)$preds$risk
@@ -194,7 +194,7 @@ plotLMrisk <- function(object, data, format, LM_col, id_col, w,
 
     long_form = rbind(no_change, change1, change2)
 
-    plotLMrisk(object, long_form, format="long", LM_col="LM", id_col,
+    plotLMrisk(object, long_form, format="long", lm_col="LM", id_col,
                            cause, varying,
                            end_time, extend, silence,
                            unit, pch,lty,lwd,col,main,xlab,ylab,xlim,ylim,x.legend,y.legend,...)

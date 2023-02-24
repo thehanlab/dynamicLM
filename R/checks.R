@@ -77,7 +77,7 @@ check_evaluation_inputs <- function(
     }
     # only need the dataframe
     if (inherits(data,"LMdataframe")) {
-      tLM <- data$data[[data$LM_col]]
+      tLM <- data$data[[data$lm_col]]
       data <- data$data
     }
     else if (missing(tLM)) {
@@ -95,7 +95,7 @@ check_evaluation_inputs <- function(
     LMdata <- object[[1]]$data
     LMdata$data <- LMdata$data[stats::complete.cases(LMdata$data), ]
     data <- LMdata$data
-    LM_col <- LMdata$LM_col
+    lm_col <- LMdata$lm_col
 
     if (!is.null(object[[1]]$ID_col)){ ID_col <- object[[1]]$ID_col }
     if(!(ID_col %in% colnames(data))){
@@ -199,8 +199,8 @@ check_evaluation_inputs <- function(
       id_train_b <- data[[ID_col]] %in% id_train_b
 
       data_val_b <- data[!id_train_b, ]
-      tLMs_b <- data_val_b[[LM_col]]
-      outcomes_val_b <- data_val_b[c(outcome$time, outcome$status, LM_col)]
+      tLMs_b <- data_val_b[[lm_col]]
+      outcomes_val_b <- data_val_b[c(outcome$time, outcome$status, lm_col)]
 
       data_train_b <- LMdata
       data_train_b$data <- data[id_train_b, ]
@@ -243,8 +243,8 @@ check_evaluation_inputs <- function(
     pred.df <- do.call("rbind",pred.list)
     pred.df <- pred.df[stats::complete.cases(pred.df), ] # TODO: remove/fix
     preds <- pred.df[names(object)]
-    pred_LMs <- pred.df[[LM_col]]
-    data <- pred.df[c(outcome$time, outcome$status, LM_col, "b")]
+    pred_LMs <- pred.df[[lm_col]]
+    data <- pred.df[c(outcome$time, outcome$status, lm_col, "b")]
     num_preds <- nrow(data)
     type <- lapply(object, function(o) ifelse(inherits(o, "LMcoxph"), "coxph", "CSC"))
 

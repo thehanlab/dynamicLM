@@ -9,7 +9,7 @@ add_interactions(
   lm_covs,
   func_covars,
   func_lms,
-  LM_col = "LM",
+  lm_col = "LM",
   keep = T
 )
 }
@@ -30,7 +30,7 @@ and covariates.}
 \item{func_lms}{A list of functions to use for transformations of the
 landmark times.}
 
-\item{LM_col}{Character string specifying the column name that indicates the
+\item{lm_col}{Character string specifying the column name that indicates the
 landmark time point for a row.}
 
 \item{keep}{Boolean value to indicate whether or not to keep the columns
@@ -45,8 +45,8 @@ The object has the following components:
 \item func_covars: as the input
 \item func_lms: as the input
 \item lm_covs: as the input
-\item allLMcovars: a list of the new columns added
-\item LM_col: as the input
+\item all_covs: a list of the new columns added
+\item lm_col: as the input
 }
 }
 \description{
