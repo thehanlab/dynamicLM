@@ -76,8 +76,8 @@ You can install the development version of `dynamicLM` from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("thehanlab/dynamicLM")
-#> Skipping install of 'dynamicLM' from a github remote, the SHA1 (13c46691) has not changed since last install.
+devtools::install_github("thehanlab/dynamicLM", ref = "proposed-updates")
+#> Skipping install of 'dynamicLM' from a github remote, the SHA1 (9f19de7d) has not changed since last install.
 #>   Use `force = TRUE` to force installation
 ```
 
@@ -141,7 +141,7 @@ covars = list(fixed=c("ID","age.at.time.0","male","stage","bmi"),
 ```
 
 We will produce 5-year dynamic predictions of relapse (`w`). Landmark
-time points (`LMs`) are set as every year between 0 and 3 years to train
+time points (`lms`) are set as every year between 0 and 3 years to train
 the model. This means we are only interested in prediction between 0 and
 3 years.
 
@@ -152,13 +152,13 @@ covariates that should have these landmark interactions are given in
 
 ``` r
 w = 5*12                  # risk prediction window (risk within time w)
-LMs = seq(0,36,by=6)      # landmarks on which to build the model
+lms = seq(0,36,by=6)      # landmarks on which to build the model
 
 # Covariate-landmark time interactions
 func.covars <- list( function(t) t, function(t) t^2)
 # let hazard depend on landmark time
-func.LMs <- list( function(t) t, function(t) t^2)
-# Choose covariates that will have time interaction
+func.lms <- list( function(t) t, function(t) t^2)
+# Choose variables that will have time interaction
 pred.covars <- c("age","male","stage","bmi","treatment") 
 ```
 
@@ -167,7 +167,7 @@ model. We print intermediate steps for illustration.
 
 There are three steps:
 
-1.  `cutLMsuper`: stacks the landmark data sets
+1.  `stack_data`: stacks the landmark data sets
 2.  An **optional** additional update for more complex columns that vary
     with landmark-times: For example, here we update the value of age.
 3.  `addLMtime`: Landmark time interactions are added, note the
@@ -196,9 +196,9 @@ our case, only treatment varies).
 
 ``` r
 # Stack landmark datasets
-LMdata <- cutLMsuper(relapse, outcome, LMs, w, covars, format="long",
+LMdata <- stack_data(relapse, outcome, lms, w, covars, format="long",
                      id="ID", rtime="T_txgiven", right=F)
-data = LMdata$LMdata
+data = LMdata$data
 print(data[data$ID == "ID1029",])
 #>         ID     Time event   ID.1 age.at.time.0 male stage  bmi treatment
 #> 7   ID1029 60.00000     0 ID1029      62.25753    0     0 26.8         0
@@ -222,8 +222,8 @@ We then (optionally) update more complex LM-varying covariates. Here we
 create an age covariate, based on age at time 0.
 
 ``` r
-LMdata$LMdata$age <- LMdata$LMdata$age.at.time.0 + LMdata$LMdata$LM/12 # age is in years and LM is in months
-data = LMdata$LMdata
+LMdata$data$age <- LMdata$data$age.at.time.0 + LMdata$data$LM/12 # age is in years and LM is in months
+data = LMdata$data
 print(data[data$ID == "ID1029",])
 #>         ID     Time event   ID.1 age.at.time.0 male stage  bmi treatment
 #> 7   ID1029 60.00000     0 ID1029      62.25753    0     0 26.8         0
@@ -250,8 +250,8 @@ interaction in `func.covars`, `_2` refers to the second interaction in
 covariates that will have landmark time interactions.
 
 ``` r
-LMdata <- addLMtime(LMdata, pred.covars, func.covars, func.LMs) 
-data = LMdata$LMdata
+LMdata <- addLMtime(LMdata, pred.covars, func.covars, func.lms) 
+data = LMdata$data
 print(data[data$ID == "ID1029",])
 #>         ID     Time event   ID.1 age.at.time.0 male stage  bmi treatment
 #> 7   ID1029 60.00000     0 ID1029      62.25753    0     0 26.8         0
@@ -365,11 +365,11 @@ print(supermodel)
 #> $func_covars
 #> $func_covars$[[1]]
 #> function(t) t
-#> <bytecode: 0x110687420>
+#> <bytecode: 0x1233795a0>
 #> 
 #> $func_covars$[[2]]
 #> function(t) t^2
-#> <bytecode: 0x110709c40>
+#> <bytecode: 0x1233ff3f8>
 #> 
 #> $func_LMs
 #> $func_LMs$[[1]]
@@ -542,8 +542,8 @@ data can be used too if there are no complex variables involved.*
 x = seq(0,36,by=6)
 
 # Stack landmark datasets
-dat <- cutLMsuper(relapse[idx,], outcome, x, w, covars, format="long", 
-                  id="ID", rtime="T_txgiven", right=F)$LMdata
+dat <- stack_data(relapse[idx,], outcome, x, w, covars, format="long", 
+                  id="ID", rtime="T_txgiven", right=F)$data
 dat$age <- dat$age.at.time.0 + dat$LM/12 # age is in years and LM is in months
 
 head(dat)
