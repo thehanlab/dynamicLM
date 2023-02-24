@@ -1,30 +1,38 @@
-#' Plots the dynamic hazard ratio of a cox or CSC supermodel
+#' Plots the dynamic log-hazard ratio of a cox or CSC supermodel
 #'
-#' @param object An object of class "LMcoxph" or "LMCSC", i.e. a fitted supermodel
-#' @param covars Vector or list of strings indicating the variables to plot the HR of
-#'   (note these must be given without time interaction label, for e.g., as in `lm_covs`).
-#' @param CI Include confidence intervals or not, default is TRUE
+#' @param object An object of class "LMcoxph" or "LMCSC", i.e. a fitted
+#'   supermodel
+#' @param covars Vector or list of strings indicating the variables to plot
+#'   (note these must be given without time interaction label, for e.g., as in
+#'   the argument `lm_covs` in [add_interactions()]).
+#' @param conf_int Include confidence intervals or not, default is TRUE
 #' @param cause Cause of interest if considering competing risks
-#' @param end_time Final time point to plot HR, defaults to the last landmark point used in model fitting.
-#' @param extend Argument to allow for HR to be plot at landmark times that are later than the LMs used in model fitting.
+#' @param end_time Final time point to plot HR, defaults to the last landmark
+#'   point used in model fitting.
+#' @param logHR Boolean, if true plots the log of the hazard ratio, if false
+#'   plots the hazard ratio. Default is TRUE.
+#' @param extend Argument to allow for HR to be plot at landmark times that are
+#'   later than the LMs used in model fitting.
 #'   Default is FALSE. If set to TRUE, the HR may be unreliable.
-#' @param silence silence the warning message when end_time > LMs used in fitting the model
+#' @param silence silence the warning message when end_time > LMs used in
+#'   fitting the model
 #' @param xlab x label for the plots
 #' @param ylab y label for the plots
 #' @param ylim y limit for the plots
-#' @param main Vector of strings indicating the title of each plot. Must be in the same order as covars.
-#' @param logHR Boolean, if true plots the log of the hazard ratio, if false plots the hazard ratio
+#' @param main Vector of strings indicating the title of each plot. Must be in
+#'   the same order as covars.
 #' @param ... Additional arguments passed to plot
 #'
 #' @return Plots for each variable in covars showing the dynamic hazard ratio
 #' @details See the Github for example code
 #' @export
 #'
-plotDynamicHR <- function(object, covars, CI=T, cause, end_time, extend=F, silence=F,
-                            xlab="LM time", ylab, ylim, main, logHR=T, ...){
+plot.dynamicLM <- function(object, covars, conf_int=T, cause, end_time, logHR=T,
+                           extend=F, silence=F,
+                           xlab="LM time", ylab, ylim, main,  ...){
   fm = object$model
 
-  if(CI){
+  if(conf_int){
     if (!requireNamespace("msm", quietly = TRUE)) {
       stop("Package \"msm\" must be installed to use this function.", call. = FALSE)}
   }
@@ -58,7 +66,7 @@ plotDynamicHR <- function(object, covars, CI=T, cause, end_time, extend=F, silen
     if (!missing(cause)) {stop("no cause should be input for coxph supermodels.")}
     bet <- fm$coefficients
     func_covars <- object$func_covars
-    if(CI){ sig <- stats::vcov(fm) }
+    if(conf_int){ sig <- stats::vcov(fm) }
 
   } else if (object$type == "CauseSpecificCox" | object$type == "CSC") {
     if (missing(cause)) { cause <- as.numeric(fm$theCause) }
@@ -67,7 +75,7 @@ plotDynamicHR <- function(object, covars, CI=T, cause, end_time, extend=F, silen
     bet <- fm$models[[cause]]$coefficients
     func_covars <- object$func_covars
 
-    if(CI){ sig <- stats::vcov(fm$models[[cause]]) }
+    if(conf_int){ sig <- stats::vcov(fm$models[[cause]]) }
   }
   if (missing(ylim)) { set_ylim <- T }
 
@@ -92,7 +100,7 @@ plotDynamicHR <- function(object, covars, CI=T, cause, end_time, extend=F, silen
     }
 
     if (set_ylim) ylim <- c(min(HR),max(HR))
-    if(CI){
+    if(conf_int){
       if(logHR){ se <- sapply(t, find_se_log, bet_var, sig[idx,idx], func_covars) }
       else{ se <- sapply(t, find_se, bet_var, sig[idx,idx], func_covars) }
       lower <- HR - 1.96*se
@@ -106,7 +114,7 @@ plotDynamicHR <- function(object, covars, CI=T, cause, end_time, extend=F, silen
     plot(t, HR, xlab=xlab, ylab=ylab, main=main[i], type="l", ylim=ylim, ...)
     if(logHR){ graphics::lines(t, rep(0,end_time/0.1+1), col="grey") }
     else { graphics::lines(t, rep(1,end_time/0.1+1), col="grey") }
-    if(CI){
+    if(conf_int){
       graphics::lines(t, lower, lty=2)
       graphics::lines(t, upper, lty=2)
     }
