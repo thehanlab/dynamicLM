@@ -79,9 +79,9 @@ You can install the development version of `dynamicLM` from
 devtools::install_github("thehanlab/dynamicLM", ref = "proposed-updates")
 #> Downloading GitHub repo thehanlab/dynamicLM@proposed-updates
 #> 
-#>      checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpYUUYfY/remotesb078090fe1/thehanlab-dynamicLM-9ac58a7/DESCRIPTION’ ...  ✔  checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpYUUYfY/remotesb078090fe1/thehanlab-dynamicLM-9ac58a7/DESCRIPTION’
+#>      checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/Rtmp660u8H/remotes367768c517a/thehanlab-dynamicLM-b2d7716/DESCRIPTION’ ...  ✔  checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/Rtmp660u8H/remotes367768c517a/thehanlab-dynamicLM-b2d7716/DESCRIPTION’
 #>   ─  preparing ‘dynamicLM’:
-#>      checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
+#>    checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
 #>   ─  checking for LF line-endings in source and make files and shell scripts
 #>   ─  checking for empty or unneeded directories
 #>   ─  building ‘dynamicLM_0.3.0.tar.gz’
@@ -156,7 +156,7 @@ the model. This means we are only interested in prediction between 0 and
 We will consider linear and quadratic landmark interactions with the
 covariates (given in `func_covars`) and the landmarks (`func_lms`). The
 covariates that should have these landmark interactions are given in
-`pred.covars`.
+`pred_covars`.
 
 ``` r
 w = 5*12                  # risk prediction window (risk within time w)
@@ -252,9 +252,9 @@ print(data[data$ID == "ID1029",])
 ```
 
 Lastly, we add landmark time-interactions. The `_1` refers to the first
-interaction in `func.covars`, `_2` refers to the second interaction in
-`func.covars`, etc… Similarly, `LM_1` and `LM_2` are created from
-`func.LM`. Note that we use `pred.covars` here, defined earlier as the
+interaction in `func_covars`, `_2` refers to the second interaction in
+`func_covars`, etc… Similarly, `LM_1` and `LM_2` are created from
+`func_lm`. Note that we use `pred_covars` here, defined earlier as the
 covariates that will have landmark time interactions.
 
 ``` r
@@ -290,15 +290,15 @@ print(data[data$ID == "ID1029",])
 ## 3.3 Fit the super model
 
 Now we can fit the model. We fit a model with all the covariates
-created. Note that `LMdata$allLMcovars` returns a vector with all the
-covariates that have LM interactions and from `pred.covars`. Again, the
-`_1` refers to the first interaction in `func.covars`, `_2` refers to
+created. Note that `LMdata$all_covs` returns a vector with all the
+covariates that have LM interactions and from `pred_covars`. Again, the
+`_1` refers to the first interaction in `func_covars`, `_2` refers to
 the second interaction in `func.covars`, etc… `LM_1` and `LM_2` are
-created from `func.LM`.
+created from `func_lms`.
 
 ``` r
-allLMcovars <- LMdata$allLMcovars
-print(allLMcovars)
+all_covs <- LMdata$all_covs
+print(all_covs)
 #>  [1] "age"         "male"        "stage"       "bmi"         "treatment"  
 #>  [6] "age_1"       "age_2"       "male_1"      "male_2"      "stage_1"    
 #> [11] "stage_2"     "bmi_1"       "bmi_2"       "treatment_1" "treatment_2"
@@ -373,17 +373,17 @@ print(supermodel)
 #> $func_covars
 #> $func_covars$[[1]]
 #> function(t) t
-#> <bytecode: 0x1113ab0a8>
+#> <bytecode: 0x1076f8438>
 #> 
 #> $func_covars$[[2]]
 #> function(t) t^2
-#> <bytecode: 0x111443978>
+#> <bytecode: 0x1077ef328>
 #> 
-#> $func_LMs
-#> $func_LMs$[[1]]
+#> $func_lms
+#> $func_lms$[[1]]
 #> function(t) t
 #> 
-#> $func_LMs$[[2]]
+#> $func_lms$[[2]]
 #> function(t) t^2
 #> 
 #> $w
@@ -572,7 +572,7 @@ head(dat)
 ```
 
 ``` r
-plotLMrisk(supermodel, dat, format="long", LM_col = "LM", id_col="ID", 
+plotLMrisk(supermodel, dat, format="long", lm_col = "LM", id_col="ID", 
            ylim=c(0, 0.7), x.legend="bottom", unit="month")
 ```
 

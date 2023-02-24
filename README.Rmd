@@ -135,7 +135,7 @@ the model. This means we are only interested in prediction between 0 and
 We will consider linear and quadratic landmark interactions with the
 covariates (given in `func_covars`) and the landmarks (`func_lms`). The
 covariates that should have these landmark interactions are given in
-`pred.covars`.
+`pred_covars`.
 
 
 ```{r}
@@ -197,9 +197,9 @@ print(data[data$ID == "ID1029",])
 ```
 
 Lastly, we add landmark time-interactions. The `_1` refers to the first
-interaction in `func.covars`, `_2` refers to the second interaction in
-`func.covars`, etc… Similarly, `LM_1` and `LM_2` are created from
-`func.LM`. Note that we use `pred.covars` here, defined earlier as the 
+interaction in `func_covars`, `_2` refers to the second interaction in
+`func_covars`, etc… Similarly, `LM_1` and `LM_2` are created from
+`func_lm`. Note that we use `pred_covars` here, defined earlier as the 
 covariates that will have landmark time interactions.
 
 ```{r}
@@ -211,15 +211,15 @@ print(data[data$ID == "ID1029",])
 ## Fit the super model
 
 Now we can fit the model. We fit a model with all the covariates
-created. Note that `LMdata$allLMcovars` returns a vector with all the
-covariates that have LM interactions and from `pred.covars`. Again, the
-`_1` refers to the first interaction in `func.covars`, `_2` refers to
+created. Note that `LMdata$all_covs` returns a vector with all the
+covariates that have LM interactions and from `pred_covars`. Again, the
+`_1` refers to the first interaction in `func_covars`, `_2` refers to
 the second interaction in `func.covars`, etc… `LM_1` and `LM_2` are
-created from `func.LM`.
+created from `func_lms`.
 
 ```{r}
-allLMcovars <- LMdata$allLMcovars
-print(allLMcovars)
+all_covs <- LMdata$all_covs
+print(all_covs)
 ```
 
 It is then easy to fit a landmark supermodel using `fitLM`. A formula,
@@ -352,7 +352,7 @@ head(dat)
 ```
 
 ```{r plotrisk}
-plotLMrisk(supermodel, dat, format="long", LM_col = "LM", id_col="ID", 
+plotLMrisk(supermodel, dat, format="long", lm_col = "LM", id_col="ID", 
            ylim=c(0, 0.7), x.legend="bottom", unit="month")
 ```
 
