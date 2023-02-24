@@ -12,7 +12,7 @@
 #'   Defaults to the w used in model fitting.
 #'   If w > than that used in model fitting, results are unreliable, but can be produced by setting extend=T.
 #' @param extend Argument to allow for predictions at landmark times that are greater than those used in model fitting,
-#'   or prediction windows greater than the one used in model fitting.
+#'   or prediction windows greater than the o?ne used in model fitting.
 #'   Default is FALSE. If set to TRUE, predictions may be unreliable.
 #' @param silence Silence the warning message when extend is set to TRUE.
 #' @param complete Only make predictions for data entries with non-NA entries (i.e., non-NA predictions). Default is TRUE.
@@ -27,7 +27,7 @@
 #' @import survival
 #' @export
 #'
-predLMrisk <- function(object, newdata, tLM, cause, w, extend=F, silence=F, complete=T)
+predict.dynamicLM <- function(object, newdata, tLM, cause, w, extend=F, silence=F, complete=T)
 {
   func_covars <- object$func_covars
   func_lms <- object$func_lms

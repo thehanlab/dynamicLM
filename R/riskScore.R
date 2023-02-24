@@ -1,4 +1,5 @@
-#' Calcutes dynamic risk score at a time for an individual (helper to predLMrisk)
+#' Calcutes dynamic risk score at a time for an individual (helper to
+#' predict.dynamicLM)
 #'
 #' @param object A coxph object
 #' @param tLM Landmarking time point at which to calculate risk score (time at which the prediction is made)
