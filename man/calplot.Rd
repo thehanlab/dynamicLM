@@ -125,7 +125,7 @@ calibration is performed). Furthermore, most errors in plotting occur when a
 formula is not given. Formulas can look like \code{Hist(Time,event,LM)~1} /
 similar...
 
-See the \href{https://github.com/thehanlab/dynamicLM}{github} for detailed
+See our \href{https://github.com/thehanlab/dynamicLM}{GitHub} for detailed
 example code.
 
 A comment on the following message:

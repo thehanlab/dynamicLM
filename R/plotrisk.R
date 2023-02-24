@@ -29,7 +29,8 @@
 #' @param ... Additional arguments passed to plot
 #'
 #' @return Single plot the absolute w-year risk of individuals
-#' @details See the Github for example code
+#' @details See our [GitHub](https://github.com/thehanlab/dynamicLM) for example
+#'   code
 #' @export
 #'
 plotrisk <- function(object, data, format, lm_col, id_col, w,

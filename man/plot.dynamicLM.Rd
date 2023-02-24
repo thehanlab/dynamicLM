@@ -63,5 +63,6 @@ Plots for each variable in covars showing the dynamic hazard ratio
 Plots the dynamic log-hazard ratio of a cox or CSC supermodel
 }
 \details{
-See the Github for example code
+See our \href{https://github.com/thehanlab/dynamicLM}{GitHub} for example
+code
 }
