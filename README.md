@@ -11,8 +11,8 @@
     super model</a>
   - <a href="#obtain-predictions" id="toc-obtain-predictions">3.4 Obtain
     predictions</a>
-  - <a href="#model-evaluation" id="toc-model-evaluation">3.5 Model
-    evaluation</a>
+  - <a href="#model-evaluationvalidation"
+    id="toc-model-evaluationvalidation">3.5 Model evaluation/validation</a>
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
@@ -79,9 +79,9 @@ You can install the development version of `dynamicLM` from
 devtools::install_github("thehanlab/dynamicLM", ref = "proposed-updates")
 #> Downloading GitHub repo thehanlab/dynamicLM@proposed-updates
 #> 
-#>      checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpQ4YnaL/remotes1af36c5579e2/thehanlab-dynamicLM-77b905d/DESCRIPTION’ ...  ✔  checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpQ4YnaL/remotes1af36c5579e2/thehanlab-dynamicLM-77b905d/DESCRIPTION’
+#>      checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpjiVrID/remotes1dcb5761fac3/thehanlab-dynamicLM-555e999/DESCRIPTION’ ...  ✔  checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpjiVrID/remotes1dcb5761fac3/thehanlab-dynamicLM-555e999/DESCRIPTION’
 #>   ─  preparing ‘dynamicLM’:
-#>    checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
+#>      checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
 #>   ─  checking for LF line-endings in source and make files and shell scripts
 #>   ─  checking for empty or unneeded directories
 #>   ─  building ‘dynamicLM_0.3.0.tar.gz’
@@ -187,7 +187,7 @@ There are three steps:
     additional columns created.
 
 *Note that these return an object of class `LMdataframe`. This has a
-component `LMdata` which contains the dataset itself.*
+component `data` which contains the dataset itself.*
 
 We illustrate the process in detail by printing the entries at each step
 for one individual, ID1029.
@@ -209,9 +209,9 @@ our case, only treatment varies).
 
 ``` r
 # Stack landmark datasets
-LMdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
+lmdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
                      id = "ID", rtime = "T_txgiven", right = F)
-data <- LMdata$data
+data <- lmdata$data
 print(data[data$ID == "ID1029",])
 #>         ID     Time event   ID.1 age.at.time.0 male stage  bmi treatment
 #> 7   ID1029 60.00000     0 ID1029      62.25753    0     0 26.8         0
@@ -235,8 +235,8 @@ We then (optionally) update more complex LM-varying covariates. Here we
 create an age covariate, based on age at time 0.
 
 ``` r
-LMdata$data$age <- LMdata$data$age.at.time.0 + LMdata$data$LM/12 # age is in years and LM is in months
-data <- LMdata$data
+lmdata$data$age <- lmdata$data$age.at.time.0 + lmdata$data$LM/12 # age is in years and LM is in months
+data <- lmdata$data
 print(data[data$ID == "ID1029",])
 #>         ID     Time event   ID.1 age.at.time.0 male stage  bmi treatment
 #> 7   ID1029 60.00000     0 ID1029      62.25753    0     0 26.8         0
@@ -263,8 +263,8 @@ interaction in `func_covars`, `_2` refers to the second interaction in
 covariates that will have landmark time interactions.
 
 ``` r
-LMdata <- add_interactions(LMdata, pred_covars, func_covars, func_lms) 
-data <- LMdata$data
+lmdata <- add_interactions(lmdata, pred_covars, func_covars, func_lms) 
+data <- lmdata$data
 print(data[data$ID == "ID1029",])
 #>         ID     Time event   ID.1 age.at.time.0 male stage  bmi treatment
 #> 7   ID1029 60.00000     0 ID1029      62.25753    0     0 26.8         0
@@ -295,14 +295,14 @@ print(data[data$ID == "ID1029",])
 ## 3.3 Fit the super model
 
 Now we can fit the model. We fit a model with all the covariates
-created. Note that `LMdata$all_covs` returns a vector with all the
+created. Note that `lmdata$all_covs` returns a vector with all the
 covariates that have LM interactions and from `pred_covars`. Again, the
 `_1` refers to the first interaction in `func_covars`, `_2` refers to
 the second interaction in `func.covars`, etc… `LM_1` and `LM_2` are
 created from `func_lms`.
 
 ``` r
-all_covs <- LMdata$all_covs
+all_covs <- lmdata$all_covs
 print(all_covs)
 #>  [1] "age"         "male"        "stage"       "bmi"         "treatment"  
 #>  [6] "age_1"       "age_2"       "male_1"      "male_2"      "stage_1"    
@@ -319,7 +319,7 @@ on how the landmark interaction terms must be named.
 
 ``` r
 formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment + age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 + bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
-supermodel <- dynls(as.formula(formula), LMdata, "CSC") 
+supermodel <- dynls(as.formula(formula), lmdata, "CSC") 
 #> Warning in agreg.fit(X, Y, istrat, offset, init, control, weights = weights, :
 #> Loglik converged before variable 8,9 ; beta may be infinite.
 print(supermodel)
@@ -378,11 +378,11 @@ print(supermodel)
 #> $func_covars
 #> $func_covars$[[1]]
 #> function(t) t
-#> <bytecode: 0x11a4136d8>
+#> <bytecode: 0x1147ad020>
 #> 
 #> $func_covars$[[2]]
 #> function(t) t^2
-#> <bytecode: 0x11b0dea58>
+#> <bytecode: 0x126ea3568>
 #> 
 #> $func_lms
 #> $func_lms$[[1]]
@@ -462,7 +462,7 @@ p0$preds
 #> 2  0 0.04641678
 ```
 
-## 3.5 Model evaluation
+## 3.5 Model evaluation/validation
 
 Calibration plots, which assess the agreement between predictions and
 observations in different percentiles of the predicted values, can be
@@ -488,7 +488,7 @@ area under the receiving operator curve (AUCt) or time-dependent dynamic
 Brier score (BSt).
 
 - AUCt is defined as the percentage of correctly ordered markers when
-  comparing a case and a control – i.e., those who incur the primary
+  comparing a case and a control – i.e., those who incur the pr imary
   event within the window w after prediction and those who do not.
 - BSt provides the average squared difference between the primary event
   markers at time w after prediction and the absolute risk estimates by
@@ -528,6 +528,15 @@ scores
 #> NOTE: The lower Brier the better.
 #> NOTE: Predictions are made at time tLM for 60-month risk
 ```
+
+**Bootstrapping** can be performed by calling `calplot` or `Score` and
+setting the arguments `split.method = "bootcv"` and `B = 10` (or however
+many bootstrap replications are desired). Note that the argument
+`x=TRUE` must be specified when fitting the model.
+
+**External validation** can be performed by passing new data through the
+`data` argument. This data can be a LMdataframe or a dataframe (in which
+case `tLM` must be specified).
 
 ### 3.5.1 Visualize individual dynamic risk trajectories
 
