@@ -122,9 +122,9 @@ which variables are fixed or landmark-varying. When there are no
 landmark-varying variables, set `varying=NULL`.
 
 ```{r}
-outcome <- list(time="Time", status="event")
-covars <- list(fixed=c("ID","age.at.time.0","male","stage","bmi"),
-              varying=c("treatment"))
+outcome <- list(time = "Time", status = "event")
+covars <- list(fixed = c("age.at.time.0","male","stage","bmi"),
+               varying = c("treatment"))
 ```
 
 We will produce 5-year dynamic predictions of relapse (`w`). Landmark
@@ -246,7 +246,7 @@ plot(supermodel)
 
 ```{r, eval=F}
 # To create only two plots:
-plot(supermodel, covars=c("age","male"))
+plot(supermodel, covars = c("age","male"))
 ```
 
 ## Obtain predictions
@@ -281,7 +281,7 @@ print(individuals)
 ```
 
 ```{r}
-p0 <- predict(supermodel, individuals, landmark_times, cause=1)
+p0 <- predict(supermodel, individuals, landmark_times, cause = 1)
 p0$preds
 ```
 
@@ -295,13 +295,13 @@ allows for comparison between models.
 
 ```{r calplot}
 par(mfrow=c(2,3), pty="s", mar = c(4, 4, 4, 1))
-outlist <- calplot(list("Model1"=p1), 
-                    unit="month",            # for the titles
-                    times=c(0,6,12,18,24,30),# landmarks at which to provide calibration plots
-                    method="quantile", q=10, # method for calibration plot
+outlist <- calplot(list("Model1" = p1), 
+                    unit = "month",            # for the titles
+                    times = c(0,6,12,18,24,30),# landmarks at which to provide calibration plots
+                    method = "quantile", q=10, # method for calibration plot
                     # Optional plotting parameters to alter
-                    ylim=c(0,0.36), xlim=c(0,0.36), 
-                    lwd=1, xlab="Predicted Risk", ylab="Observed Risk", legend=F)
+                    ylim = c(0, 0.36), xlim = c(0, 0.36), 
+                    lwd = 1, xlab = "Predicted Risk", ylab = "Observed Risk", legend = F)
 ```
 
 Predictive performance can also be assessed using time-dependent dynamic
@@ -317,10 +317,10 @@ Brier score (BSt).
     estimates by that time point.
     
 ```{r}
-scores <- Score(list("Model1"=p1),
-                     times=c(6,12,18,24), # landmarks at which to provide calibration plots
-                     unit="month")      # for the print out
-scores 
+scores <- Score(list("Model1" = p1),
+                     times = c(6,12,18,24), # landmarks at which to assess
+                     unit = "month")        # for the print out
+scores
 ```
 
 **Bootstrapping** can be performed by calling `calplot` or `Score` and setting 
@@ -355,15 +355,15 @@ x <- seq(0,36,by=6)
 
 # Stack landmark datasets
 dat <- stack_data(relapse[idx,], outcome, x, w, covars, format="long", 
-                  id="ID", rtime="T_txgiven", right=F)$data
+                  id = "ID", rtime = "T_txgiven")$data
 dat$age <- dat$age.at.time.0 + dat$LM/12 # age is in years and LM is in months
 
 head(dat)
 ```
 
 ```{r plotrisk}
-plotrisk(supermodel, dat, format="long", lm_col = "LM", id_col = "ID", 
-           ylim = c(0, 0.7), x.legend="bottom", unit="month")
+plotrisk(supermodel, dat, format = "long", lm_col = "LM", id_col = "ID", 
+           ylim = c(0, 0.7), x.legend = "bottom", unit = "month")
 ```
 
 We can see that the male has a much higher and increasing 5-year risk of
