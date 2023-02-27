@@ -4,7 +4,7 @@ check_evaluation_inputs <- function(
     formula,
     data,
     tLM,
-    ID_col="ID",
+    id_col="ID",
     split.method = "none",
     B = 1,
     M,
@@ -97,9 +97,9 @@ check_evaluation_inputs <- function(
     data <- LMdata$data
     lm_col <- LMdata$lm_col
 
-    if (!is.null(object[[1]]$ID_col)){ ID_col <- object[[1]]$ID_col }
-    if(!(ID_col %in% colnames(data))){
-      stop(paste("An ID column that is in the data must be provided;", ID_col, "is not a column."))
+    if (!is.null(object[[1]]$id_col)){ id_col <- object[[1]]$id_col }
+    if(!(id_col %in% colnames(data))){
+      stop(paste("An ID column that is in the data must be provided;", id_col, "is not a column."))
     }
   }
 
@@ -139,7 +139,7 @@ check_evaluation_inputs <- function(
 
   perform.boot <- F
   if (split.method == "bootcv"){
-    unique.inds = unique(data[[ID_col]])
+    unique.inds = unique(data[[id_col]])
     split.method <- riskRegression::getSplitMethod(split.method, B=B, N=length(unique.inds), M=M, seed)
     B <- split.method$B
     split.idx <- split.method$index
@@ -196,7 +196,7 @@ check_evaluation_inputs <- function(
     # pred.list <- parallel::mclapply(1:B,function(b){
     pred.list <- lapply(1:B,function(b){
       id_train_b <- split.idx[,b]
-      id_train_b <- data[[ID_col]] %in% id_train_b
+      id_train_b <- data[[id_col]] %in% id_train_b
 
       data_val_b <- data[!id_train_b, ]
       tLMs_b <- data_val_b[[lm_col]]
@@ -208,8 +208,8 @@ check_evaluation_inputs <- function(
       preds.b <- do.call("cbind",lapply(1:NF,function(f){
         original_model <- object[[f]]
         args <- original_model$args
-        args$data <- NULL
-        args$data <- data_train_b
+        args$lmdata <- NULL
+        args$lmdata <- data_train_b
         model.b <- eval(args)
         base_data = 0 * model.b$model$coefficients
         pred.b <- try(
