@@ -12,7 +12,7 @@ Score(
   formula,
   data,
   tLM,
-  ID_col = "ID",
+  id_col = "ID",
   se.fit = TRUE,
   conf.int = 0.95,
   split.method = "none",
@@ -50,7 +50,7 @@ tLM can be a string (indicating a column in data), a vector of length
 nrow(data), or a single value if all patient entries were obtained at the
 same landmark time.}
 
-\item{ID_col}{Column name that identifies individuals in data. If omitted, it
+\item{id_col}{Column name that identifies individuals in data. If omitted, it
 is obtained from the prediction object.}
 
 \item{se.fit}{If FALSE or 0, no standard errors are calculated.}
@@ -146,6 +146,27 @@ overflow sometimes occurs in predictions for bootstrapped samples. To avoid
 potential errors, the whole bootstrap sample is dropped in this case. Note
 that input data should be complete otherwise this may occur
 unintentionally.
+}
+\examples{
+\dontrun{
+# Internal validation
+scores <- Score(list("Model1" = supermodel),
+                times = c(0, 6), # landmarks at which to provide calibration plots
+                unit = "month")   # for the print out
+scores
+
+# Boostrapping
+# Remember to fit the supermodel with argument 'x = TRUE'
+scores <- Score(list("Model1" = supermodel),
+                times = c(0, 6),
+                split.method = "bootcv", B = 10, # 10 bootstraps
+                unit = "month")
+scores
+
+# External validation
+# Specify "data" argument
+}
+
 }
 \references{
 Paul Blanche, Cecile Proust-Lima, Lucie Loubere, Claudine Berr,

@@ -18,20 +18,22 @@
 #' @details This function calls cutLM from the library dynpred, more documentation can be found there. Note that for every landmark tLM given in `lms`, there must be at least one patient alive after tLM.
 #' @examples
 #' \dontrun{
+#' head(lmdata$data)
 #' data(relapse)
-#' outcome = list(time="Time", status="event")
-#' covars = list(fixed=c("ID","age.at.time.0","male","stage","bmi"),
-#'               varying=c("treatment"))
-#' w = 60; lms = c(0,12,24)
+#' outcome <- list(time = "Time", status = "event")
+#' covars <- list(fixed = c("ID","age.at.time.0","male","stage","bmi"),
+#'                varying = c("treatment"))
+#' w <- 60; lms <- c(0, 6, 12, 18)
 #' # Stack landmark datasets
-#' lmdata <- stack_data(relapse, outcome, lms, w, covs, format="long",
-#'                      id="ID", rtime="T_txgiven", right=F)
+#' lmdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
+#'                      id = "ID", rtime = "T_txgiven")
 #' head(lmdata$data)
 #' }
 #' @import dynpred
 #' @export
 #'
-stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"), id, rtime, right=T){
+stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"),
+                       id, rtime, right=F){
   if(!all(covs$fixed %in% colnames(data))){
     stop(paste("Fixed column(s): ",
                paste(covs$fixed[!(covs$fixed %in% colnames(data))], collapse=","),
@@ -100,7 +102,13 @@ stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"), 
                                      format, id, rtime, right))
     }
   }
-  out=list(data=lmdata, outcome=outcome, w=w, end_time=lms[length(lms)])
+  out=list(
+    data=lmdata,
+    outcome=outcome,
+    w=w,
+    end_time=lms[length(lms)],
+    lm_col="LM"
+  )
   class(out)="LMdataframe"
   return(out)
 }

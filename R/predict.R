@@ -38,8 +38,37 @@
 #' @references van Houwelingen HC, Putter H (2012). Dynamic Prediction in
 #'   Clinical Survival Analysis. Chapman & Hall.
 #'
-#' @details See our [GitHub](https://github.com/thehanlab/dynamicLM) for
-#'   examples
+#' @examples
+#' \dontrun{
+#' data(relapse)
+#' outcome <- list(time = "Time", status = "event")
+#' covars <- list(fixed = c("ID","age.at.time.0","male","stage","bmi"),
+#'                varying = c("treatment"))
+#' w <- 60; lms <- c(0, 6, 12, 18)
+#' LMs = seq(0,36,by=6)
+#' # Covariate-landmark time interactions
+#' func_covars <- list( function(t) t, function(t) t^2)
+#' # let hazard depend on landmark time
+#' func_lms <- list( function(t) t, function(t) t^2)
+#' # Choose covariates that will have time interaction
+#' pred_covars <- c("age","male","stage","bmi","treatment")
+#' # Stack landmark datasets
+#' lmdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
+#'                      id = "ID", rtime = "T_txgiven")
+#' # Update complex LM-varying covariates, note age is in years and LM is in months
+#' lmdata$data$age <- lmdata$data$age.at.time.0 + lmdata$data$LM/12
+#' # Add LM-time interactions
+#' lmdata <- add_interactions(lmdata, pred_covars, func_covars, func_lms)
+#' head(lmdata$data)
+#'
+#' formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment +
+#'            age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 +
+#'            bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
+#' supermodel <- dynls(as.formula(formula), lmdata, "CSC")
+#'
+#' p1 <- predict(supermodel)
+#' head(p1$preds)
+#' }
 #' @import survival
 #' @export
 #'
