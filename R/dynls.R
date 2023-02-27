@@ -38,32 +38,36 @@
 #'   - linear.predictors: the vector of linear predictors, one per subject.
 #'     Note that this vector has not been centered.
 #'   - args: arguments used to call model fitting
-#'   - ID_col: the cluster argument, often specifies the column with patient ID
+#'   - id_col: the cluster argument, often specifies the column with patient ID
 #'
 #' @examples
 #' \dontrun{
 #' data(relapse)
-#' outcome = list(time="Time", status="event")
-#' covars = list(fixed=c("ID","age.at.time.0","male","stage","bmi"),
-#'               varying=c("treatment"))
-#' w = 60; LMs = c(0,12,24)
+#' outcome <- list(time = "Time", status = "event")
+#' covars <- list(fixed = c("ID","age.at.time.0","male","stage","bmi"),
+#'                varying = c("treatment"))
+#' w <- 60; lms <- c(0, 6, 12, 18)
+#' LMs = seq(0,36,by=6)
 #' # Covariate-landmark time interactions
-#' func.covars <- list( function(t) t, function(t) t^2)
+#' func_covars <- list( function(t) t, function(t) t^2)
 #' # let hazard depend on landmark time
-#' func.LMs <- list( function(t) t, function(t) t^2)
+#' func_lms <- list( function(t) t, function(t) t^2)
 #' # Choose covariates that will have time interaction
-#' pred.covars <- c("age","male","stage","bmi","treatment")
+#' pred_covars <- c("age","male","stage","bmi","treatment")
 #' # Stack landmark datasets
-#' lmdata <- stack_data(relapse, outcome, LMs, w, covs, format="long",
-#'                      id="ID", rtime="fup_time", right=F)
+#' lmdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
+#'                      id = "ID", rtime = "T_txgiven")
 #' # Update complex LM-varying covariates, note age is in years and LM is in months
 #' lmdata$data$age <- lmdata$data$age.at.time.0 + lmdata$data$LM/12
 #' # Add LM-time interactions
-#' lmdata <- add_interactions(lmdata, pred.covars, func.covars, func.LMs)
+#' lmdata <- add_interactions(lmdata, pred_covars, func_covars, func_lms)
+#' head(lmdata$data)
+#'
 #' formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment +
 #'            age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 +
 #'            bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
 #' supermodel <- dynls(as.formula(formula), lmdata, "CSC")
+#' print(supermodel)
 #' }
 #' @import survival
 #' @export
@@ -93,13 +97,14 @@ dynls <- function(formula,
   cluster_check <- as.character(stats::as.formula(formula))[3]
   if (!grepl("cluster", cluster_check)){
     if (missing(cluster)){
-      message("Did you forget to specify a cluster argument or add a '+ cluster(ID)' term for your ID variable in your formula? No cluster argument was specified in the formula. Standard errors may be estimated incorrectly.")
+      stop("Did you forget to specify a cluster argument or add a '+ cluster(ID)' term for your ID variable in your formula? No cluster argument was specified in the formula. Standard errors may be estimated incorrectly.")
+    } else {
+      id_col <- cluster
     }
   } else {
     cluster <- regmatches(cluster_check, gregexpr("(?<=cluster\\().*?(?=\\))", cluster_check, perl=T))[[1]]
+    id_col <- cluster
   }
-
-  ID_col <- cluster
 
   if(!inherits(lmdata,"LMdataframe")){
     if(!inherits(lmdata,"data.frame")){stop("data must be of a data.frame or an object of class LMdataframe")}
@@ -175,7 +180,7 @@ dynls <- function(formula,
            all_covs=all_covs,
            outcome=outcome,
            LHS=LHS,
-           ID_col = ID_col,
+           id_col = id_col,
            linear.predictors=linear.predictors,
            original.landmarks=original.landmarks,
            args=args

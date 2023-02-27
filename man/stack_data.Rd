@@ -13,7 +13,7 @@ stack_data(
   format = c("wide", "long"),
   id,
   rtime,
-  right = T
+  right = F
 )
 }
 \arguments{
@@ -52,14 +52,15 @@ This function calls cutLM from the library dynpred, more documentation can be fo
 }
 \examples{
 \dontrun{
+head(lmdata$data)
 data(relapse)
-outcome = list(time="Time", status="event")
-covars = list(fixed=c("ID","age.at.time.0","male","stage","bmi"),
-              varying=c("treatment"))
-w = 60; lms = c(0,12,24)
+outcome <- list(time = "Time", status = "event")
+covars <- list(fixed = c("ID","age.at.time.0","male","stage","bmi"),
+               varying = c("treatment"))
+w <- 60; lms <- c(0, 6, 12, 18)
 # Stack landmark datasets
-lmdata <- stack_data(relapse, outcome, lms, w, covs, format="long",
-                     id="ID", rtime="T_txgiven", right=F)
+lmdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
+                     id = "ID", rtime = "T_txgiven")
 head(lmdata$data)
 }
 }

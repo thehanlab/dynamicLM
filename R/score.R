@@ -33,7 +33,7 @@
 #'   tLM can be a string (indicating a column in data), a vector of length
 #'   nrow(data), or a single value if all patient entries were obtained at the
 #'   same landmark time.
-#' @param ID_col Column name that identifies individuals in data. If omitted, it
+#' @param id_col Column name that identifies individuals in data. If omitted, it
 #'   is obtained from the prediction object.
 #' @param se.fit If FALSE or 0, no standard errors are calculated.
 #' @param conf.int Confidence interval (CI) coverage. Default is 0.95. If
@@ -105,6 +105,25 @@
 #'   time-dependent areas under receiver operating characteristic curves for
 #'   censored event times with competing risks. Statistics in Medicine,
 #'   32(30):5381–5397, 2013.
+#' @examples
+#' \dontrun{
+#' # Internal validation
+#' scores <- Score(list("Model1" = supermodel),
+#'                 times = c(0, 6), # landmarks at which to provide calibration plots
+#'                 unit = "month")   # for the print out
+#' scores
+#'
+#' # Boostrapping
+#' # Remember to fit the supermodel with argument 'x = TRUE'
+#' scores <- Score(list("Model1" = supermodel),
+#'                 times = c(0, 6),
+#'                 split.method = "bootcv", B = 10, # 10 bootstraps
+#'                 unit = "month")
+#' scores
+#'
+#' # External validation
+#' # Specify "data" argument
+#' }
 #'
 #' @import riskRegression
 #' @importFrom data.table .SD
@@ -116,7 +135,7 @@ Score <-
            formula,
            data,
            tLM,
-           ID_col="ID",
+           id_col="ID",
            se.fit = TRUE,
            conf.int = 0.95,
            split.method = "none",
@@ -140,7 +159,7 @@ Score <-
     if ("brier" %in% metrics) get.brier <- TRUE
 
     checked_input <- match.call()
-    m <- match(c("object", "times", "formula", "data", "tLM", "ID_col",
+    m <- match(c("object", "times", "formula", "data", "tLM", "id_col",
                  "split.method", "B", "M", "cores", "seed", "cause"), names(checked_input), 0L)
     checked_input <- as.list(checked_input[m])
     checked_input <- do.call(check_evaluation_inputs, checked_input)

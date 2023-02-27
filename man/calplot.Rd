@@ -36,11 +36,14 @@ a subset of LM times used during the prediction}
 \item{formula}{A survival or event history formula (\code{Hist(...)}). The left
 If none is given, it is obtained from the prediction object.}
 
-\item{data}{Data for external validation.}
+\item{data}{Data for external validation. This can be an object of class
+LMdataframe (i.e., created by calling \code{\link[=stack_data]{stack_data()}} and
+\code{\link[=add_interactions]{add_interactions()}}), or a data.frame. If it is a data.frame, argument
+\code{tLM} must be specified.}
 
 \item{tLM}{Landmark times corresponding to the patient entries in data. Only
-required if data is specified and is a dataframe.
-tLM can be a string (indicating a column in data), a vector of length
+required if \code{data} is specified and is a dataframe.
+\code{tLM} can be a string (indicating a column in data), a vector of length
 nrow(data), or a single value if all patient entries were obtained at the
 same landmark time.}
 
@@ -139,13 +142,27 @@ made during the bootstrap resampling.
 }
 \examples{
 \dontrun{
-par(mfrow=c(2,2),pty="s")
-outlist = calplot(list("Model_1"=supermodel),
-                    unit="month",            # only used for the title
-                    times=c(6,12,18,24),     # landmark times at which to plot
-                    method="quantile", q=10, # method for calibration plot
-                    regression_values = TRUE,# output regression values
-                    ylim=c(0,0.4), xlim=c(0,0.4)) # optional
+# Internal validation
+par(mfrow=c(1,2),pty="s")
+outlist <- calplot(list("Model_1" = supermodel),
+                   unit = "month",              # only used for the title
+                   times = c(0, 6),             # landmark times at which to plot
+                   method = "quantile", q = 10, # method for calibration plot
+                   regression_values = TRUE,    # output regression values
+                   ylim = c(0, 0.4), xlim = c(0, 0.4)) # optional
 outlist$regression_values
+
+# Boostrapping
+# Remember to fit the supermodel with argument 'x = TRUE'
+par(mfrow=c(1,2),pty="s")
+outlist = calplot(list("Model_1" = supermodel),
+                  unit = "month",
+                  times = c(0, 6),
+                  method = "quantile", q=10,
+                  split.method = "bootcv", B = 10, # 10 bootstraps
+                  ylim = c(0, 0.4), xlim = c(0, 0.4))
+
+# External validation
+# Specify "data" argument
 }
 }
