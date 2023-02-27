@@ -79,7 +79,7 @@ You can install the development version of `dynamicLM` from
 devtools::install_github("thehanlab/dynamicLM", ref = "proposed-updates")
 #> Downloading GitHub repo thehanlab/dynamicLM@proposed-updates
 #> 
-#>      checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpjiVrID/remotes1dcb5761fac3/thehanlab-dynamicLM-555e999/DESCRIPTION’ ...  ✔  checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpjiVrID/remotes1dcb5761fac3/thehanlab-dynamicLM-555e999/DESCRIPTION’
+#>      checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpI2i1N3/remotes1e7c3440314a/thehanlab-dynamicLM-fa25095/DESCRIPTION’ ...  ✔  checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpI2i1N3/remotes1e7c3440314a/thehanlab-dynamicLM-fa25095/DESCRIPTION’
 #>   ─  preparing ‘dynamicLM’:
 #>      checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
 #>   ─  checking for LF line-endings in source and make files and shell scripts
@@ -148,9 +148,9 @@ which variables are fixed or landmark-varying. When there are no
 landmark-varying variables, set `varying=NULL`.
 
 ``` r
-outcome <- list(time="Time", status="event")
-covars <- list(fixed=c("ID","age.at.time.0","male","stage","bmi"),
-              varying=c("treatment"))
+outcome <- list(time = "Time", status = "event")
+covars <- list(fixed = c("age.at.time.0","male","stage","bmi"),
+               varying = c("treatment"))
 ```
 
 We will produce 5-year dynamic predictions of relapse (`w`). Landmark
@@ -213,22 +213,14 @@ lmdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
                      id = "ID", rtime = "T_txgiven", right = F)
 data <- lmdata$data
 print(data[data$ID == "ID1029",])
-#>         ID     Time event   ID.1 age.at.time.0 male stage  bmi treatment
-#> 7   ID1029 60.00000     0 ID1029      62.25753    0     0 26.8         0
-#> 73  ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         0
-#> 733 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         0
-#> 736 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
-#> 751 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
-#> 786 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
-#> 788 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
-#>     T_txgiven LM
-#> 7        0.00  0
-#> 73       0.00  6
-#> 733      0.00 12
-#> 736     12.96 18
-#> 751     12.96 24
-#> 786     12.96 30
-#> 788     12.96 36
+#>         ID     Time event age.at.time.0 male stage  bmi treatment T_txgiven LM
+#> 7   ID1029 60.00000     0      62.25753    0     0 26.8         0      0.00  0
+#> 73  ID1029 60.03288     0      62.25753    0     0 26.8         0      0.00  6
+#> 733 ID1029 60.03288     0      62.25753    0     0 26.8         0      0.00 12
+#> 736 ID1029 60.03288     0      62.25753    0     0 26.8         1     12.96 18
+#> 751 ID1029 60.03288     0      62.25753    0     0 26.8         1     12.96 24
+#> 786 ID1029 60.03288     0      62.25753    0     0 26.8         1     12.96 30
+#> 788 ID1029 60.03288     0      62.25753    0     0 26.8         1     12.96 36
 ```
 
 We then (optionally) update more complex LM-varying covariates. Here we
@@ -238,22 +230,22 @@ create an age covariate, based on age at time 0.
 lmdata$data$age <- lmdata$data$age.at.time.0 + lmdata$data$LM/12 # age is in years and LM is in months
 data <- lmdata$data
 print(data[data$ID == "ID1029",])
-#>         ID     Time event   ID.1 age.at.time.0 male stage  bmi treatment
-#> 7   ID1029 60.00000     0 ID1029      62.25753    0     0 26.8         0
-#> 73  ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         0
-#> 733 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         0
-#> 736 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
-#> 751 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
-#> 786 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
-#> 788 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
-#>     T_txgiven LM      age
-#> 7        0.00  0 62.25753
-#> 73       0.00  6 62.75753
-#> 733      0.00 12 63.25753
-#> 736     12.96 18 63.75753
-#> 751     12.96 24 64.25753
-#> 786     12.96 30 64.75753
-#> 788     12.96 36 65.25753
+#>         ID     Time event age.at.time.0 male stage  bmi treatment T_txgiven LM
+#> 7   ID1029 60.00000     0      62.25753    0     0 26.8         0      0.00  0
+#> 73  ID1029 60.03288     0      62.25753    0     0 26.8         0      0.00  6
+#> 733 ID1029 60.03288     0      62.25753    0     0 26.8         0      0.00 12
+#> 736 ID1029 60.03288     0      62.25753    0     0 26.8         1     12.96 18
+#> 751 ID1029 60.03288     0      62.25753    0     0 26.8         1     12.96 24
+#> 786 ID1029 60.03288     0      62.25753    0     0 26.8         1     12.96 30
+#> 788 ID1029 60.03288     0      62.25753    0     0 26.8         1     12.96 36
+#>          age
+#> 7   62.25753
+#> 73  62.75753
+#> 733 63.25753
+#> 736 63.75753
+#> 751 64.25753
+#> 786 64.75753
+#> 788 65.25753
 ```
 
 Lastly, we add landmark time-interactions. The `_1` refers to the first
@@ -266,30 +258,30 @@ covariates that will have landmark time interactions.
 lmdata <- add_interactions(lmdata, pred_covars, func_covars, func_lms) 
 data <- lmdata$data
 print(data[data$ID == "ID1029",])
-#>         ID     Time event   ID.1 age.at.time.0 male stage  bmi treatment
-#> 7   ID1029 60.00000     0 ID1029      62.25753    0     0 26.8         0
-#> 73  ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         0
-#> 733 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         0
-#> 736 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
-#> 751 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
-#> 786 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
-#> 788 ID1029 60.03288     0 ID1029      62.25753    0     0 26.8         1
-#>     T_txgiven LM      age     age_1     age_2 male_1 male_2 stage_1 stage_2
-#> 7        0.00  0 62.25753    0.0000     0.000      0      0       0       0
-#> 73       0.00  6 62.75753  376.5452  2259.271      0      0       0       0
-#> 733      0.00 12 63.25753  759.0904  9109.085      0      0       0       0
-#> 736     12.96 18 63.75753 1147.6356 20657.441      0      0       0       0
-#> 751     12.96 24 64.25753 1542.1808 37012.340      0      0       0       0
-#> 786     12.96 30 64.75753 1942.7260 58281.781      0      0       0       0
-#> 788     12.96 36 65.25753 2349.2712 84573.764      0      0       0       0
-#>     bmi_1   bmi_2 treatment_1 treatment_2 LM_1 LM_2
-#> 7     0.0     0.0           0           0    0    0
-#> 73  160.8   964.8           0           0    6   36
-#> 733 321.6  3859.2           0           0   12  144
-#> 736 482.4  8683.2          18         324   18  324
-#> 751 643.2 15436.8          24         576   24  576
-#> 786 804.0 24120.0          30         900   30  900
-#> 788 964.8 34732.8          36        1296   36 1296
+#>         ID     Time event age.at.time.0 male stage  bmi treatment T_txgiven LM
+#> 7   ID1029 60.00000     0      62.25753    0     0 26.8         0      0.00  0
+#> 73  ID1029 60.03288     0      62.25753    0     0 26.8         0      0.00  6
+#> 733 ID1029 60.03288     0      62.25753    0     0 26.8         0      0.00 12
+#> 736 ID1029 60.03288     0      62.25753    0     0 26.8         1     12.96 18
+#> 751 ID1029 60.03288     0      62.25753    0     0 26.8         1     12.96 24
+#> 786 ID1029 60.03288     0      62.25753    0     0 26.8         1     12.96 30
+#> 788 ID1029 60.03288     0      62.25753    0     0 26.8         1     12.96 36
+#>          age     age_1     age_2 male_1 male_2 stage_1 stage_2 bmi_1   bmi_2
+#> 7   62.25753    0.0000     0.000      0      0       0       0   0.0     0.0
+#> 73  62.75753  376.5452  2259.271      0      0       0       0 160.8   964.8
+#> 733 63.25753  759.0904  9109.085      0      0       0       0 321.6  3859.2
+#> 736 63.75753 1147.6356 20657.441      0      0       0       0 482.4  8683.2
+#> 751 64.25753 1542.1808 37012.340      0      0       0       0 643.2 15436.8
+#> 786 64.75753 1942.7260 58281.781      0      0       0       0 804.0 24120.0
+#> 788 65.25753 2349.2712 84573.764      0      0       0       0 964.8 34732.8
+#>     treatment_1 treatment_2 LM_1 LM_2
+#> 7             0           0    0    0
+#> 73            0           0    6   36
+#> 733           0           0   12  144
+#> 736          18         324   18  324
+#> 751          24         576   24  576
+#> 786          30         900   30  900
+#> 788          36        1296   36 1296
 ```
 
 ## 3.3 Fit the super model
@@ -378,11 +370,11 @@ print(supermodel)
 #> $func_covars
 #> $func_covars$[[1]]
 #> function(t) t
-#> <bytecode: 0x1147ad020>
+#> <bytecode: 0x1220dcf30>
 #> 
 #> $func_covars$[[2]]
 #> function(t) t^2
-#> <bytecode: 0x126ea3568>
+#> <bytecode: 0x1104b4b58>
 #> 
 #> $func_lms
 #> $func_lms$[[1]]
@@ -414,7 +406,7 @@ plot(supermodel)
 
 ``` r
 # To create only two plots:
-plot(supermodel, covars=c("age","male"))
+plot(supermodel, covars = c("age","male"))
 ```
 
 ## 3.4 Obtain predictions
@@ -455,7 +447,7 @@ print(individuals)
 ```
 
 ``` r
-p0 <- predict(supermodel, individuals, landmark_times, cause=1)
+p0 <- predict(supermodel, individuals, landmark_times, cause = 1)
 p0$preds
 #>   LM       risk
 #> 1  0 0.11514265
@@ -472,13 +464,13 @@ argument allows for comparison between models.
 
 ``` r
 par(mfrow=c(2,3), pty="s", mar = c(4, 4, 4, 1))
-outlist <- calplot(list("Model1"=p1), 
-                    unit="month",            # for the titles
-                    times=c(0,6,12,18,24,30),# landmarks at which to provide calibration plots
-                    method="quantile", q=10, # method for calibration plot
+outlist <- calplot(list("Model1" = p1), 
+                    unit = "month",            # for the titles
+                    times = c(0,6,12,18,24,30),# landmarks at which to provide calibration plots
+                    method = "quantile", q=10, # method for calibration plot
                     # Optional plotting parameters to alter
-                    ylim=c(0,0.36), xlim=c(0,0.36), 
-                    lwd=1, xlab="Predicted Risk", ylab="Observed Risk", legend=F)
+                    ylim = c(0, 0.36), xlim = c(0, 0.36), 
+                    lwd = 1, xlab = "Predicted Risk", ylab = "Observed Risk", legend = F)
 ```
 
 <img src="man/figures/README-calplot-1.png" width="100%" />
@@ -495,9 +487,9 @@ Brier score (BSt).
   that time point.
 
 ``` r
-scores <- Score(list("Model1"=p1),
-                     times=c(6,12,18,24), # landmarks at which to provide calibration plots
-                     unit="month")      # for the print out
+scores <- Score(list("Model1" = p1),
+                     times = c(6,12,18,24), # landmarks at which to assess
+                     unit = "month")        # for the print out
 scores
 #> 
 #> Metric: Time-dependent AUC for 60-month risk prediction
@@ -565,29 +557,29 @@ x <- seq(0,36,by=6)
 
 # Stack landmark datasets
 dat <- stack_data(relapse[idx,], outcome, x, w, covars, format="long", 
-                  id="ID", rtime="T_txgiven", right=F)$data
+                  id = "ID", rtime = "T_txgiven")$data
 dat$age <- dat$age.at.time.0 + dat$LM/12 # age is in years and LM is in months
 
 head(dat)
-#>          ID     Time event   ID.1 age.at.time.0 male stage  bmi treatment
-#> 1    ID1007 60.00000     0 ID1007      60.25936    0     1 25.9         0
-#> 442  ID2412 43.35342     0 ID2412      60.09132    1     0 24.1         0
-#> 11   ID1007 62.68493     0 ID1007      60.25936    0     1 25.9         0
-#> 4421 ID2412 43.35342     0 ID2412      60.09132    1     0 24.1         0
-#> 12   ID1007 62.68493     0 ID1007      60.25936    0     1 25.9         0
-#> 4422 ID2412 43.35342     0 ID2412      60.09132    1     0 24.1         0
-#>      T_txgiven LM      age
-#> 1            0  0 60.25936
-#> 442          0  0 60.09132
-#> 11           0  6 60.75936
-#> 4421         0  6 60.59132
-#> 12           0 12 61.25936
-#> 4422         0 12 61.09132
+#>          ID     Time event age.at.time.0 male stage  bmi treatment T_txgiven LM
+#> 1    ID1007 60.00000     0      60.25936    0     1 25.9         0         0  0
+#> 442  ID2412 43.35342     0      60.09132    1     0 24.1         0         0  0
+#> 11   ID1007 62.68493     0      60.25936    0     1 25.9         0         0  6
+#> 4421 ID2412 43.35342     0      60.09132    1     0 24.1         0         0  6
+#> 12   ID1007 62.68493     0      60.25936    0     1 25.9         0         0 12
+#> 4422 ID2412 43.35342     0      60.09132    1     0 24.1         0         0 12
+#>           age
+#> 1    60.25936
+#> 442  60.09132
+#> 11   60.75936
+#> 4421 60.59132
+#> 12   61.25936
+#> 4422 61.09132
 ```
 
 ``` r
-plotrisk(supermodel, dat, format="long", lm_col = "LM", id_col = "ID", 
-           ylim = c(0, 0.7), x.legend="bottom", unit="month")
+plotrisk(supermodel, dat, format = "long", lm_col = "LM", id_col = "ID", 
+           ylim = c(0, 0.7), x.legend = "bottom", unit = "month")
 ```
 
 <img src="man/figures/README-plotrisk-1.png" width="100%" />
