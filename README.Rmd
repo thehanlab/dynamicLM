@@ -119,7 +119,7 @@ length(unique(relapse$ID)) # There are 171 patients with two entries, i.e., one 
 
 We first note the outcome variables we are interested in, as well as
 which variables are fixed or landmark-varying. When there are no
-landmark-varying variables, set `varying=NULL`.
+landmark-varying variables, set `varying = NULL`.
 
 ```{r}
 outcome <- list(time = "Time", status = "event")
@@ -147,7 +147,7 @@ func_covars <- list( function(t) t, function(t) t^2)
 # let hazard depend on landmark time
 func_lms <- list( function(t) t, function(t) t^2)
 # Choose variables that will have time interaction
-pred_covars <- c("age","male","stage","bmi","treatment") 
+pred_covars <- c("age", "male", "stage", "bmi", "treatment") 
 ```
 
 With this, we are ready to build the super data set that will train the
@@ -155,10 +155,10 @@ model. We print intermediate steps for illustration.
 
 There are three steps:
 
-1.  `stack_data`: stacks the landmark data sets
+1.  `stack_data()`: stacks the landmark data sets
 2.  An **optional** additional update for more complex columns that vary
     with landmark-times: For example, here we update the value of age.
-3.  `add_interactions`: Landmark time interactions are added, note the
+3.  `add_interactions()`: Landmark time interactions are added, note the
     additional columns created.
 
 *Note that these return an object of class `LMdataframe`. This has a
@@ -222,11 +222,11 @@ all_covs <- lmdata$all_covs
 print(all_covs)
 ```
 
-It is then easy to fit a landmark supermodel using `dynls`. A formula,
+It is then easy to fit a landmark supermodel using `dynls()`. A formula,
 super dataset and method need to be provided. If the super dataset is
 not of class `LMdataframe` (i.e., is a self-created R dataframe), then
 additional parameters must be specified. In this case, see the details
-section of the documentation of `add_interactions(...)` for information on how
+section of the documentation of `add_interactions()` for information on how
 the landmark interaction terms must be named.
 
 ```{r}
@@ -290,7 +290,7 @@ p0$preds
 Calibration plots, which assess the agreement between predictions and
 observations in different percentiles of the predicted values, can be
 plotted for each of the landmarks used for prediction. Entering a named
-list of prediction objects (created by calling `predict`) in the first argument
+list of prediction objects (created by calling `predict()`) in the first argument
 allows for comparison between models.
 
 ```{r calplot}
@@ -323,10 +323,10 @@ scores <- Score(list("Model1" = p1),
 scores
 ```
 
-**Bootstrapping** can be performed by calling `calplot` or `Score` and setting 
+**Bootstrapping** can be performed by calling `calplot()` or `Score()` and setting 
 the arguments `split.method = "bootcv"` and `B = 10` (or however many bootstrap 
-replications are desired). Note that the argument `x=TRUE` must be specified 
-when fitting the model.
+replications are desired). Note that the argument `x = TRUE` must be specified 
+when fitting the model (i.e., when calling `dynls`.
 
 **External validation** can be performed by passing new 
 data through the `data` argument. This data can be a LMdataframe or a dataframe 
@@ -334,7 +334,7 @@ data through the `data` argument. This data can be a LMdataframe or a dataframe
 
 ### Visualize individual dynamic risk trajectories
 
-Individual risk score trajectories can be plotted. As with `predict`,
+Individual risk score trajectories can be plotted. As with `predict()`,
 the data input is in the form of the original data. For example, we can
 consider two individuals of similar age, bmi, and treatment status at
 baseline, but of different gender.

@@ -79,9 +79,9 @@ You can install the development version of `dynamicLM` from
 devtools::install_github("thehanlab/dynamicLM", ref = "proposed-updates")
 #> Downloading GitHub repo thehanlab/dynamicLM@proposed-updates
 #> 
-#>      checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpI2i1N3/remotes1e7c3440314a/thehanlab-dynamicLM-fa25095/DESCRIPTION’ ...  ✔  checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpI2i1N3/remotes1e7c3440314a/thehanlab-dynamicLM-fa25095/DESCRIPTION’
+#>      checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpWlvME1/remotes47696b5d7292/thehanlab-dynamicLM-fa25095/DESCRIPTION’ ...  ✔  checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpWlvME1/remotes47696b5d7292/thehanlab-dynamicLM-fa25095/DESCRIPTION’
 #>   ─  preparing ‘dynamicLM’:
-#>      checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
+#>        checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
 #>   ─  checking for LF line-endings in source and make files and shell scripts
 #>   ─  checking for empty or unneeded directories
 #>   ─  building ‘dynamicLM_0.3.0.tar.gz’
@@ -145,7 +145,7 @@ length(unique(relapse$ID)) # There are 171 patients with two entries, i.e., one 
 
 We first note the outcome variables we are interested in, as well as
 which variables are fixed or landmark-varying. When there are no
-landmark-varying variables, set `varying=NULL`.
+landmark-varying variables, set `varying = NULL`.
 
 ``` r
 outcome <- list(time = "Time", status = "event")
@@ -172,7 +172,7 @@ func_covars <- list( function(t) t, function(t) t^2)
 # let hazard depend on landmark time
 func_lms <- list( function(t) t, function(t) t^2)
 # Choose variables that will have time interaction
-pred_covars <- c("age","male","stage","bmi","treatment") 
+pred_covars <- c("age", "male", "stage", "bmi", "treatment") 
 ```
 
 With this, we are ready to build the super data set that will train the
@@ -180,10 +180,10 @@ model. We print intermediate steps for illustration.
 
 There are three steps:
 
-1.  `stack_data`: stacks the landmark data sets
+1.  `stack_data()`: stacks the landmark data sets
 2.  An **optional** additional update for more complex columns that vary
     with landmark-times: For example, here we update the value of age.
-3.  `add_interactions`: Landmark time interactions are added, note the
+3.  `add_interactions()`: Landmark time interactions are added, note the
     additional columns created.
 
 *Note that these return an object of class `LMdataframe`. This has a
@@ -302,12 +302,12 @@ print(all_covs)
 #> [16] "LM_1"        "LM_2"
 ```
 
-It is then easy to fit a landmark supermodel using `dynls`. A formula,
+It is then easy to fit a landmark supermodel using `dynls()`. A formula,
 super dataset and method need to be provided. If the super dataset is
 not of class `LMdataframe` (i.e., is a self-created R dataframe), then
 additional parameters must be specified. In this case, see the details
-section of the documentation of `add_interactions(...)` for information
-on how the landmark interaction terms must be named.
+section of the documentation of `add_interactions()` for information on
+how the landmark interaction terms must be named.
 
 ``` r
 formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment + age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 + bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
@@ -370,11 +370,11 @@ print(supermodel)
 #> $func_covars
 #> $func_covars$[[1]]
 #> function(t) t
-#> <bytecode: 0x1220dcf30>
+#> <bytecode: 0x117c01ba0>
 #> 
 #> $func_covars$[[2]]
 #> function(t) t^2
-#> <bytecode: 0x1104b4b58>
+#> <bytecode: 0x117e67cb8>
 #> 
 #> $func_lms
 #> $func_lms$[[1]]
@@ -459,7 +459,7 @@ p0$preds
 Calibration plots, which assess the agreement between predictions and
 observations in different percentiles of the predicted values, can be
 plotted for each of the landmarks used for prediction. Entering a named
-list of prediction objects (created by calling `predict`) in the first
+list of prediction objects (created by calling `predict()`) in the first
 argument allows for comparison between models.
 
 ``` r
@@ -521,10 +521,11 @@ scores
 #> NOTE: Predictions are made at time tLM for 60-month risk
 ```
 
-**Bootstrapping** can be performed by calling `calplot` or `Score` and
-setting the arguments `split.method = "bootcv"` and `B = 10` (or however
-many bootstrap replications are desired). Note that the argument
-`x=TRUE` must be specified when fitting the model.
+**Bootstrapping** can be performed by calling `calplot()` or `Score()`
+and setting the arguments `split.method = "bootcv"` and `B = 10` (or
+however many bootstrap replications are desired). Note that the argument
+`x = TRUE` must be specified when fitting the model (i.e., when calling
+`dynls`.
 
 **External validation** can be performed by passing new data through the
 `data` argument. This data can be a LMdataframe or a dataframe (in which
@@ -532,7 +533,7 @@ case `tLM` must be specified).
 
 ### 3.5.1 Visualize individual dynamic risk trajectories
 
-Individual risk score trajectories can be plotted. As with `predict`,
+Individual risk score trajectories can be plotted. As with `predict()`,
 the data input is in the form of the original data. For example, we can
 consider two individuals of similar age, bmi, and treatment status at
 baseline, but of different gender.
