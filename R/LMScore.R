@@ -145,7 +145,7 @@ LMScore <-
     formula = checked_input$formula
     cause = checked_input$cause
 
-    if(!all(b %in% colnames(data))) data$b = 1
+    if(!all("b" %in% colnames(data))) data$b = 1
 
     num_B = length(unique(data$b))
     se.fit.b <- se.fit
