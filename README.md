@@ -77,7 +77,7 @@ You can install the development version of `dynamicLM` from
 ``` r
 # install.packages("devtools")
 devtools::install_github("thehanlab/dynamicLM")
-#> Skipping install of 'dynamicLM' from a github remote, the SHA1 (e353a33c) has not changed since last install.
+#> Skipping install of 'dynamicLM' from a github remote, the SHA1 (13c46691) has not changed since last install.
 #>   Use `force = TRUE` to force installation
 ```
 
@@ -365,11 +365,11 @@ print(supermodel)
 #> $func_covars
 #> $func_covars$[[1]]
 #> function(t) t
-#> <bytecode: 0x12364bdb0>
+#> <bytecode: 0x110687420>
 #> 
 #> $func_covars$[[2]]
 #> function(t) t^2
-#> <bytecode: 0x1237006d0>
+#> <bytecode: 0x110709c40>
 #> 
 #> $func_LMs
 #> $func_LMs$[[1]]
@@ -485,16 +485,16 @@ Brier score (BSt).
 scores = LMScore(list("Model1"=p1),
                      times=c(6,12,18,24), # landmarks at which to provide calibration plots
                      unit="month")      # for the print out
-scores
+scores 
 #> 
 #> Metric: Time-dependent AUC for 60-month risk prediction
 #> 
 #> Results by model:
-#>    tLM  model    AUC  lower  upper b
-#> 1:   6 Model1 61.808 51.891 71.726 1
-#> 2:  12 Model1 60.855 50.447 71.262 1
-#> 3:  18 Model1 61.374 51.034 71.714 1
-#> 4:  24 Model1 55.188 43.949 66.427 1
+#>    tLM  model    AUC  lower  upper
+#> 1:   6 Model1 61.808 51.891 71.726
+#> 2:  12 Model1 60.855 50.447 71.262
+#> 3:  18 Model1 61.374 51.034 71.714
+#> 4:  24 Model1 55.188 43.949 66.427
 #> NOTE: Values are multiplied by 100 and given in %.
 #> NOTE: The higher AUC the better.
 #> NOTE: Predictions are made at time tLM for 60-month risk
@@ -502,15 +502,15 @@ scores
 #> Metric: Time-dependent Brier Score for 60-month risk prediction
 #> 
 #> Results by model:
-#>    tLM      model  Brier lower  upper b
-#> 1:   6 Null model  8.493 6.288 10.698 1
-#> 2:   6     Model1  8.141 6.017 10.266 1
-#> 3:  12 Null model 11.152 8.420 13.883 1
-#> 4:  12     Model1 10.639 7.945 13.333 1
-#> 5:  18 Null model 11.582 8.591 14.574 1
-#> 6:  18     Model1 11.163 8.246 14.081 1
-#> 7:  24 Null model 11.494 8.231 14.758 1
-#> 8:  24     Model1 11.467 8.247 14.687 1
+#>    tLM      model  Brier lower  upper
+#> 1:   6 Null model  8.493 6.288 10.698
+#> 2:   6     Model1  8.141 6.017 10.266
+#> 3:  12 Null model 11.152 8.420 13.883
+#> 4:  12     Model1 10.639 7.945 13.333
+#> 5:  18 Null model 11.582 8.591 14.574
+#> 6:  18     Model1 11.163 8.246 14.081
+#> 7:  24 Null model 11.494 8.231 14.758
+#> 8:  24     Model1 11.467 8.247 14.687
 #> NOTE: Values are multiplied by 100 and given in %.
 #> NOTE: The lower Brier the better.
 #> NOTE: Predictions are made at time tLM for 60-month risk

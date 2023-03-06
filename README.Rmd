@@ -319,7 +319,7 @@ Brier score (BSt).
 scores = LMScore(list("Model1"=p1),
                      times=c(6,12,18,24), # landmarks at which to provide calibration plots
                      unit="month")      # for the print out
-scores
+scores 
 ```
 
 ### Visualize individual dynamic risk trajectories
