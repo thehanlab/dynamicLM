@@ -145,7 +145,7 @@ LMScore <-
     formula = checked_input$formula
     cause = checked_input$cause
 
-    if(is.null(data$b)) data$b <- 1
+    if(!all(b %in% colnames(data))) data$b = 1
 
     num_B = length(unique(data$b))
     se.fit.b <- se.fit
@@ -255,6 +255,8 @@ LMScore <-
     } else {
       auct_out <- auct
       briert_out <- briert
+      auct_out$b <- NULL
+      briert_out$b <- NULL
     }
 
     outlist <- list(
