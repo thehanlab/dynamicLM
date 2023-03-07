@@ -52,8 +52,15 @@ plotrisk <- function(object, data, format, lm_col, id_col, w,
 
   if (missing(unit)){unit="year"}
   if(format=="long"){
-    if(missing(id_col)) stop("argument 'id_col' should be specified for long format data")
-    if(missing(lm_col)) stop("argument 'lm_col' should be specified for long format data")
+    if(missing(id_col)) {
+      if("ID" %in% colnames(data)) { id_col <- "ID" }
+      else if("id" %in% colnames(data)) { id_col <- "id" }
+      else { stop("argument 'id_col' should be specified for long format data") }
+    }
+    if(missing(lm_col)) {
+      if("LM" %in% colnames(data)) { lm_col <- "LM" }
+      else { stop("argument 'lm_col' should be specified for long format data") }
+    }
     if(! id_col %in% colnames(data)) stop("arg 'id_col' is not a column in data")
     if(! lm_col %in% colnames(data)) stop("arg 'lm_col' is not a column in data")
     unique_ids <- unique(data[[id_col]])
