@@ -139,13 +139,13 @@ plot.dynamicLM <- function(object, covars, conf_int = TRUE, cause, end_time,
 #' @param object An object of class "LMScore" output from [Score()]
 #' @param metrics One or both of "auc" and "brier"
 #' @param se Boolean, default TRUE. To include point wise confidence intervals.
-#' @param xlab,ylab,y,x,pch,ylim graphical parameters
+#' @param xlab,ylab,y,x,pch,ylim,xlim graphical parameters
 #' @param ...
 #'
 #' @export
 #'
 plot.LMScore <- function(object, metrics, se = TRUE, xlab, ylab, x, pch, ylim,
-                         ...) {
+                         xlim, ...) {
   if (missing(metrics)) {
     metrics <- c()
     if (!is.null(object$auct)) metrics <- c("auc")
@@ -153,7 +153,7 @@ plot.LMScore <- function(object, metrics, se = TRUE, xlab, ylab, x, pch, ylim,
   }
 
   if (missing(xlab))
-    xlab <- "Landmark Time (tLM)"
+    xlab <- "Landmark Time (t)"
   if (missing(pch))
     pch <- 19
 
@@ -164,8 +164,8 @@ plot.LMScore <- function(object, metrics, se = TRUE, xlab, ylab, x, pch, ylim,
   if (missing(x))
     set_x <- TRUE
 
-  plot.metric <- function(df, metric, loc, ylim) {
-    if (set_ylab) ylab <- metric
+  plot.metric <- function(df, metric, loc, ylim, xlim) {
+    if (set_ylab) ylab <- paste0(metric, "(t, t + ", object$w, ")")
 
     num_models = length(unique(df$model))
     model_names = df$model[1:num_models]
@@ -178,9 +178,12 @@ plot.LMScore <- function(object, metrics, se = TRUE, xlab, ylab, x, pch, ylim,
     if (missing(ylim)) {
       ylim = c(min(lower), max(upper))
     }
+    if (missing(xlim)) {
+      xlim = c(min(tLM), max(tLM))
+    }
 
     plot(tLM, metric, col = models, pch = pch, xlab = xlab, ylab = ylab,
-         ylim = ylim, ...)
+         ylim = ylim, xlim = xlim, ...)
 
     for (i in 1:num_models){
       idx = models == model_names[i]
@@ -198,7 +201,7 @@ plot.LMScore <- function(object, metrics, se = TRUE, xlab, ylab, x, pch, ylim,
       warning("AUC was not set as a metric when calling LMScore. No results to plot. Either call LMScore again with auc as a metric or do not include it as a metric here.")
     } else {
       if(set_x) x <- "topright"
-      plot.metric(object$auct, "AUC", x, ylim)
+      plot.metric(object$auct, "AUC", x, ylim, xlim)
     }
   }
   if ("brier" %in% metrics) {
@@ -206,7 +209,7 @@ plot.LMScore <- function(object, metrics, se = TRUE, xlab, ylab, x, pch, ylim,
       warning("Brier was not set as a metric when calling LMScore. No results to plot. Either call LMScore again with auc as a metric or do not include it as a metric here.")
     } else {
       if (set_x) x <- "bottomright"
-      plot.metric(object$briert, "Brier", x, ylim)
+      plot.metric(object$briert, "Brier", x, ylim, xlim)
     }
   }
 }

@@ -2,27 +2,23 @@
 % Please edit documentation in R/plot.R
 \name{plot.LMScore}
 \alias{plot.LMScore}
-\title{Plot an object output from \code{LMScore}: plot the landmark and time-dependent
+\title{Plot an object output from \code{\link[=Score]{Score()}}: plot the landmark and time-dependent
 Brier and/or AUC of dynamic landmark supermodels.}
 \usage{
-\method{plot}{LMScore}(object, metrics, xlab, ylab, x, pch, ...)
+\method{plot}{LMScore}(object, metrics, se = TRUE, xlab, ylab, x, pch, ylim, xlim, ...)
 }
 \arguments{
-\item{object}{An object of class "LMScore" output from \code{LMScore}}
+\item{object}{An object of class "LMScore" output from \code{\link[=Score]{Score()}}}
 
 \item{metrics}{One or both of "auc" and "brier"}
 
-\item{xlab}{x label}
+\item{se}{Boolean, default TRUE. To include point wise confidence intervals.}
 
-\item{ylab}{y label}
-
-\item{x}{legend location}
-
-\item{pch}{size of points}
+\item{xlab, ylab, y, x, pch, ylim, xlim}{graphical parameters}
 
 \item{...}{}
 }
 \description{
-Plot an object output from \code{LMScore}: plot the landmark and time-dependent
+Plot an object output from \code{\link[=Score]{Score()}}: plot the landmark and time-dependent
 Brier and/or AUC of dynamic landmark supermodels.
 }
