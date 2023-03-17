@@ -77,7 +77,7 @@ You can install the development version of `dynamicLM` from
 ``` r
 # install.packages("devtools")
 devtools::install_github("thehanlab/dynamicLM", ref = "proposed-updates")
-#> Skipping install of 'dynamicLM' from a github remote, the SHA1 (26de31c4) has not changed since last install.
+#> Skipping install of 'dynamicLM' from a github remote, the SHA1 (859bb12f) has not changed since last install.
 #>   Use `force = TRUE` to force installation
 ```
 
@@ -362,11 +362,11 @@ print(supermodel)
 #> $func_covars
 #> $func_covars$[[1]]
 #> function(t) t
-#> <bytecode: 0x121f486a0>
+#> <bytecode: 0x10f68b6d8>
 #> 
 #> $func_covars$[[2]]
 #> function(t) t^2
-#> <bytecode: 0x121fc6d50>
+#> <bytecode: 0x10f70c2a0>
 #> 
 #> $func_lms
 #> $func_lms$[[1]]
@@ -522,7 +522,7 @@ par(mfrow = c(1,2))
 plot(scores)
 ```
 
-<img src="man/figures/README-unnamed-chunk-19-1.png" width="100%" style="display: block; margin: auto;" />
+<img src="man/figures/README-unnamed-chunk-19-1.png" width="100%" />
 
 **Bootstrapping** can be performed by calling `calplot()` or `Score()`
 and setting the arguments `split.method = "bootcv"` and `B = 10` (or

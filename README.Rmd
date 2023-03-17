@@ -327,7 +327,7 @@ scores
 These results can also be plot with point wise confidence intervals. Setting
 `se = FALSE` in plot excludes the intervals.
 
-```{r, fig.height = 4, fig.width = 9, fig.align = "center"}
+```{r, fig.height = 4, fig.width = 9}
 par(mfrow = c(1,2))
 plot(scores)
 ```
