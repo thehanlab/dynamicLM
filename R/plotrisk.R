@@ -15,7 +15,6 @@
 #' @param extend Argument to allow for risk to be plot at landmark times that are later than the LMs used in model fitting.
 #'   Default is FALSE. If set to TRUE, risks may be unreliable.
 #' @param silence Silence the message when end_time > LMs used in fitting the model
-#' @param unit Time unit for window of prediction, e.g., "year", "month", etc. Used for printing results.
 #' @param pch Passed to points
 #' @param lty Vector with line style
 #' @param lwd Vector with line widths
@@ -36,7 +35,6 @@
 plotrisk <- function(object, data, format, lm_col, id_col, w,
                      cause, varying,
                      end_time, extend=F, silence=F,
-                     unit,
                      pch,lty,lwd,col,main,xlab,ylab,xlim,ylim,x.legend,y.legend,...){
 
   model_w <- object$w
@@ -50,7 +48,6 @@ plotrisk <- function(object, data, format, lm_col, id_col, w,
     }
   }
 
-  if (missing(unit)){unit="year"}
   if(format=="long"){
     if(missing(id_col)) {
       if("ID" %in% colnames(data)) { id_col <- "ID" }
@@ -107,7 +104,7 @@ plotrisk <- function(object, data, format, lm_col, id_col, w,
   if (length(pch) < NF)
     pch <- rep(pch, NF)
   if(missing(main))
-    main <- paste0(object$w,"-",unit," dynamic risk prediction")
+    main <- paste0("Dynamic risk prediction (window:", object$w,")")
   if(missing(xlab))
     xlab <- "LM prediction time"
   if(missing(ylab))
@@ -205,7 +202,7 @@ plotrisk <- function(object, data, format, lm_col, id_col, w,
     plotrisk(object, long_form, format="long", lm_col="LM", id_col,
                            cause, varying,
                            end_time, extend, silence,
-                           unit, pch,lty,lwd,col,main,xlab,ylab,xlim,ylim,x.legend,y.legend,...)
+                           pch,lty,lwd,col,main,xlab,ylab,xlim,ylim,x.legend,y.legend,...)
 
 
   }

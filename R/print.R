@@ -125,7 +125,7 @@ print.LMdataframe <- function(x, ...){
 print.LMScore <- function(x,digits=3,...){
 
   if(nrow(x$auct)>0){
-    cat(paste0("\nMetric: Time-dependent AUC for ",x$w,"-",x$unit," risk prediction\n"))
+    cat(paste0("\nMetric: Time-dependent AUC (window ",x$w,")\n"))
     cat("\nResults by model:\n")
 
     AUC=se=times=lower=upper=NULL
@@ -143,10 +143,10 @@ print.LMScore <- function(x,digits=3,...){
 
     message("NOTE: Values are multiplied by 100 and given in %.")
     message("NOTE: The higher AUC the better.")
-    message(paste0("NOTE: Predictions are made at time tLM for ",x$w,"-",x$unit," risk"))
+    message(paste("NOTE: Predictions are made at time tLM for risk windows of length", x$w))
   }
   if(nrow(x$briert)>0){
-    cat(paste0("\nMetric: Time-dependent Brier Score for ",x$w,"-",x$unit," risk prediction\n"))
+    cat(paste0("\nMetric: Time-dependent Brier Score (window ",x$w,")\n"))
     cat("\nResults by model:\n")
 
     Brier=se=times=se.conservative=lower=upper=NULL
@@ -164,7 +164,7 @@ print.LMScore <- function(x,digits=3,...){
 
     message("NOTE: Values are multiplied by 100 and given in %.")
     message("NOTE: The lower Brier the better.")
-    message(paste0("NOTE: Predictions are made at time tLM for ",x$w,"-",x$unit," risk"))
+    message(paste("NOTE: Predictions are made at time tLM for risk windows of length", x$w))
   }
 }
 

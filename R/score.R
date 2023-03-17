@@ -57,8 +57,6 @@
 #'   (Not yet implemented)
 #' @param seed Optional, integer passed to set.seed. If not given or NA, no seed
 #'   is set.
-#' @param unit Time unit for window of prediction, e.g., "year", "month", etc.
-#'   Only used for printing results.
 #' @param cause Cause of interest if considering competing risks. If left blank,
 #'   this is inferred from object.
 #' @param ... Additional arguments to pass to [riskRegression::Score()].
@@ -109,16 +107,14 @@
 #' \dontrun{
 #' # Internal validation
 #' scores <- Score(list("Model1" = supermodel),
-#'                 times = c(0, 6), # landmarks at which to provide calibration plots
-#'                 unit = "month")   # for the print out
+#'                 times = c(0, 6)) # landmarks at which to provide calibration plots
 #' scores
 #'
 #' # Boostrapping
 #' # Remember to fit the supermodel with argument 'x = TRUE'
 #' scores <- Score(list("Model1" = supermodel),
 #'                 times = c(0, 6),
-#'                 split.method = "bootcv", B = 10, # 10 bootstraps
-#'                 unit = "month")
+#'                 split.method = "bootcv", B = 10) # 10 bootstraps
 #' scores
 #'
 #' # External validation
@@ -143,7 +139,6 @@ Score <-
            M,
            cores = 1,
            seed,
-           unit ="year",
            cause,
            silent = T,
            na.rm = FALSE,
@@ -291,8 +286,7 @@ Score <-
     outlist <- list(
       auct = auct_out,
       briert = briert_out,
-      w = w,
-      unit = unit
+      w = w
     )
     class(outlist) = "LMScore"
     return(outlist)

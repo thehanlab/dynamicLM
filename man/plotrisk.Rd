@@ -16,7 +16,6 @@ plotrisk(
   end_time,
   extend = F,
   silence = F,
-  unit,
   pch,
   lty,
   lwd,
@@ -57,8 +56,6 @@ If w > than that used in model fitting, results are unreliable, but can be produ
 Default is FALSE. If set to TRUE, risks may be unreliable.}
 
 \item{silence}{Silence the message when end_time > LMs used in fitting the model}
-
-\item{unit}{Time unit for window of prediction, e.g., "year", "month", etc. Used for printing results.}
 
 \item{pch}{Passed to points}
 

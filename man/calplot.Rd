@@ -17,7 +17,6 @@ calplot(
   cores = 1,
   seed,
   regression_values = FALSE,
-  unit = "year",
   cause,
   plot = T,
   main,
@@ -72,9 +71,6 @@ is appended by another list \code{regression_values},
 which contains the intercept and slope of a linear regression of each model
 for each landmark time (i.e., each calibration plot).
 Note that perfect calibration has a slope of 1 and an intercept of 0.}
-
-\item{unit}{Time unit for window of prediction, e.g., "year", "month", etc.
-Only used for printing results.}
 
 \item{cause}{Cause of interest if considering competing risks. If left blank,
 this is inferred from object.}
@@ -145,7 +141,6 @@ made during the bootstrap resampling.
 # Internal validation
 par(mfrow=c(1,2),pty="s")
 outlist <- calplot(list("Model_1" = supermodel),
-                   unit = "month",              # only used for the title
                    times = c(0, 6),             # landmark times at which to plot
                    method = "quantile", q = 10, # method for calibration plot
                    regression_values = TRUE,    # output regression values
@@ -156,7 +151,6 @@ outlist$regression_values
 # Remember to fit the supermodel with argument 'x = TRUE'
 par(mfrow=c(1,2),pty="s")
 outlist = calplot(list("Model_1" = supermodel),
-                  unit = "month",
                   times = c(0, 6),
                   method = "quantile", q=10,
                   split.method = "bootcv", B = 10, # 10 bootstraps
