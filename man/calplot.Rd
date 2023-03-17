@@ -163,6 +163,7 @@ outlist = calplot(list("Model_1" = supermodel),
                   ylim = c(0, 0.4), xlim = c(0, 0.4))
 
 # External validation
-# Specify "data" argument
+# Either input an object from predict as the object or a supermodel and
+# "data" argument
 }
 }
