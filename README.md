@@ -77,7 +77,7 @@ You can install the development version of `dynamicLM` from
 ``` r
 # install.packages("devtools")
 devtools::install_github("thehanlab/dynamicLM", ref = "proposed-updates")
-#> Skipping install of 'dynamicLM' from a github remote, the SHA1 (859bb12f) has not changed since last install.
+#> Skipping install of 'dynamicLM' from a github remote, the SHA1 (f6c669fb) has not changed since last install.
 #>   Use `force = TRUE` to force installation
 ```
 
@@ -362,11 +362,11 @@ print(supermodel)
 #> $func_covars
 #> $func_covars$[[1]]
 #> function(t) t
-#> <bytecode: 0x10f68b6d8>
+#> <bytecode: 0x1267be180>
 #> 
 #> $func_covars$[[2]]
 #> function(t) t^2
-#> <bytecode: 0x10f70c2a0>
+#> <bytecode: 0x117ff8510>
 #> 
 #> $func_lms
 #> $func_lms$[[1]]
@@ -458,7 +458,6 @@ between models. This list can be of supermodels or prediction objects
 ``` r
 par(mfrow=c(2,3), pty="s")
 outlist <- calplot(list("LM supermodel" = p1), 
-                    unit = "month",            # for the titles
                     times = c(0,6,12,18,24,30),# landmarks at which to provide calibration plots
                     method = "quantile", q=10, # method for calibration plot
                     # Optional plotting parameters to alter
@@ -481,11 +480,10 @@ Brier score (BSt).
 
 ``` r
 scores <- Score(list("LM supermodel" = p1),
-                     times = c(6,12,18,24), # landmarks at which to assess
-                     unit = "month")        # for the print out
+                     times = c(6,12,18,24)) # landmarks at which to assess
 scores
 #> 
-#> Metric: Time-dependent AUC for 60-month risk prediction
+#> Metric: Time-dependent AUC (window 60)
 #> 
 #> Results by model:
 #>    tLM         model    AUC  lower  upper
@@ -495,9 +493,9 @@ scores
 #> 4:  24 LM supermodel 55.188 43.949 66.427
 #> NOTE: Values are multiplied by 100 and given in %.
 #> NOTE: The higher AUC the better.
-#> NOTE: Predictions are made at time tLM for 60-month risk
+#> NOTE: Predictions are made at time tLM for risk windows of length 60
 #> 
-#> Metric: Time-dependent Brier Score for 60-month risk prediction
+#> Metric: Time-dependent Brier Score (window 60)
 #> 
 #> Results by model:
 #>    tLM         model  Brier lower  upper
@@ -511,7 +509,7 @@ scores
 #> 8:  24 LM supermodel 11.467 8.247 14.687
 #> NOTE: Values are multiplied by 100 and given in %.
 #> NOTE: The lower Brier the better.
-#> NOTE: Predictions are made at time tLM for 60-month risk
+#> NOTE: Predictions are made at time tLM for risk windows of length 60
 ```
 
 These results can also be plot with point wise confidence intervals.
@@ -534,8 +532,7 @@ however many bootstrap replications are desired). Note that the argument
 # Remember to fit the supermodel with argument 'x = TRUE'
 scores <- Score(list("Model1" = supermodel),
               times = c(0, 6),
-              split.method = "bootcv", B = 10, # 10 bootstraps
-              unit = "month")
+              split.method = "bootcv", B = 10) # 10 bootstraps
 ```
 
 **External validation** can be performed by specifying the supermodel as
@@ -593,7 +590,7 @@ head(dat)
 
 ``` r
 plotrisk(supermodel, dat, format = "long", lm_col = "LM", id_col = "ID", 
-           ylim = c(0, 0.7), x.legend = "bottom", unit = "month")
+           ylim = c(0, 0.7), x.legend = "bottom")
 ```
 
 <img src="man/figures/README-plotrisk-1.png" width="100%" />

@@ -104,7 +104,7 @@ plotrisk <- function(object, data, format, lm_col, id_col, w,
   if (length(pch) < NF)
     pch <- rep(pch, NF)
   if(missing(main))
-    main <- paste0("Dynamic risk prediction (window:", object$w,")")
+    main <- paste0("Dynamic risk prediction (window length ", object$w,")")
   if(missing(xlab))
     xlab <- "LM prediction time"
   if(missing(ylab))
