@@ -290,8 +290,9 @@ p0$preds
 Calibration plots, which assess the agreement between predictions and
 observations in different percentiles of the predicted values, can be
 plotted for each of the landmarks used for prediction. Entering a named
-list of prediction objects (created by calling `predict()`) in the first argument
-allows for comparison between models.
+list of prediction objects in the first argument allows for comparison between 
+models. This list can be of supermodels or prediction objects (created by 
+calling `predict()`).
 
 ```{r calplot}
 par(mfrow=c(2,3), pty="s", mar = c(4, 4, 4, 1))
@@ -323,14 +324,32 @@ scores <- Score(list("Model1" = p1),
 scores
 ```
 
+These results can also be plot.
+
+```{r}
+# plot(scores)
+```
+
+
 **Bootstrapping** can be performed by calling `calplot()` or `Score()` and setting 
 the arguments `split.method = "bootcv"` and `B = 10` (or however many bootstrap 
 replications are desired). Note that the argument `x = TRUE` must be specified 
-when fitting the model (i.e., when calling `dynls`.
+when fitting the model (i.e., when calling `dynls()`).
 
-**External validation** can be performed by passing new 
-data through the `data` argument. This data can be a LMdataframe or a dataframe 
-(in which case `tLM` must be specified).
+```{r, eval = FALSE}
+# Remember to fit the supermodel with argument 'x = TRUE'
+scores <- Score(list("Model1" = supermodel),
+              times = c(0, 6),
+              split.method = "bootcv", B = 10, # 10 bootstraps
+              unit = "month")
+```
+
+
+**External validation** can be performed by specifying the supermodel as the 
+object argument and passing new data through the `data` argument. This data can 
+be a LMdataframe or a dataframe (in which case `tLM` must be specified). 
+Alternatively, predictions can be made on new data using `predict()` and this 
+object can be input.
 
 ### Visualize individual dynamic risk trajectories
 
