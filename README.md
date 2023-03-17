@@ -79,9 +79,9 @@ You can install the development version of `dynamicLM` from
 devtools::install_github("thehanlab/dynamicLM", ref = "proposed-updates")
 #> Downloading GitHub repo thehanlab/dynamicLM@proposed-updates
 #> 
-#>      checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpWlvME1/remotes47696b5d7292/thehanlab-dynamicLM-fa25095/DESCRIPTION’ ...  ✔  checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpWlvME1/remotes47696b5d7292/thehanlab-dynamicLM-fa25095/DESCRIPTION’
+#>      checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpBHyW9e/remotes1b196eb4da0a/thehanlab-dynamicLM-1a31580/DESCRIPTION’ ...  ✔  checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpBHyW9e/remotes1b196eb4da0a/thehanlab-dynamicLM-1a31580/DESCRIPTION’
 #>   ─  preparing ‘dynamicLM’:
-#>        checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
+#>      checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
 #>   ─  checking for LF line-endings in source and make files and shell scripts
 #>   ─  checking for empty or unneeded directories
 #>   ─  building ‘dynamicLM_0.3.0.tar.gz’
@@ -370,11 +370,11 @@ print(supermodel)
 #> $func_covars
 #> $func_covars$[[1]]
 #> function(t) t
-#> <bytecode: 0x117c01ba0>
+#> <bytecode: 0x10fd443a8>
 #> 
 #> $func_covars$[[2]]
 #> function(t) t^2
-#> <bytecode: 0x117e67cb8>
+#> <bytecode: 0x10fcb8e70>
 #> 
 #> $func_lms
 #> $func_lms$[[1]]
@@ -459,8 +459,9 @@ p0$preds
 Calibration plots, which assess the agreement between predictions and
 observations in different percentiles of the predicted values, can be
 plotted for each of the landmarks used for prediction. Entering a named
-list of prediction objects (created by calling `predict()`) in the first
-argument allows for comparison between models.
+list of prediction objects in the first argument allows for comparison
+between models. This list can be of supermodels or prediction objects
+(created by calling `predict()`).
 
 ``` r
 par(mfrow=c(2,3), pty="s", mar = c(4, 4, 4, 1))
@@ -521,15 +522,31 @@ scores
 #> NOTE: Predictions are made at time tLM for 60-month risk
 ```
 
+These results can also be plot.
+
+``` r
+# plot(scores)
+```
+
 **Bootstrapping** can be performed by calling `calplot()` or `Score()`
 and setting the arguments `split.method = "bootcv"` and `B = 10` (or
 however many bootstrap replications are desired). Note that the argument
 `x = TRUE` must be specified when fitting the model (i.e., when calling
-`dynls`.
+`dynls()`).
 
-**External validation** can be performed by passing new data through the
-`data` argument. This data can be a LMdataframe or a dataframe (in which
-case `tLM` must be specified).
+``` r
+# Remember to fit the supermodel with argument 'x = TRUE'
+scores <- Score(list("Model1" = supermodel),
+              times = c(0, 6),
+              split.method = "bootcv", B = 10, # 10 bootstraps
+              unit = "month")
+```
+
+**External validation** can be performed by specifying the supermodel as
+the object argument and passing new data through the `data` argument.
+This data can be a LMdataframe or a dataframe (in which case `tLM` must
+be specified). Alternatively, predictions can be made on new data using
+`predict()` and this object can be input.
 
 ### 3.5.1 Visualize individual dynamic risk trajectories
 
