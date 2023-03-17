@@ -15,19 +15,21 @@ end_time (see \code{\link[=stack_data]{stack_data()}} for further description of
 and w), end_time is the largest landmarking time.}
 
 \item{lm_covs}{Vector of strings indicating the columns (covariates) that are
-to have a LM interaction}
+to have an interaction with the landmark times.}
 
-\item{func_covars}{A list of functions to use for interactions between LMs
-and covariates.}
+\item{func_covars}{A list of functions to use for interactions between
+landmarks and covariates. For example,
+\code{list( function(t) t, function(t) t^2)} will, for each covariate \code{x},
+create \code{x}, \code{x*t}, \code{x*t^2}.}
 
 \item{func_lms}{A list of functions to use for transformations of the
 landmark times.}
 
 \item{lm_col}{Character string specifying the column name that indicates the
-landmark time point for a row.}
+landmark time point for a row. Obtained from \code{lmdata} if not input.}
 
 \item{keep}{Boolean value to indicate whether or not to keep the columns
-given by \code{lm_covs} without the time interactions or not. Default=FALSE.}
+given by \code{lm_covs} without the time interactions. Default is TRUE.}
 }
 \value{
 An object of class "LMdataframe" which now also contains LM
@@ -38,21 +40,23 @@ The object has the following components:
 \item func_covars: as the input
 \item func_lms: as the input
 \item lm_covs: as the input
-\item all_covs: a list of the new columns added
+\item all_covs: a list of the new columns added. This includes \code{lm_covs}
+if \code{keep} is TRUE.
 \item lm_col: as the input
 }
 }
 \description{
-Add landmarking time interactions to a super dataset
+The stacked dataset output is used as input to \code{\link[=dynls]{dynls()}} to fit a landmark
+supermodel for dynamic prediction.
 }
 \details{
 For each variable "var" in \code{lm_covs}, new columns var_1,...,var_i
 (length(func_covars) == i) are added; one column for each interaction given
-in func_covars is added
+in func_covars is added.
 
 Transformations of the LM column are added and labelled as LM_1,...,LM_j
 (length(func_lms) == j); one column for each interaction given in func_lms
-is added
+is added.
 }
 \examples{
 \dontrun{
@@ -71,7 +75,8 @@ pred_covars <- c("age","male","stage","bmi","treatment")
 # Stack landmark datasets
 lmdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
                      id = "ID", rtime = "T_txgiven")
-# Update complex LM-varying covariates, note age is in years and LM is in months
+# Update complex LM-varying covariates
+# note age is in years and LM is in months
 lmdata$data$age <- lmdata$data$age.at.time.0 + lmdata$data$LM/12
 # Add LM-time interactions
 lmdata <- add_interactions(lmdata, pred_covars, func_covars, func_lms)

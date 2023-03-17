@@ -1,5 +1,7 @@
-# -----------------------------------------------------------------------
 #' Add landmarking time interactions to a super dataset
+#'
+#' The stacked dataset output is used as input to [dynls()] to fit a landmark
+#' supermodel for dynamic prediction.
 #'
 #' @param lmdata An object of class "LMdataframe".
 #'
@@ -7,16 +9,19 @@
 #'   stacked data set and storing it in a list with attributes outcome, w and
 #'   end_time (see [dynamicLM::stack_data()] for further description of outcome
 #'   and w), end_time is the largest landmarking time.
+#'
 #' @param lm_covs Vector of strings indicating the columns (covariates) that are
-#'   to have a LM interaction
-#' @param func_covars A list of functions to use for interactions between LMs
-#'   and covariates.
+#'   to have an interaction with the landmark times.
+#' @param func_covars A list of functions to use for interactions between
+#'   landmarks and covariates. For example,
+#'   `list( function(t) t, function(t) t^2)` will, for each covariate `x`,
+#'   create `x`, `x*t`, `x*t^2`.
 #' @param func_lms A list of functions to use for transformations of the
 #'   landmark times.
 #' @param lm_col Character string specifying the column name that indicates the
-#'   landmark time point for a row.
+#'   landmark time point for a row. Obtained from `lmdata` if not input.
 #' @param keep Boolean value to indicate whether or not to keep the columns
-#'   given by `lm_covs` without the time interactions or not. Default=FALSE.
+#'   given by `lm_covs` without the time interactions. Default is TRUE.
 #'
 #' @return An object of class "LMdataframe" which now also contains LM
 #'   time-interactions.
@@ -25,16 +30,17 @@
 #'   - func_covars: as the input
 #'   - func_lms: as the input
 #'   - lm_covs: as the input
-#'   - all_covs: a list of the new columns added
+#'   - all_covs: a list of the new columns added. This includes `lm_covs`
+#'     if `keep` is TRUE.
 #'   - lm_col: as the input
 #'
 #' @details For each variable "var" in `lm_covs`, new columns var_1,...,var_i
 #'   (length(func_covars) == i) are added; one column for each interaction given
-#'   in func_covars is added
+#'   in func_covars is added.
 #'
 #'   Transformations of the LM column are added and labelled as LM_1,...,LM_j
 #'   (length(func_lms) == j); one column for each interaction given in func_lms
-#'   is added
+#'   is added.
 #'
 #' @examples
 #' \dontrun{
@@ -53,7 +59,8 @@
 #' # Stack landmark datasets
 #' lmdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
 #'                      id = "ID", rtime = "T_txgiven")
-#' # Update complex LM-varying covariates, note age is in years and LM is in months
+#' # Update complex LM-varying covariates
+#' # note age is in years and LM is in months
 #' lmdata$data$age <- lmdata$data$age.at.time.0 + lmdata$data$LM/12
 #' # Add LM-time interactions
 #' lmdata <- add_interactions(lmdata, pred_covars, func_covars, func_lms)
@@ -61,12 +68,14 @@
 #' }
 #'
 #' @export
-add_interactions <- function(lmdata, lm_covs, func_covars, func_lms, lm_col, keep=T){
+add_interactions <- function(lmdata, lm_covs, func_covars, func_lms, lm_col,
+                             keep = T){
   if (missing(lm_col)){
     lm_col <- lmdata$lm_col
   }
   if (lm_col %in% func_covars){
-    stop(paste0("arg lm_col (given as/inferred as ",lm_col,") should not be in arg func_covars."))
+    stop(paste0("arg lm_col (given as/inferred as ",lm_col,
+                ") should not be in arg func_covars."))
   }
   data <- lmdata$data
   if (missing(func_covars)){
