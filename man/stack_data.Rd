@@ -2,7 +2,7 @@
 % Please edit documentation in R/stack_data.R
 \name{stack_data}
 \alias{stack_data}
-\title{Build a stacked super dataset from original dataset (wide or long format)}
+\title{Build a stacked dataset from original dataset (wide or long format).}
 \usage{
 stack_data(
   data,
@@ -13,42 +13,65 @@ stack_data(
   format = c("wide", "long"),
   id,
   rtime,
-  right = F
+  right = FALSE
 )
 }
 \arguments{
 \item{data}{Data frame from which to construct landmark super dataset}
 
-\item{outcome}{List with items time and status, containing character strings identifying the names of time and status variables, respectively, of the survival outcome}
+\item{outcome}{A list with items time and status, containing character strings
+identifying the names of time and status variables, respectively, of the
+survival outcome}
 
-\item{lms}{vector, the value of the landmark time points (points at which prediction is made)}
+\item{lms}{vector, the value of the landmark time points. This should be a
+range of points over the interval that prediction will be made. For
+example, if 5-year risk predictions are to be made over the first three
+years, this could be \code{c(0, 1.5, 3)}, \code{c(0, 1, 2, 3)} etc.}
 
-\item{w}{Scalar, the value of the prediction window (ie predict w-year/other time period risk from the LM points)}
+\item{w}{Scalar, the value of the prediction window (ie predict risk within
+time w landmark points)}
 
-\item{covs}{List with items fixed and varying, containing character strings specifying column names in the data containing time-fixed and time-varying covariates, respectively}
+\item{covs}{A list with items fixed and varying, containing character strings
+specifying column names in the data containing time-fixed and time-varying
+covariates, respectively.}
 
-\item{format}{Character string specifying whether the original data are in wide (default) or in long format}
+\item{format}{Character string specifying whether the original data are in
+wide (default) or in long format.}
 
-\item{id}{Character string specifying the column name in data containing the subject id; only needed if format="long"}
+\item{id}{Character string specifying the column name in data containing the
+subject id; only needed if format = "long".}
 
-\item{rtime}{Character string specifying the column name in data containing the (running) time variable associated; only needed if format="long"}
+\item{rtime}{Character string specifying the column name in data containing
+the (running) time variable associated with the time-varying variables;
+only needed if format = "long".}
 
-\item{right}{Boolean (default=TRUE), indicating if the intervals for the time-varying covariates are closed on the right (and open on the left) or vice versa, see cut}
+\item{right}{Boolean (default = FALSE), indicating if the intervals for the
+time-varying covariates are closed on the right (and open on the left) or
+vice-versa.}
 }
 \value{
 An object of class "LMdataframe". This the following components:
 \itemize{
-\item data: containing the stacked data set, i.e., the outcome and the values of time-fixed and time-varying covariates taken at the landmark time points. The value of the landmark time point is stored in column LM.
+\item data: containing the stacked data set, i.e., the outcome and the values
+of time-fixed and time-varying covariates taken at the landmark time
+points. The value of the landmark time point is stored in column LM.
 \item outcome: same as input
 \item w: same as input
 \item end_time: final landmarking point used in training
+\item lm_col: "LM", identifies the landmark time column.
 }
 }
 \description{
-Build a stacked super dataset from original dataset (wide or long format)
+This stacked dataset output is used as input to \code{\link[=dynls]{dynls()}} to fit a landmark
+supermodel for dynamic prediction. Calling \code{\link[=add_interactions]{add_interactions()}} on the output
+before fitting the supermodel allows for landmark time interactions to be
+included.
 }
 \details{
-This function calls cutLM from the library dynpred, more documentation can be found there. Note that for every landmark tLM given in \code{lms}, there must be at least one patient alive after tLM.
+This function calls \code{\link[dynpred:cutLM]{dynpred::cutLM()}} from the library dynpred, more
+documentation can be found there. Furthermore, note that for every landmark
+time given in \code{lms}, there must be at least one patient alive after that
+time.
 }
 \examples{
 \dontrun{

@@ -1,21 +1,48 @@
-#' Build a stacked super dataset from original dataset (wide or long format)
+#' Build a stacked dataset from original dataset (wide or long format).
+#'
+#' This stacked dataset output is used as input to [dynls()] to fit a landmark
+#' supermodel for dynamic prediction. Calling [add_interactions()] on the output
+#' before fitting the supermodel allows for landmark time interactions to be
+#' included.
 #'
 #' @param data Data frame from which to construct landmark super dataset
-#' @param outcome List with items time and status, containing character strings identifying the names of time and status variables, respectively, of the survival outcome
-#' @param lms vector, the value of the landmark time points (points at which prediction is made)
-#' @param w Scalar, the value of the prediction window (ie predict w-year/other time period risk from the LM points)
-#' @param covs  List with items fixed and varying, containing character strings specifying column names in the data containing time-fixed and time-varying covariates, respectively
-#' @param format Character string specifying whether the original data are in wide (default) or in long format
-#' @param id Character string specifying the column name in data containing the subject id; only needed if format="long"
-#' @param rtime Character string specifying the column name in data containing the (running) time variable associated; only needed if format="long"
-#' @param right Boolean (default=TRUE), indicating if the intervals for the time-varying covariates are closed on the right (and open on the left) or vice versa, see cut
+#' @param outcome A list with items time and status, containing character strings
+#'   identifying the names of time and status variables, respectively, of the
+#'   survival outcome
+#' @param lms vector, the value of the landmark time points. This should be a
+#'   range of points over the interval that prediction will be made. For
+#'   example, if 5-year risk predictions are to be made over the first three
+#'   years, this could be `c(0, 1.5, 3)`, `c(0, 1, 2, 3)` etc.
+#' @param w Scalar, the value of the prediction window (ie predict risk within
+#'   time w landmark points)
+#' @param covs A list with items fixed and varying, containing character strings
+#'   specifying column names in the data containing time-fixed and time-varying
+#'   covariates, respectively.
+#' @param format Character string specifying whether the original data are in
+#'   wide (default) or in long format.
+#' @param id Character string specifying the column name in data containing the
+#'   subject id; only needed if format = "long".
+#' @param rtime Character string specifying the column name in data containing
+#'   the (running) time variable associated with the time-varying variables;
+#'   only needed if format = "long".
+#' @param right Boolean (default = FALSE), indicating if the intervals for the
+#'   time-varying covariates are closed on the right (and open on the left) or
+#'   vice-versa.
 #'
 #' @return An object of class "LMdataframe". This the following components:
-#'   - data: containing the stacked data set, i.e., the outcome and the values of time-fixed and time-varying covariates taken at the landmark time points. The value of the landmark time point is stored in column LM.
+#'   - data: containing the stacked data set, i.e., the outcome and the values
+#'     of time-fixed and time-varying covariates taken at the landmark time
+#'     points. The value of the landmark time point is stored in column LM.
 #'   - outcome: same as input
 #'   - w: same as input
 #'   - end_time: final landmarking point used in training
-#' @details This function calls cutLM from the library dynpred, more documentation can be found there. Note that for every landmark tLM given in `lms`, there must be at least one patient alive after tLM.
+#'   - lm_col: "LM", identifies the landmark time column.
+#'
+#' @details This function calls [dynpred::cutLM()] from the library dynpred, more
+#'   documentation can be found there. Furthermore, note that for every landmark
+#'   time given in `lms`, there must be at least one patient alive after that
+#'   time.
+#'
 #' @examples
 #' \dontrun{
 #' head(lmdata$data)
@@ -33,7 +60,7 @@
 #' @export
 #'
 stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"),
-                       id, rtime, right=F){
+                       id, rtime, right = FALSE){
   if(!all(covs$fixed %in% colnames(data))){
     stop(paste("Fixed column(s): ",
                paste(covs$fixed[!(covs$fixed %in% colnames(data))], collapse=","),
