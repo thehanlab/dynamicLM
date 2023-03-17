@@ -123,20 +123,19 @@ plot.dynamicLM <- function(object, covars, conf_int=T, cause, end_time, logHR=T,
 }
 
 
-#' Plot an object output from `LMScore`: plot the landmark and time-dependent
+#' Plot an object output from [Score()]: plot the landmark and time-dependent
 #' Brier and/or AUC of dynamic landmark supermodels.
 #'
-#' @param object An object of class "LMScore" output from `LMScore`
+#' @param object An object of class "LMScore" output from [Score()]
 #' @param metrics One or both of "auc" and "brier"
-#' @param xlab x label
-#' @param ylab y label
-#' @param x legend location
-#' @param pch size of points
+#' @param se Boolean, default TRUE. To include point wise confidence intervals.
+#' @param xlab,ylab,y,x,pch,ylim graphical parameters
 #' @param ...
 #'
 #' @export
 #'
-plot.LMScore <- function(object, metrics, xlab, ylab, x, pch, ...){
+plot.LMScore <- function(object, metrics, se = TRUE, xlab, ylab, x, pch, ylim,
+                         ...){
   if (missing(metrics)){
     metrics <- c()
     if (!is.null(object$auct)) metrics <- c("auc")
@@ -154,20 +153,32 @@ plot.LMScore <- function(object, metrics, xlab, ylab, x, pch, ...){
   set_x <- F
   if (missing(x))
     set_x <- T
-  plot.metric <- function(df, metric, loc){
+
+  plot.metric <- function(df, metric, loc, ylim){
     if (set_ylab) ylab <- metric
 
     num_models = length(unique(df$model))
     model_names = df$model[1:num_models]
     tLM = df$tLM
     metric = df[[metric]]
+    upper = df[["upper"]]
+    lower = df[["lower"]]
     models = df$model
 
-    plot(tLM, metric, col = models, pch = pch, xlab=xlab, ylab=ylab, ...)
+    if (missing(ylim)) {
+      ylim = c(min(lower), max(upper))
+    }
+
+    plot(tLM, metric, col = models, pch = pch, xlab = xlab, ylab = ylab,
+         ylim = ylim, ...)
 
     for (i in 1:num_models){
       idx = models == model_names[i]
       lines(tLM[idx], metric[idx], col = models[idx], pch = pch)
+      if (se) {
+        lines(tLM[idx], upper[idx], col = models[idx], pch = pch, lty = 2)
+        lines(tLM[idx], lower[idx], col = models[idx], pch = pch, lty = 2)
+      }
     }
     legend(loc, legend = model_names, col = models, pch = pch, bty = "n")
   }
@@ -178,7 +189,7 @@ plot.LMScore <- function(object, metrics, xlab, ylab, x, pch, ...){
     }
     else {
       if(set_x) x <- "topright"
-      plot.metric(object$auct, "AUC", x)
+      plot.metric(object$auct, "AUC", x, ylim)
     }
   }
   if ("brier" %in% metrics){
@@ -187,7 +198,7 @@ plot.LMScore <- function(object, metrics, xlab, ylab, x, pch, ...){
     }
     else {
       if(set_x) x <- "bottomright"
-      plot.metric(object$briert, "Brier", x)
+      plot.metric(object$briert, "Brier", x, ylim)
     }
   }
 }
