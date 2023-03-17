@@ -295,8 +295,8 @@ models. This list can be of supermodels or prediction objects (created by
 calling `predict()`).
 
 ```{r calplot}
-par(mfrow=c(2,3), pty="s", mar = c(4, 4, 4, 1))
-outlist <- calplot(list("Model1" = p1), 
+par(mfrow=c(2,3), pty="s")
+outlist <- calplot(list("LM supermodel" = p1), 
                     unit = "month",            # for the titles
                     times = c(0,6,12,18,24,30),# landmarks at which to provide calibration plots
                     method = "quantile", q=10, # method for calibration plot
@@ -318,16 +318,18 @@ Brier score (BSt).
     estimates by that time point.
     
 ```{r}
-scores <- Score(list("Model1" = p1),
+scores <- Score(list("LM supermodel" = p1),
                      times = c(6,12,18,24), # landmarks at which to assess
                      unit = "month")        # for the print out
 scores
 ```
 
-These results can also be plot.
+These results can also be plot with point wise confidence intervals. Setting
+`se = FALSE` in plot excludes the intervals.
 
-```{r}
-# plot(scores)
+```{r, fig.height = 4, fig.width = 9, fig.align = "center"}
+par(mfrow = c(1,2))
+plot(scores)
 ```
 
 

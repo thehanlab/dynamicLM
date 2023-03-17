@@ -77,16 +77,8 @@ You can install the development version of `dynamicLM` from
 ``` r
 # install.packages("devtools")
 devtools::install_github("thehanlab/dynamicLM", ref = "proposed-updates")
-#> Downloading GitHub repo thehanlab/dynamicLM@proposed-updates
-#> 
-#>      checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpBHyW9e/remotes1b196eb4da0a/thehanlab-dynamicLM-1a31580/DESCRIPTION’ ...  ✔  checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpBHyW9e/remotes1b196eb4da0a/thehanlab-dynamicLM-1a31580/DESCRIPTION’
-#>   ─  preparing ‘dynamicLM’:
-#>      checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
-#>   ─  checking for LF line-endings in source and make files and shell scripts
-#>   ─  checking for empty or unneeded directories
-#>   ─  building ‘dynamicLM_0.3.0.tar.gz’
-#>      
-#> 
+#> Skipping install of 'dynamicLM' from a github remote, the SHA1 (26de31c4) has not changed since last install.
+#>   Use `force = TRUE` to force installation
 ```
 
 Requirements for the package can be found in the description file.
@@ -370,11 +362,11 @@ print(supermodel)
 #> $func_covars
 #> $func_covars$[[1]]
 #> function(t) t
-#> <bytecode: 0x10fd443a8>
+#> <bytecode: 0x121f486a0>
 #> 
 #> $func_covars$[[2]]
 #> function(t) t^2
-#> <bytecode: 0x10fcb8e70>
+#> <bytecode: 0x121fc6d50>
 #> 
 #> $func_lms
 #> $func_lms$[[1]]
@@ -464,8 +456,8 @@ between models. This list can be of supermodels or prediction objects
 (created by calling `predict()`).
 
 ``` r
-par(mfrow=c(2,3), pty="s", mar = c(4, 4, 4, 1))
-outlist <- calplot(list("Model1" = p1), 
+par(mfrow=c(2,3), pty="s")
+outlist <- calplot(list("LM supermodel" = p1), 
                     unit = "month",            # for the titles
                     times = c(0,6,12,18,24,30),# landmarks at which to provide calibration plots
                     method = "quantile", q=10, # method for calibration plot
@@ -488,7 +480,7 @@ Brier score (BSt).
   that time point.
 
 ``` r
-scores <- Score(list("Model1" = p1),
+scores <- Score(list("LM supermodel" = p1),
                      times = c(6,12,18,24), # landmarks at which to assess
                      unit = "month")        # for the print out
 scores
@@ -496,11 +488,11 @@ scores
 #> Metric: Time-dependent AUC for 60-month risk prediction
 #> 
 #> Results by model:
-#>    tLM  model    AUC  lower  upper
-#> 1:   6 Model1 61.808 51.891 71.726
-#> 2:  12 Model1 60.855 50.447 71.262
-#> 3:  18 Model1 61.374 51.034 71.714
-#> 4:  24 Model1 55.188 43.949 66.427
+#>    tLM         model    AUC  lower  upper
+#> 1:   6 LM supermodel 61.808 51.891 71.726
+#> 2:  12 LM supermodel 60.855 50.447 71.262
+#> 3:  18 LM supermodel 61.374 51.034 71.714
+#> 4:  24 LM supermodel 55.188 43.949 66.427
 #> NOTE: Values are multiplied by 100 and given in %.
 #> NOTE: The higher AUC the better.
 #> NOTE: Predictions are made at time tLM for 60-month risk
@@ -508,25 +500,29 @@ scores
 #> Metric: Time-dependent Brier Score for 60-month risk prediction
 #> 
 #> Results by model:
-#>    tLM      model  Brier lower  upper
-#> 1:   6 Null model  8.493 6.288 10.698
-#> 2:   6     Model1  8.141 6.017 10.266
-#> 3:  12 Null model 11.152 8.420 13.883
-#> 4:  12     Model1 10.639 7.945 13.333
-#> 5:  18 Null model 11.582 8.591 14.574
-#> 6:  18     Model1 11.163 8.246 14.081
-#> 7:  24 Null model 11.494 8.231 14.758
-#> 8:  24     Model1 11.467 8.247 14.687
+#>    tLM         model  Brier lower  upper
+#> 1:   6    Null model  8.493 6.288 10.698
+#> 2:   6 LM supermodel  8.141 6.017 10.266
+#> 3:  12    Null model 11.152 8.420 13.883
+#> 4:  12 LM supermodel 10.639 7.945 13.333
+#> 5:  18    Null model 11.582 8.591 14.574
+#> 6:  18 LM supermodel 11.163 8.246 14.081
+#> 7:  24    Null model 11.494 8.231 14.758
+#> 8:  24 LM supermodel 11.467 8.247 14.687
 #> NOTE: Values are multiplied by 100 and given in %.
 #> NOTE: The lower Brier the better.
 #> NOTE: Predictions are made at time tLM for 60-month risk
 ```
 
-These results can also be plot.
+These results can also be plot with point wise confidence intervals.
+Setting `se = FALSE` in plot excludes the intervals.
 
 ``` r
-# plot(scores)
+par(mfrow = c(1,2))
+plot(scores)
 ```
+
+<img src="man/figures/README-unnamed-chunk-19-1.png" width="100%" style="display: block; margin: auto;" />
 
 **Bootstrapping** can be performed by calling `calplot()` or `Score()`
 and setting the arguments `split.method = "bootcv"` and `B = 10` (or
@@ -600,7 +596,7 @@ plotrisk(supermodel, dat, format = "long", lm_col = "LM", id_col = "ID",
            ylim = c(0, 0.7), x.legend = "bottom", unit = "month")
 ```
 
-<img src="man/figures/README-plotRisk-1.png" width="100%" />
+<img src="man/figures/README-plotrisk-1.png" width="100%" />
 
 We can see that the male has a much higher and increasing 5-year risk of
 recurrence that peaks around 1 year, and then rapidly decreases. This
