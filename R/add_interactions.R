@@ -1,6 +1,6 @@
 #' Add landmarking time interactions to a super dataset
 #'
-#' The stacked dataset output is used as input to [dynls()] to fit a landmark
+#' The stacked dataset output is used as input to [dynamic_lm()] to fit a landmark
 #' supermodel for dynamic prediction.
 #'
 #' @param lmdata An object of class "LMdataframe".
@@ -51,9 +51,9 @@
 #' w <- 60; lms <- c(0, 6, 12, 18)
 #' LMs = seq(0,36,by=6)
 #' # Covariate-landmark time interactions
-#' func_covars <- list( function(t) t, function(t) t^2)
+#' func_covars <- list(function(t) t, function(t) t^2)
 #' # let hazard depend on landmark time
-#' func_lms <- list( function(t) t, function(t) t^2)
+#' func_lms <- list(function(t) t, function(t) t^2)
 #' # Choose covariates that will have time interaction
 #' pred_covars <- c("age","male","stage","bmi","treatment")
 #' # Stack landmark datasets

@@ -81,7 +81,7 @@ head(lmdata$data)
 formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment +
            age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 +
            bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
-supermodel <- dynls(as.formula(formula), lmdata, "CSC")
+supermodel <- dynamic_lm(as.formula(formula), lmdata, "CSC")
 
 p1 <- predict(supermodel)
 head(p1$preds)

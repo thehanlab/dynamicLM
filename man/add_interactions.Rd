@@ -46,7 +46,7 @@ if \code{keep} is TRUE.
 }
 }
 \description{
-The stacked dataset output is used as input to \code{\link[=dynls]{dynls()}} to fit a landmark
+The stacked dataset output is used as input to \code{\link[=dynamic_lm]{dynamic_lm()}} to fit a landmark
 supermodel for dynamic prediction.
 }
 \details{
@@ -67,9 +67,9 @@ covars <- list(fixed = c("ID","age.at.time.0","male","stage","bmi"),
 w <- 60; lms <- c(0, 6, 12, 18)
 LMs = seq(0,36,by=6)
 # Covariate-landmark time interactions
-func_covars <- list( function(t) t, function(t) t^2)
+func_covars <- list(function(t) t, function(t) t^2)
 # let hazard depend on landmark time
-func_lms <- list( function(t) t, function(t) t^2)
+func_lms <- list(function(t) t, function(t) t^2)
 # Choose covariates that will have time interaction
 pred_covars <- c("age","male","stage","bmi","treatment")
 # Stack landmark datasets

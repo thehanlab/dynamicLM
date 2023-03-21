@@ -1,7 +1,7 @@
 #' Fit a coxph or CSC model to a landmark super dataset, i.e., fit a dynamic
 #' landmark supermodel
 #'
-#' dynamic (dyn) landmark (l) supermodel (s) --> dynls
+#' dynamic (dyn) landmark (lm) supermodel --> dynamic_lm
 #'
 #' @param formula The formula to be used, remember to include "+cluster(ID)" for
 #'  the column that indicates the ID of the individual for robust error
@@ -50,9 +50,9 @@
 #' w <- 60; lms <- c(0, 6, 12, 18)
 #' LMs = seq(0,36,by=6)
 #' # Covariate-landmark time interactions
-#' func_covars <- list( function(t) t, function(t) t^2)
+#' func_covars <- list(function(t) t, function(t) t^2)
 #' # let hazard depend on landmark time
-#' func_lms <- list( function(t) t, function(t) t^2)
+#' func_lms <- list(function(t) t, function(t) t^2)
 #' # Choose covariates that will have time interaction
 #' pred_covars <- c("age","male","stage","bmi","treatment")
 #' # Stack landmark datasets
@@ -67,25 +67,25 @@
 #' formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment +
 #'            age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 +
 #'            bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
-#' supermodel <- dynls(as.formula(formula), lmdata, "CSC")
+#' supermodel <- dynamic_lm(as.formula(formula), lmdata, "CSC")
 #' print(supermodel)
 #' }
 #' @import survival
 #' @export
 #'
-dynls <- function(formula,
-                  lmdata,
-                  type = "coxph",
-                  method = "breslow",
-                  func_covars,
-                  func_lms,
-                  lm_col,
-                  outcome,
-                  w,
-                  lm_covs,
-                  cluster,
-                  x = FALSE,
-                  ...) {
+dynamic_lm <-  function(formula,
+                        lmdata,
+                        type = "coxph",
+                        method = "breslow",
+                        func_covars,
+                        func_lms,
+                        lm_col,
+                        outcome,
+                        w,
+                        lm_covs,
+                        cluster,
+                        x = FALSE,
+                        ...) {
 
   # store arguments but not the data (heavy)
   args = match.call()

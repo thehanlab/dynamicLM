@@ -62,7 +62,7 @@ points. The value of the landmark time point is stored in column LM.
 }
 }
 \description{
-This stacked dataset output is used as input to \code{\link[=dynls]{dynls()}} to fit a landmark
+This stacked dataset output is used as input to \code{\link[=dynamic_lm]{dynamic_lm()}} to fit a landmark
 supermodel for dynamic prediction. Calling \code{\link[=add_interactions]{add_interactions()}} on the output
 before fitting the supermodel allows for landmark time interactions to be
 included.

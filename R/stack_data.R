@@ -1,6 +1,6 @@
 #' Build a stacked dataset from original dataset (wide or long format).
 #'
-#' This stacked dataset output is used as input to [dynls()] to fit a landmark
+#' This stacked dataset output is used as input to [dynamic_lm()] to fit a landmark
 #' supermodel for dynamic prediction. Calling [add_interactions()] on the output
 #' before fitting the supermodel allows for landmark time interactions to be
 #' included.

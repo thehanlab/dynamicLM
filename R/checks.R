@@ -55,7 +55,7 @@ check_evaluation_inputs <- function(
     }
     # TODO: update to include penalized classes
     else if (!(inherits(object[[i]],c("LMCSC", "LMcoxph")))) {
-      stop(paste("all prediction models in object must be of class LMCSC, LMcoxph (i.e., output from dynls) or LMpred (i.e., output from predict.dynamicLM) but", name, "is of class",class(object[[i]])))
+      stop(paste("all prediction models in object must be of class LMCSC, LMcoxph (i.e., output from dynamic_lm) or LMpred (i.e., output from predict.dynamicLM) but", name, "is of class",class(object[[i]])))
     }
     else { # We know it is of class LMCSC or LMcoxph
       if (split.method == "bootcv"){
