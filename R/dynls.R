@@ -39,6 +39,7 @@
 #'     Note that this vector has not been centered.
 #'   - args: arguments used to call model fitting
 #'   - id_col: the cluster argument, often specifies the column with patient ID
+#'   - lm_col: column name that indicates the landmark time point for a row.
 #'
 #' @examples
 #' \dontrun{
@@ -107,14 +108,21 @@ dynls <- function(formula,
   }
 
   if(!inherits(lmdata,"LMdataframe")){
-    if(!inherits(lmdata,"data.frame")){stop("data must be of a data.frame or an object of class LMdataframe")}
+    if(!inherits(lmdata,"data.frame"))
+      stop("data must be of a data.frame or an object of class LMdataframe")
 
-    if(missing(func_covars)) stop("For input data that is a data frame, arg func_covars must be specified.")
-    if(missing(func_lms)) stop("For input data that is a data frame, arg func_lms must be specified.")
-    if(missing(lm_col)) stop("For input data that is a data frame, arg lm_col must be specified.")
-    if(missing(outcome)) stop("For input data that is a data frame, arg outcome must be specified.")
-    if(missing(w)) stop("For input data that is a data frame, arg w must be specified.")
-    if(missing(lm_covs)) stop("For input data that is a data frame, arg lm_covs must be specified.")
+    if (missing(func_covars))
+      stop("For input data that is a data frame, arg func_covars must be specified.")
+    if (missing(func_lms))
+      stop("For input data that is a data frame, arg func_lms must be specified.")
+    if (missing(lm_col))
+      stop("For input data that is a data frame, arg lm_col must be specified.")
+    if (missing(outcome))
+      stop("For input data that is a data frame, arg outcome must be specified.")
+    if (missing(w))
+      stop("For input data that is a data frame, arg w must be specified.")
+    if (missing(lm_covs))
+      stop("For input data that is a data frame, arg lm_covs must be specified.")
 
     all_covs <- c(sapply(1:length(func_covars), function(i) paste0(lm_covs,"_",i)),
                      sapply(1:length(func_lms), function(i) paste0("LM_",i)))
@@ -130,7 +138,8 @@ dynls <- function(formula,
     data <- lmdata$data
     func_covars <- lmdata$func_covars
     func_lms <- lmdata$func_lms
-    original.landmarks <- data[[lmdata$lm_col]]
+    lm_col <- lmdata$lm_col
+    original.landmarks <- data[[lm_col]]
     end_time <- lmdata$end_time
     outcome <- lmdata$outcome
     w <- lmdata$w
@@ -170,20 +179,21 @@ dynls <- function(formula,
       })
     )
 
-  out=list(model=superfm,
-           type=type,
-           w=w,
-           end_time=end_time,
-           func_covars=func_covars,
-           func_lms=func_lms,
-           lm_covs=lm_covs,
-           all_covs=all_covs,
-           outcome=outcome,
-           LHS=LHS,
+  out=list(model = superfm,
+           type = type,
+           w = w,
+           end_time = end_time,
+           func_covars = func_covars,
+           func_lms = func_lms,
+           lm_covs = lm_covs,
+           all_covs = all_covs,
+           outcome = outcome,
+           LHS = LHS,
            id_col = id_col,
-           linear.predictors=linear.predictors,
-           original.landmarks=original.landmarks,
-           args=args
+           lm_col = lm_col,
+           linear.predictors = linear.predictors,
+           original.landmarks = original.landmarks,
+           args = args
   )
   if (x == TRUE) out$data = lmdata
   class(out)=c(cl, "dynamicLM")

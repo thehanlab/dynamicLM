@@ -72,6 +72,7 @@ An object of class "LMcoxph" or "LMCSC" with components:
 Note that this vector has not been centered.
 \item args: arguments used to call model fitting
 \item id_col: the cluster argument, often specifies the column with patient ID
+\item lm_col: column name that indicates the landmark time point for a row.
 }
 }
 \description{
