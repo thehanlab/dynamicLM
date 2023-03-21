@@ -4,10 +4,12 @@
 \alias{print.LMdataframe}
 \title{Print function for object of class LMdataframe}
 \usage{
-\method{print}{LMdataframe}(x, ...)
+\method{print}{LMdataframe}(x, verbose = FALSE, ...)
 }
 \arguments{
 \item{x}{Object of class LMdataframe}
+
+\item{verbose}{Boolean, default is FALSE. Print further components.}
 
 \item{...}{Arguments passed to print.}
 }
