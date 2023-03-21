@@ -2,7 +2,8 @@
 % Please edit documentation in R/plotrisk.R
 \name{plotrisk}
 \alias{plotrisk}
-\title{Plots the absolute w-year risk of individuals for different LM points for an event of interest within a window}
+\title{Plots the absolute risk of individuals for different LM points for an event
+of interest within a given window}
 \usage{
 plotrisk(
   object,
@@ -31,31 +32,39 @@ plotrisk(
 )
 }
 \arguments{
-\item{object}{Fitted LM supermodel}
+\item{object}{Fitted landmark supermodel}
 
 \item{data}{Data frame of individuals from which to plot risk}
 
-\item{format}{Character string specifying whether the data are in wide (default) or in long format}
+\item{format}{Character string specifying whether the data are in wide
+(default) or in long format}
 
-\item{lm_col}{Character string specifying the column name in data containing the (running) time variable
+\item{lm_col}{Character string specifying the column name in data containing
+the (running) time variable
 associated with the time-varying covariate(s); only needed if format="long"}
 
-\item{id_col}{Character string specifying the column name in data containing the subject id; only needed if format="long"}
+\item{id_col}{Character string specifying the column name in data containing
+the subject id; only needed if format="long"}
 
-\item{w}{Prediction window, i.e., predict w-year (/month/..) risk from each of the tLMs.
+\item{w}{Prediction window, i.e., predict w-year (/month/..) risk from each
+of the tLMs.
 Defaults to the w used in model fitting.
-If w > than that used in model fitting, results are unreliable, but can be produced by setting extend=T.}
+If w > than that used in model fitting, results are unreliable, but can be
+produced by setting extend=T.}
 
 \item{cause}{The cause we are looking at if considering competing risks}
 
-\item{varying}{Character string specifying column name in the data containing time-varying covariates; only needed if format="wide"}
+\item{varying}{Character string specifying column name in the data containing
+time-varying covariates; only needed if format="wide"}
 
 \item{end_time}{Final time point to plot risk}
 
-\item{extend}{Argument to allow for risk to be plot at landmark times that are later than the LMs used in model fitting.
+\item{extend}{Argument to allow for risk to be plot at landmark times that
+are later than the landmarks used in model fitting.
 Default is FALSE. If set to TRUE, risks may be unreliable.}
 
-\item{silence}{Silence the message when end_time > LMs used in fitting the model}
+\item{silence}{Silence the message when end_time > landmarks used in fitting
+the model}
 
 \item{pch}{Passed to points}
 
@@ -75,15 +84,18 @@ Default is FALSE. If set to TRUE, risks may be unreliable.}
 
 \item{ylim}{Limits for the y-axis}
 
-\item{x.legend, y.legend}{The x and y co-ordinates to be used to position the legend. They can be specified by keyword or in any way which is accepted by xy.coords.}
+\item{x.legend, y.legend}{The x and y co-ordinates to be used to position the
+legend. They can be specified by keyword or in any way which is accepted
+by xy.coords.}
 
 \item{...}{Additional arguments passed to plot}
 }
 \value{
-Single plot the absolute w-year risk of individuals
+Single plot of the absolute w-year risk of individuals
 }
 \description{
-Plots the absolute w-year risk of individuals for different LM points for an event of interest within a window
+Plots the absolute risk of individuals for different LM points for an event
+of interest within a given window
 }
 \details{
 See our \href{https://github.com/thehanlab/dynamicLM}{GitHub} for example
