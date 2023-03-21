@@ -81,12 +81,7 @@
 #'   landmarks they remain alive (or that are given in `times`).
 #'
 #'  Note that only complete cases of data are considered (whatever type of
-#'  calibration is performed). Furthermore, most errors in plotting occur when a
-#'  formula is not given. Formulas can look like `Hist(Time,event,LM)~1` /
-#'  similar...
-#'
-#'  See our [GitHub](https://github.com/thehanlab/dynamicLM) for detailed
-#'  example code.
+#'  calibration is performed).
 #'
 #'  A comment on the following message:
 #'  "Dropping bootstrap b = {X} for model {name} due
@@ -247,5 +242,6 @@ calplot <-
       }
       outlist[["regression_values"]] <- reg_values_list
     }
+    class(outlist) <- "LMcalibrationPlot"
     return(outlist)
   }

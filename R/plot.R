@@ -213,3 +213,17 @@ plot.LMScore <- function(object, metrics, se = TRUE, xlab, ylab, x, pch, ylim,
     }
   }
 }
+
+
+#' Plot an object output from [calplot()]: plot the calibration plots.
+#'
+#' @param object An object of class "LMcalibrationPlot" output from [calplot()]
+#' @param ...
+#'
+#' @export
+#'
+plot.LMcalibrationPlot <- function(object) {
+  for (i in 1:length(object)) {
+    plot(object[[i]])
+  }
+}
