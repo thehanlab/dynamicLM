@@ -120,12 +120,7 @@ these individuals, and validate on the individuals not sampled at the
 landmarks they remain alive (or that are given in \code{times}).
 
 Note that only complete cases of data are considered (whatever type of
-calibration is performed). Furthermore, most errors in plotting occur when a
-formula is not given. Formulas can look like \code{Hist(Time,event,LM)~1} /
-similar...
-
-See our \href{https://github.com/thehanlab/dynamicLM}{GitHub} for detailed
-example code.
+calibration is performed).
 
 A comment on the following message:
 "Dropping bootstrap b = {X} for model {name} due

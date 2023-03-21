@@ -123,9 +123,6 @@ dataframe (in which case \code{tLM} must be specified).
 For both internal evaluation and bootstrapping, it is assumed that all
 models in \code{object} are fit on the same data.
 
-See our \href{https://github.com/thehanlab/dynamicLM}{GitHub} for
-example code.
-
 If data at late evaluation times is sparse, certain bootstrap samples may
 not have patients that live long enough to perform evaluation leading to
 the message "Upper limit of followup in bootstrap samples, was too low.

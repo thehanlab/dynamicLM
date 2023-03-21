@@ -7,7 +7,7 @@
 \method{predict}{dynamicLM}(object, newdata, lms, cause, w, extend = F, silence = F, complete = T)
 }
 \arguments{
-\item{object}{fitted landmarking supermodel}
+\item{object}{Fitted landmark supermodel}
 
 \item{newdata}{Either a dataframe of individuals to make predictions for or
 an object of class LMdataframe (e.g., created by calling \code{\link[=stack_data]{stack_data()}} and
@@ -18,10 +18,10 @@ original covariates (i.e., without landmark interaction).}
 Only required when \code{newdata} is a data.frame.
 \code{lms} is either a time point, a vector or character string.
 \itemize{
-\item For a single time, w-year risk is predicted from this time, assuming
-all data comes from this time.
+\item For a single time point, w-year risk is predicted from this time for each
+data point.
 \item For a vector, \code{lms} must have the same length as the number of rows of
-\code{newdata} (i.e., each datapoint is associated with one LM/prediction
+\code{newdata} (i.e., each data point is associated with one LM/prediction
 time point).
 \item A character string indicates a column in \code{newdata}.
 }}
@@ -64,9 +64,9 @@ covars <- list(fixed = c("ID","age.at.time.0","male","stage","bmi"),
 w <- 60; lms <- c(0, 6, 12, 18)
 LMs = seq(0,36,by=6)
 # Covariate-landmark time interactions
-func_covars <- list( function(t) t, function(t) t^2)
+func_covars <- list(function(t) t, function(t) t^2)
 # let hazard depend on landmark time
-func_lms <- list( function(t) t, function(t) t^2)
+func_lms <- list(function(t) t, function(t) t^2)
 # Choose covariates that will have time interaction
 pred_covars <- c("age","male","stage","bmi","treatment")
 # Stack landmark datasets

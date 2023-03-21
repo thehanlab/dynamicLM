@@ -73,10 +73,7 @@
 #'     included as a metric
 #'   - `briert`: dataframe containing time-dependent Brier score if "brier" was
 #'     included as a metric
-#' @details See our [GitHub](https://github.com/thehanlab/dynamicLM) for
-#'   example code.
-#'
-#'   If data at late evaluation times is sparse, certain bootstrap samples may
+#' @details If data at late evaluation times is sparse, certain bootstrap samples may
 #'   not have patients that live long enough to perform evaluation leading to
 #'   the message "Upper limit of followup in bootstrap samples, was too low.
 #'   Results at evaluation time(s) beyond these points could not be computed

@@ -1,6 +1,6 @@
 #' Calculate w-year risk from a landmark time point
 #'
-#' @param object fitted landmarking supermodel
+#' @param object Fitted landmark supermodel
 #' @param newdata Either a dataframe of individuals to make predictions for or
 #'  an object of class LMdataframe (e.g., created by calling [stack_data()] and
 #'  [add_interactions()]). If it is a dataframe, it must contain the
@@ -9,11 +9,11 @@
 #'  Only required when `newdata` is a data.frame.
 #'  `lms` is either a time point, a vector or character string.
 #'
-#'  * For a single time, w-year risk is predicted from this time, assuming
-#'  all data comes from this time.
+#'  * For a single time point, w-year risk is predicted from this time for each
+#'    data point.
 #'  * For a vector, `lms` must have the same length as the number of rows of
-#'  `newdata` (i.e., each datapoint is associated with one LM/prediction
-#'  time point).
+#'    `newdata` (i.e., each data point is associated with one LM/prediction
+#'    time point).
 #'  * A character string indicates a column in `newdata`.
 #'
 #' @param cause Cause of interest for competing risks.
@@ -47,9 +47,9 @@
 #' w <- 60; lms <- c(0, 6, 12, 18)
 #' LMs = seq(0,36,by=6)
 #' # Covariate-landmark time interactions
-#' func_covars <- list( function(t) t, function(t) t^2)
+#' func_covars <- list(function(t) t, function(t) t^2)
 #' # let hazard depend on landmark time
-#' func_lms <- list( function(t) t, function(t) t^2)
+#' func_lms <- list(function(t) t, function(t) t^2)
 #' # Choose covariates that will have time interaction
 #' pred_covars <- c("age","male","stage","bmi","treatment")
 #' # Stack landmark datasets
