@@ -77,8 +77,31 @@ You can install the development version of `dynamicLM` from
 ``` r
 # install.packages("devtools")
 devtools::install_github("thehanlab/dynamicLM", ref = "proposed-updates")
-#> Skipping install of 'dynamicLM' from a github remote, the SHA1 (f6c669fb) has not changed since last install.
-#>   Use `force = TRUE` to force installation
+#> Downloading GitHub repo thehanlab/dynamicLM@proposed-updates
+#> pillar       (1.8.1      -> 1.9.0     ) [CRAN]
+#> vctrs        (0.6.0      -> 0.6.1     ) [CRAN]
+#> tibble       (3.2.0      -> 3.2.1     ) [CRAN]
+#> gtable       (0.3.2      -> 0.3.3     ) [CRAN]
+#> riskRegre... (2022.11.28 -> 2023.03.22) [CRAN]
+#> Installing 5 packages: pillar, vctrs, tibble, gtable, riskRegression
+#> 
+#>   There are binary versions available but the source versions are later:
+#>        binary source needs_compilation
+#> pillar  1.8.1  1.9.0             FALSE
+#> vctrs   0.5.2  0.6.1              TRUE
+#> 
+#> 
+#> The downloaded binary packages are in
+#>  /var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T//Rtmpt1twYc/downloaded_packages
+#> installing the source packages 'pillar', 'vctrs'
+#>      checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/Rtmpt1twYc/remotes17ae12928e967/thehanlab-dynamicLM-83271d1/DESCRIPTION’ ...  ✔  checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/Rtmpt1twYc/remotes17ae12928e967/thehanlab-dynamicLM-83271d1/DESCRIPTION’
+#>   ─  preparing ‘dynamicLM’:
+#>    checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
+#>   ─  checking for LF line-endings in source and make files and shell scripts
+#>   ─  checking for empty or unneeded directories
+#>   ─  building ‘dynamicLM_0.3.0.tar.gz’
+#>      
+#> 
 ```
 
 Requirements for the package can be found in the description file.
@@ -114,7 +137,7 @@ library(dynamicLM)
 #> Loading required package: survival
 #> Loading required package: prodlim
 #> Loading required package: riskRegression
-#> riskRegression version 2022.11.28
+#> riskRegression version 2023.03.22
 #> 
 #> Attaching package: 'dynamicLM'
 #> The following object is masked from 'package:riskRegression':
@@ -160,9 +183,9 @@ w <- 60                    # risk prediction window (risk within time w)
 lms <- seq(0,36,by=6)      # landmarks on which to build the model
 
 # Covariate-landmark time interactions
-func_covars <- list( function(t) t, function(t) t^2)
+func_covars <- list(function(t) t, function(t) t^2)
 # let hazard depend on landmark time
-func_lms <- list( function(t) t, function(t) t^2)
+func_lms <- list(function(t) t, function(t) t^2)
 # Choose variables that will have time interaction
 pred_covars <- c("age", "male", "stage", "bmi", "treatment") 
 ```
@@ -274,6 +297,9 @@ print(data[data$ID == "ID1029",])
 #> 751          24         576   24  576
 #> 786          30         900   30  900
 #> 788          36        1296   36 1296
+
+# E.g., of additional arguments to print
+# print(lmdata, verbose = TRUE)
 ```
 
 ## 3.3 Fit the super model
@@ -294,16 +320,16 @@ print(all_covs)
 #> [16] "LM_1"        "LM_2"
 ```
 
-It is then easy to fit a landmark supermodel using `dynls()`. A formula,
-super dataset and method need to be provided. If the super dataset is
-not of class `LMdataframe` (i.e., is a self-created R dataframe), then
-additional parameters must be specified. In this case, see the details
-section of the documentation of `add_interactions()` for information on
-how the landmark interaction terms must be named.
+It is then easy to fit a landmark supermodel using `dynamic_lm()`. A
+formula, super dataset and method need to be provided. If the super
+dataset is not of class `LMdataframe` (i.e., is a self-created R
+dataframe), then additional parameters must be specified. In this case,
+see the details section of the documentation of `add_interactions()` for
+information on how the landmark interaction terms must be named.
 
 ``` r
 formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment + age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 + bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
-supermodel <- dynls(as.formula(formula), lmdata, "CSC") 
+supermodel <- dynamic_lm(as.formula(formula), lmdata, "CSC") 
 #> Warning in agreg.fit(X, Y, istrat, offset, init, control, weights = weights, :
 #> Loglik converged before variable 8,9 ; beta may be infinite.
 print(supermodel)
@@ -356,38 +382,22 @@ print(supermodel)
 #> LM_2         2.226e-03  1.002e+00  4.466e-03  3.534e-03  0.630 0.528756
 #> 
 #> Likelihood ratio test=75.45  on 17 df, p=2.438e-09
-#> n= 2787, number of events= 1120 
-#> 
-#> 
-#> $func_covars
-#> $func_covars$[[1]]
-#> function(t) t
-#> <bytecode: 0x1267be180>
-#> 
-#> $func_covars$[[2]]
-#> function(t) t^2
-#> <bytecode: 0x117ff8510>
-#> 
-#> $func_lms
-#> $func_lms$[[1]]
-#> function(t) t
-#> 
-#> $func_lms$[[2]]
-#> function(t) t^2
-#> 
-#> $w
-#> [1] 60
-#> 
-#> $end_time
-#> [1] 36
-#> 
-#> $type
-#> [1] "CSC"
+#> n= 2787, number of events= 1120
+```
+
+There are additional ways of printing/accessing the model:
+
+``` r
+# E.g., of additional arguments to print
+print(supermodel, cause = 1, verbose = TRUE)
+
+# Coefficients can easily be accessed via
+coef(supermodel)
 ```
 
 Dynamic hazard ratios can be plotted, either log hazard ratio or hazard
-ratio using the argument `logHR`. Only certain plots can also be
-provided using the `covars` argument.
+ratio using the argument `logHR`. Specifying the `covars` arguments
+allows for a subset of dynamic hazard ratios to be plotted.
 
 ``` r
 par(mfrow = c(2,3))
@@ -398,7 +408,7 @@ plot(supermodel)
 
 ``` r
 # To create only two plots:
-plot(supermodel, covars = c("age","male"))
+plot(supermodel, covars = c("age", "male"))
 ```
 
 ## 3.4 Obtain predictions
@@ -411,6 +421,19 @@ landmarks they are still alive.
 
 ``` r
 p1 <- predict(supermodel)
+print(p1)
+#> $preds
+#>   LM       risk
+#> 1  0 0.11514265
+#> 2  0 0.04641678
+#> 3  0 0.04639277
+#> 4  0 0.11005431
+#> 5  0 0.04485027
+#> 6  0 0.04585672
+#>  [ omitted 2782 rows ]
+
+# E.g., of additional arguments to print
+# print(p1, verbose = TRUE)
 ```
 
 ### 3.4.2 For new data
@@ -425,9 +448,9 @@ using an entry from the very original data frame.
 
 ``` r
 # Prediction time
-landmark_times <- c(0,0)
+landmark_times <- c(0, 0)
 # Individuals with covariate values at 0
-individuals <- relapse[1:2,]
+individuals <- relapse[1:2, ]
 individuals$age <- individuals$age.at.time.0
 print(individuals)
 #>       ID       Time event age.at.time.0 male stage  bmi treatment T_txgiven
@@ -456,7 +479,7 @@ between models. This list can be of supermodels or prediction objects
 (created by calling `predict()`).
 
 ``` r
-par(mfrow=c(2,3), pty="s")
+par(mfrow = c(2, 3), pty = "s")
 outlist <- calplot(list("LM supermodel" = p1), 
                     times = c(0,6,12,18,24,30),# landmarks at which to provide calibration plots
                     method = "quantile", q=10, # method for calibration plot
@@ -480,7 +503,7 @@ Brier score (BSt).
 
 ``` r
 scores <- Score(list("LM supermodel" = p1),
-                     times = c(6,12,18,24)) # landmarks at which to assess
+                     times = c(6, 12, 18, 24)) # landmarks at which to assess
 scores
 #> 
 #> Metric: Time-dependent AUC (window 60)
@@ -516,17 +539,17 @@ These results can also be plot with point wise confidence intervals.
 Setting `se = FALSE` in plot excludes the intervals.
 
 ``` r
-par(mfrow = c(1,2))
+par(mfrow = c(1, 2))
 plot(scores)
 ```
 
-<img src="man/figures/README-unnamed-chunk-19-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-20-1.png" width="100%" />
 
 **Bootstrapping** can be performed by calling `calplot()` or `Score()`
 and setting the arguments `split.method = "bootcv"` and `B = 10` (or
 however many bootstrap replications are desired). Note that the argument
 `x = TRUE` must be specified when fitting the model (i.e., when calling
-`dynls()`).
+`dynamic_lm()`).
 
 ``` r
 # Remember to fit the supermodel with argument 'x = TRUE'
@@ -549,8 +572,8 @@ consider two individuals of similar age, bmi, and treatment status at
 baseline, but of different gender.
 
 ``` r
-idx <- relapse$ID %in% c("ID2412","ID1007")
-relapse[idx,]
+idx <- relapse$ID %in% c("ID2412", "ID1007")
+relapse[idx, ]
 #>         ID     Time event age.at.time.0 male stage  bmi treatment T_txgiven
 #> 1   ID1007 62.68493     0      60.25936    0     1 25.9         0      0.00
 #> 442 ID2412 43.35342     0      60.09132    1     0 24.1         0      0.00
@@ -564,12 +587,12 @@ data can be used too if there are no complex variables involved.*
 
 ``` r
 # Prediction time points 
-x <- seq(0,36,by=6)
+x <- seq(0, 36, by = 6)
 
 # Stack landmark datasets
-dat <- stack_data(relapse[idx,], outcome, x, w, covars, format="long", 
+dat <- stack_data(relapse[idx, ], outcome, x, w, covars, format = "long", 
                   id = "ID", rtime = "T_txgiven")$data
-dat$age <- dat$age.at.time.0 + dat$LM/12 # age is in years and LM is in months
+dat$age <- dat$age.at.time.0 + dat$LM / 12 # age is in years and LM is in months
 
 head(dat)
 #>          ID     Time event age.at.time.0 male stage  bmi treatment T_txgiven LM
@@ -589,14 +612,13 @@ head(dat)
 ```
 
 ``` r
-plotrisk(supermodel, dat, format = "long", lm_col = "LM", id_col = "ID", 
-           ylim = c(0, 0.7), x.legend = "bottom")
+plotrisk(supermodel, dat, format = "long", ylim = c(0, 0.7), x.legend = "topright")
 ```
 
 <img src="man/figures/README-plotrisk-1.png" width="100%" />
 
-We can see that the male has a much higher and increasing 5-year risk of
+We can see that the male has a higher and increasing 5-year risk of
 recurrence that peaks around 1 year, and then rapidly decreases. This
-can be explained by the dynamic hazard rate of being male. In
-comparison, the 5-year risk of recurrent for the female remains
+can be explained by the dynamic hazard rate of being male (seen above).
+In comparison, the 5-year risk of recurrent for the female remains
 relatively constant.

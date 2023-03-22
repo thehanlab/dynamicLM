@@ -143,9 +143,9 @@ w <- 60                    # risk prediction window (risk within time w)
 lms <- seq(0,36,by=6)      # landmarks on which to build the model
 
 # Covariate-landmark time interactions
-func_covars <- list( function(t) t, function(t) t^2)
+func_covars <- list(function(t) t, function(t) t^2)
 # let hazard depend on landmark time
-func_lms <- list( function(t) t, function(t) t^2)
+func_lms <- list(function(t) t, function(t) t^2)
 # Choose variables that will have time interaction
 pred_covars <- c("age", "male", "stage", "bmi", "treatment") 
 ```
@@ -206,6 +206,9 @@ covariates that will have landmark time interactions.
 lmdata <- add_interactions(lmdata, pred_covars, func_covars, func_lms) 
 data <- lmdata$data
 print(data[data$ID == "ID1029",])
+
+# E.g., of additional arguments to print
+# print(lmdata, verbose = TRUE)
 ```
 
 ## Fit the super model
@@ -222,7 +225,7 @@ all_covs <- lmdata$all_covs
 print(all_covs)
 ```
 
-It is then easy to fit a landmark supermodel using `dynls()`. A formula,
+It is then easy to fit a landmark supermodel using `dynamic_lm()`. A formula,
 super dataset and method need to be provided. If the super dataset is
 not of class `LMdataframe` (i.e., is a self-created R dataframe), then
 additional parameters must be specified. In this case, see the details
@@ -231,13 +234,23 @@ the landmark interaction terms must be named.
 
 ```{r}
 formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment + age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 + bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
-supermodel <- dynls(as.formula(formula), lmdata, "CSC") 
+supermodel <- dynamic_lm(as.formula(formula), lmdata, "CSC") 
 print(supermodel)
 ```
 
+There are additional ways of printing/accessing the model:
+
+```{r, eval = FALSE}
+# E.g., of additional arguments to print
+print(supermodel, cause = 1, verbose = TRUE)
+
+# Coefficients can easily be accessed via
+coef(supermodel)
+```
+
+
 Dynamic hazard ratios can be plotted, either log hazard ratio or hazard
-ratio using the argument `logHR`. Only certain plots can also be
-provided using the `covars` argument.
+ratio using the argument `logHR`. Specifying the `covars` arguments allows for a subset of dynamic hazard ratios to be plotted.
 
 ```{r dynhr}
 par(mfrow = c(2,3))
@@ -246,7 +259,7 @@ plot(supermodel)
 
 ```{r, eval=F}
 # To create only two plots:
-plot(supermodel, covars = c("age","male"))
+plot(supermodel, covars = c("age", "male"))
 ```
 
 ## Obtain predictions
@@ -259,6 +272,10 @@ landmarks they are still alive.
 
 ```{r}
 p1 <- predict(supermodel)
+print(p1)
+
+# E.g., of additional arguments to print
+# print(p1, verbose = TRUE)
 ```
 
 ### For new data
@@ -273,9 +290,9 @@ using an entry from the very original data frame.
 
 ```{r}
 # Prediction time
-landmark_times <- c(0,0)
+landmark_times <- c(0, 0)
 # Individuals with covariate values at 0
-individuals <- relapse[1:2,]
+individuals <- relapse[1:2, ]
 individuals$age <- individuals$age.at.time.0
 print(individuals)
 ```
@@ -295,7 +312,7 @@ models. This list can be of supermodels or prediction objects (created by
 calling `predict()`).
 
 ```{r calplot}
-par(mfrow=c(2,3), pty="s")
+par(mfrow = c(2, 3), pty = "s")
 outlist <- calplot(list("LM supermodel" = p1), 
                     times = c(0,6,12,18,24,30),# landmarks at which to provide calibration plots
                     method = "quantile", q=10, # method for calibration plot
@@ -318,7 +335,7 @@ Brier score (BSt).
     
 ```{r}
 scores <- Score(list("LM supermodel" = p1),
-                     times = c(6,12,18,24)) # landmarks at which to assess
+                     times = c(6, 12, 18, 24)) # landmarks at which to assess
 scores
 ```
 
@@ -326,7 +343,7 @@ These results can also be plot with point wise confidence intervals. Setting
 `se = FALSE` in plot excludes the intervals.
 
 ```{r, fig.height = 4, fig.width = 9}
-par(mfrow = c(1,2))
+par(mfrow = c(1, 2))
 plot(scores)
 ```
 
@@ -334,7 +351,7 @@ plot(scores)
 **Bootstrapping** can be performed by calling `calplot()` or `Score()` and setting 
 the arguments `split.method = "bootcv"` and `B = 10` (or however many bootstrap 
 replications are desired). Note that the argument `x = TRUE` must be specified 
-when fitting the model (i.e., when calling `dynls()`).
+when fitting the model (i.e., when calling `dynamic_lm()`).
 
 ```{r, eval = FALSE}
 # Remember to fit the supermodel with argument 'x = TRUE'
@@ -358,8 +375,8 @@ consider two individuals of similar age, bmi, and treatment status at
 baseline, but of different gender.
 
 ```{r}
-idx <- relapse$ID %in% c("ID2412","ID1007")
-relapse[idx,]
+idx <- relapse$ID %in% c("ID2412", "ID1007")
+relapse[idx, ]
 ```
 
 We turn our data into long-form data to plot.
@@ -369,34 +386,25 @@ data can be used too if there are no complex variables involved.*
 
 ```{r}
 # Prediction time points 
-x <- seq(0,36,by=6)
+x <- seq(0, 36, by = 6)
 
 # Stack landmark datasets
-dat <- stack_data(relapse[idx,], outcome, x, w, covars, format="long", 
+dat <- stack_data(relapse[idx, ], outcome, x, w, covars, format = "long", 
                   id = "ID", rtime = "T_txgiven")$data
-dat$age <- dat$age.at.time.0 + dat$LM/12 # age is in years and LM is in months
+dat$age <- dat$age.at.time.0 + dat$LM / 12 # age is in years and LM is in months
 
 head(dat)
 ```
 
 ```{r plotrisk}
-plotrisk(supermodel, dat, format = "long", lm_col = "LM", id_col = "ID", 
-           ylim = c(0, 0.7), x.legend = "bottom")
+plotrisk(supermodel, dat, format = "long", ylim = c(0, 0.7), x.legend = "topright")
 ```
 
-We can see that the male has a much higher and increasing 5-year risk of
+We can see that the male has a higher and increasing 5-year risk of
 recurrence that peaks around 1 year, and then rapidly decreases. This
-can be explained by the dynamic hazard rate of being male. In
+can be explained by the dynamic hazard rate of being male (seen above). In
 comparison, the 5-year risk of recurrent for the female remains
 relatively constant.
 
-```{r}
-
-```
-
-
-```{r}
-
-```
 
 
