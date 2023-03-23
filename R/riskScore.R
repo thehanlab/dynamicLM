@@ -14,11 +14,12 @@ riskScore <- function(object, tLM, data, func_covars, func_lms)
 {
   coefs <- object$coefficients
   pred_covars <- names(coefs)
-  idx_LM_covars <- grep("LM",pred_covars, fixed=TRUE)
-  LM_covars <- pred_covars[idx_LM_covars]
-  bet_covars <- pred_covars[-idx_LM_covars]
+  idx_LM_covars <- grep("LM", pred_covars, fixed=TRUE)
 
-  if (!is.null(LM_covars)) {
+  if (sum(idx_LM_covars) > 0) {
+    LM_covars <- pred_covars[idx_LM_covars]
+    bet_covars <- pred_covars[-idx_LM_covars]
+
     # coef_LM1*g1(t) + coef_LM2*g2(t) + ...
     risk1 <- sapply(LM_covars, function(coef_name){
         # Get associated function
@@ -26,6 +27,8 @@ riskScore <- function(object, tLM, data, func_covars, func_lms)
         return(func_lms[[idx]](tLM) * coefs[coef_name])
       })
   } else {
+    LM_covars <- c()
+    bet_covars <- pred_covars
     risk1 <- 0
   }
 
