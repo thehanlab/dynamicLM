@@ -11,7 +11,7 @@
 #'   in [dynamic_lm()]).
 #' * For external calibration, supermodels fit with [dynamic_lm()] are input along
 #'   with new data in the `data` argument. This data can be a LMdataframe or a
-#'   dataframe (in which case `tLM` must be specified).
+#'   dataframe (in which case `lms` must be specified).
 #'
 #' For both internal evaluation and bootstrapping, it is assumed that all
 #' models in `object` are fit on the same data.
@@ -21,7 +21,7 @@
 #'   outputs from [predict.dynamicLM()] or supermodels from [dynamic_lm()] depending on the
 #'   type of calibration.
 #' @param times Landmark times for which calibration must be plot. These must be
-#'   a subset of LM times used during the prediction
+#'   a subset of landmark times used during the prediction
 #' @param metrics  Character vector specifying which metrics to apply. Choices
 #'   are "auc" and "brier". Case matters.
 #' @param formula A survival or event history formula
@@ -29,9 +29,9 @@
 #'   expected event status. If none is given, it is obtained from the prediction
 #'   object.
 #' @param data Data for external validation.
-#' @param tLM Landmark times corresponding to the patient entries in data. Only
+#' @param lms Landmark times corresponding to the patient entries in data. Only
 #'   required if data is specified and is a dataframe.
-#'   tLM can be a string (indicating a column in data), a vector of length
+#'   `lms` can be a string (indicating a column in data), a vector of length
 #'   nrow(data), or a single value if all patient entries were obtained at the
 #'   same landmark time.
 #' @param id_col Column name that identifies individuals in data. If omitted, it
@@ -131,7 +131,7 @@ score <-
            metrics = c("auc", "brier"),
            formula,
            data,
-           tLM,
+           lms,
            id_col="ID",
            se.fit = TRUE,
            conf.int = 0.95,
@@ -155,7 +155,7 @@ score <-
     if ("brier" %in% metrics) get.brier <- TRUE
 
     checked_input <- match.call()
-    m <- match(c("object", "times", "formula", "data", "tLM", "id_col",
+    m <- match(c("object", "times", "formula", "data", "lms", "id_col",
                  "split.method", "B", "M", "cores", "seed", "cause"), names(checked_input), 0L)
     checked_input <- as.list(checked_input[m])
     checked_input <- do.call(check_evaluation_inputs, checked_input)

@@ -5,7 +5,7 @@
 #'  an object of class LMdataframe (e.g., created by calling [stack_data()] and
 #'  [add_interactions()]). If it is a dataframe, it must contain the
 #'  original covariates (i.e., without landmark interaction).
-#' @param lms landmark time points at which to predict risk of w more years.
+#' @param lms landmark time points that correspond to the entries in `newdata`.
 #'  Only required when `newdata` is a data.frame.
 #'  `lms` is either a time point, a vector or character string.
 #'

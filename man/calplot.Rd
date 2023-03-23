@@ -9,7 +9,7 @@ calplot(
   times,
   formula,
   data,
-  tLM,
+  lms,
   id_col = "ID",
   split.method = "none",
   B = 1,
@@ -30,7 +30,7 @@ outputs from \code{\link[=predict.dynamicLM]{predict.dynamicLM()}} or supermodel
 on the type of calibration.}
 
 \item{times}{Landmark times for which calibration must be plot. These must be
-a subset of LM times used during the prediction}
+a subset of landmark times used during the prediction}
 
 \item{formula}{A survival or event history formula (\code{Hist(...)}). The left
 If none is given, it is obtained from the prediction object.}
@@ -38,11 +38,11 @@ If none is given, it is obtained from the prediction object.}
 \item{data}{Data for external validation. This can be an object of class
 LMdataframe (i.e., created by calling \code{\link[=stack_data]{stack_data()}} and
 \code{\link[=add_interactions]{add_interactions()}}), or a data.frame. If it is a data.frame, argument
-\code{tLM} must be specified.}
+\code{lms} must be specified.}
 
-\item{tLM}{Landmark times corresponding to the patient entries in data. Only
+\item{lms}{Landmark times corresponding to the patient entries in data. Only
 required if \code{data} is specified and is a dataframe.
-\code{tLM} can be a string (indicating a column in data), a vector of length
+\code{lms} can be a string (indicating a column in data), a vector of length
 nrow(data), or a single value if all patient entries were obtained at the
 same landmark time.}
 
@@ -106,7 +106,7 @@ follows:
 in \code{\link[=dynamic_lm]{dynamic_lm()}}).
 \item For external calibration, supermodels fit with \code{\link[=dynamic_lm]{dynamic_lm()}} are input along with
 new data in the \code{data} argument. This data can be a LMdataframe or a
-dataframe (in which case \code{tLM} must be specified).
+dataframe (in which case \code{lms} must be specified).
 }
 }
 \details{

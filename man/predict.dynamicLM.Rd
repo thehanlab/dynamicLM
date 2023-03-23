@@ -14,7 +14,7 @@ an object of class LMdataframe (e.g., created by calling \code{\link[=stack_data
 \code{\link[=add_interactions]{add_interactions()}}). If it is a dataframe, it must contain the
 original covariates (i.e., without landmark interaction).}
 
-\item{lms}{landmark time points at which to predict risk of w more years.
+\item{lms}{landmark time points that correspond to the entries in \code{newdata}.
 Only required when \code{newdata} is a data.frame.
 \code{lms} is either a time point, a vector or character string.
 \itemize{

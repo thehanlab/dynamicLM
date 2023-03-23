@@ -3,7 +3,7 @@ check_evaluation_inputs <- function(
     times,
     formula,
     data,
-    tLM,
+    lms,
     id_col="ID",
     split.method = "none",
     B = 1,
@@ -80,22 +80,22 @@ check_evaluation_inputs <- function(
   # external validation: only need a dataframe
   if (!missing(data)) {
     if (split.method == "bootcv"){
-      if (!missing(tLM)){
-        warning("LMdataframe objects have LM columns, tLM is ignored.")
+      if (!missing(lms)){
+        warning("LMdataframe objects have LM columns, argument lms is ignored.")
       }
     }
     # only need the dataframe
     if (inherits(data,"LMdataframe")) {
-      tLM <- data$data[[data$lm_col]]
+      lms <- data$data[[data$lm_col]]
       data <- data$data
     }
-    else if (missing(tLM)) {
-      stop("For external validation with new data, argument tLM must be given.")
+    else if (missing(lms)) {
+      stop("For external validation with new data, argument lms must be given.")
     }
 
   } else {
-    if (!missing(tLM)){
-      warning("tLM is specified without the argument data.",
+    if (!missing(lms)){
+      warning("lms is specified without the argument data.",
               "Did you mean to use argument times instead?",
               "See documentation for more information.")
     }
@@ -200,11 +200,11 @@ check_evaluation_inputs <- function(
   else if (!perform.boot) {
     # TODO: consider including w, extend, silence, complete as args to predict
     if (!missing(data))
-      preds = lapply(object, function(o) predict.dynamicLM(o, data, tLM, cause))
+      preds = lapply(object, function(o) predict.dynamicLM(o, data, lms, cause))
     else preds = lapply(object, function(o) predict.dynamicLM(o, cause=cause))
     args = match.call()
     args$data = NULL
-    args$tLM = NULL
+    args$lms = NULL
     args$object = preds
     return(eval(args))
   }
