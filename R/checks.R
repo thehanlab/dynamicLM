@@ -28,13 +28,15 @@ check_evaluation_inputs <- function(
   if (is.null(names(object))) {
     names(object) <- paste("Model", seq(NF))
   } else {
-    names(object)[(names(object)=="")] <- paste("Model", seq(NF))[(names(object)=="")]
+    idx_replace <- (names(object)=="")
+    names(object)[idx_replace] <- paste("Model", seq(NF))[idx_replace]
   }
   names(object) <- make.unique(names(object))
 
   # check no data is input when bootstrapping
   if ((split.method == "bootcv") & (!missing(data))){
-    message("Bootstrapping is performed with data from the original model, argument data is ignored.")
+    message("Bootstrapping is performed with data from the original model, ",
+            "argument data is ignored.")
 
   }
 
@@ -46,23 +48,30 @@ check_evaluation_inputs <- function(
     # check compatibility of object type with bootstrapping and predictions
     if (inherits(object[[i]],"LMpred")){
       if (split.method != "none") {
-        stop(paste("Cannot bootstrap with deterministic risk predictions:", name))
+        stop(paste("Cannot bootstrap with deterministic risk predictions:",
+                   name))
       }
       if (!missing(data)) {
-        stop(paste0("Cannot use deterministic predictions of type LMpred (",name,") on new data, data argument should not be specified."))
+        stop(paste0("Cannot use deterministic predictions of type LMpred (",
+                name,") on new data, data argument should not be specified."))
       }
 
     }
     # TODO: update to include penalized classes
     else if (!(inherits(object[[i]],c("LMCSC", "LMcoxph")))) {
-      stop(paste("all prediction models in object must be of class LMCSC, LMcoxph (i.e., output from dynamic_lm) or LMpred (i.e., output from predict.dynamicLM) but", name, "is of class",class(object[[i]])))
+      stop(paste("all prediction models in object must be of class LMCSC,",
+                 "LMcoxph (i.e., output from dynamic_lm) or LMpred (i.e.,",
+                 "output from predict.dynamicLM) but", name, "is of class",
+                 class(object[[i]])))
     }
     else { # We know it is of class LMCSC or LMcoxph
       if (split.method == "bootcv"){
         LMdata <- object[[i]]$data
         if (is.null(LMdata)) {
           model.class = class(object[[i]])
-          stop(paste("Prediction object",name,"does not have data stored. In order to bootstrap, objects of class", model.class,"must be fit with argument x=TRUE."))
+          stop(paste("Prediction object",name,"does not have data stored.",
+                     "In order to bootstrap, objects of class", model.class,
+                     "must be fit with argument x=TRUE."))
         }
       }
     }
@@ -81,12 +90,14 @@ check_evaluation_inputs <- function(
       data <- data$data
     }
     else if (missing(tLM)) {
-      stop("For external validation on new data, argumnet tLM must be specified.")
+      stop("For external validation with new data, argument tLM must be given.")
     }
 
   } else {
     if (!missing(tLM)){
-      warning("tLM is specified without the argument data. Did you mean to use argument times instead? See documentation for more information.")
+      warning("tLM is specified without the argument data.",
+              "Did you mean to use argument times instead?",
+              "See documentation for more information.")
     }
   }
 
@@ -99,7 +110,8 @@ check_evaluation_inputs <- function(
 
     if (!is.null(object[[1]]$id_col)){ id_col <- object[[1]]$id_col }
     if(!(id_col %in% colnames(data))){
-      stop(paste("An ID column that is in the data must be provided;", id_col, "is not a column."))
+      stop(paste("An ID column that is in the data must be provided;", id_col,
+                 "is not a column."))
     }
   }
 
@@ -140,11 +152,15 @@ check_evaluation_inputs <- function(
   perform.boot <- F
   if (split.method == "bootcv"){
     unique.inds = unique(data[[id_col]])
-    split.method <- riskRegression::getSplitMethod(split.method, B=B, N=length(unique.inds), M=M, seed)
+    split.method <- riskRegression::getSplitMethod(split.method, B = B,
+                                                   N = length(unique.inds),
+                                                   M = M, seed)
     B <- split.method$B
-    split.idx <- split.method$index
+    split.idx <- do.call("cbind", lapply(1:B, split.method$index))
     perform.boot <- !is.null(split.idx)
-    if (perform.boot) split.idx <- replace(split.idx, seq_along(split.idx), unique.inds[split.idx])# get IDs of the individuals
+    if (perform.boot)
+      split.idx <- replace(split.idx, seq_along(split.idx),
+                           unique.inds[split.idx]) # get IDs of the individuals
   }
   else if (!(split.method %in% c("none", "noplan"))) {
     paste("split.method of type", split.method, "is not supported.")
@@ -156,7 +172,7 @@ check_evaluation_inputs <- function(
     if (NF > 1) {
       for (i in 2:NF) {
         if (!inherits(object[[i]],"LMpred"))
-          stop("All prediction models must either be supermodels or of type LMpred")
+          stop("All prediction models must be supermodels or of type LMpred")
       }
     }
 
@@ -167,12 +183,13 @@ check_evaluation_inputs <- function(
     data <- object[[1]]$data
     num_preds <- nrow(object[[1]]$preds)
 
-    type <- lapply(object, function(o) ifelse(o$type == "coxph", "coxph", "CSC"))
+    type <- lapply(object,
+                   function(o) ifelse(o$type == "coxph", "coxph", "CSC"))
 
     if (NF > 1) {
       for (i in 2:NF) {
         if (nrow(object[[i]]$preds) != num_preds)
-          stop("number of predictions is not the same for all prediction models.")
+          stop("Number of predictions is not the same for all prediction models.")
         if (!isTRUE(all.equal(object[[i]]$preds$LM, pred_LMs)))
           stop("LM points for individuals across prediction models are not the name.")
       }
@@ -182,7 +199,8 @@ check_evaluation_inputs <- function(
 
   else if (!perform.boot) {
     # TODO: consider including w, extend, silence, complete as args to predict
-    if (!missing(data)) preds = lapply(object, function(o) predict.dynamicLM(o, data, tLM, cause))
+    if (!missing(data))
+      preds = lapply(object, function(o) predict.dynamicLM(o, data, tLM, cause))
     else preds = lapply(object, function(o) predict.dynamicLM(o, cause=cause))
     args = match.call()
     args$data = NULL
@@ -211,27 +229,30 @@ check_evaluation_inputs <- function(
         args$lmdata <- NULL
         args$lmdata <- data_train_b
         model.b <- eval(args)
-        base_data = 0 * model.b$model$coefficients
+        base_data <- 0 * model.b$model$coefficients
+
         pred.b <- try(
-          # TODO: consider including w, extend, silence, complete as args to predict.dynamicLM
-          # TODO: use complete=T
-          predict.dynamicLM(model.b,newdata=data_val_b,lms=tLMs_b,cause=model.b$cause, complete=F),
+          # TODO: consider including w, extend, silence, complete
+          #       as args to predict.dynamicLM
+          # TODO: use complete = T
+          predict.dynamicLM(model.b, newdata = data_val_b, lms = tLMs_b,
+                            cause = model.b$cause, complete = FALSE),
           silent = F
         )
 
-
-        if (inherits(pred.b, "try-error")){
-          P <- rep(NA,NROW(data_val_b))
+        if (inherits(pred.b, "try-error")) {
+          return(c())
         } else {
           P <- pred.b$preds$risk
+          if (sum(is.na(P)) > 0) {
+            message(paste("Dropping bootstrap b =", b, "for model",
+                          names(object)[[f]], "due to unreliable predictions."))
+            return(c())
+          } else {
+            return(P)
+          }
         }
-        if (sum(is.na(P)) > 0) {
-          message(paste("Dropping bootstrap b =",b,"for model",names(object)[[f]],"due to unreliable predictions."))
-          return(c())
-        }
-        else {
-          return(P)
-        }
+
 
       }))
       if (length(preds.b) > 0) {
@@ -246,7 +267,8 @@ check_evaluation_inputs <- function(
     pred_LMs <- pred.df[[lm_col]]
     data <- pred.df[c(outcome$time, outcome$status, lm_col, "b")]
     num_preds <- nrow(data)
-    type <- lapply(object, function(o) ifelse(inherits(o, "LMcoxph"), "coxph", "CSC"))
+    type <- lapply(object,
+                   function(o) ifelse(inherits(o, "LMcoxph"), "coxph", "CSC"))
 
     rm(pred.df)
   }
@@ -258,7 +280,9 @@ check_evaluation_inputs <- function(
     if (!all(times %in% unique(pred_LMs))) {
       times = paste(times, collapse = ",")
       pred_LMs = paste(unique(pred_LMs), collapse = ",")
-      stop(paste("arg times (= ",times,") must be a subset of landmark prediction times (= ",pred_LMs,")"))
+      stop(paste("arg times (= ", times,
+                 ") must be a subset of landmark prediction times (= ",
+                 pred_LMs, ")"))
     }
   }
   out = list(
