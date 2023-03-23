@@ -20,20 +20,17 @@ riskScore <- function(object, tLM, data, func_covars, func_lms)
 
   if (!is.null(LM_covars)) {
     # coef_LM1*g1(t) + coef_LM2*g2(t) + ...
-    risk1 <- sum(
-      sapply(LM_covars, function(coef_name){
+    risk1 <- sapply(LM_covars, function(coef_name){
         # Get associated function
         idx <-  as.numeric(sub(".*\\D+", "\\1", coef_name))
         return(func_lms[[idx]](tLM) * coefs[coef_name])
       })
-      # X1*coef + X1*t*coef + X1*t^2*coef + ..
-    )
   } else {
     risk1 <- 0
   }
 
   # X1*coef + X1*t*coef + X1*t^2*coef + ..
-  risk <- risk1 + sum(
+  risk <- sum(risk1) + sum(
     sapply(bet_covars, function(coef_name){
       # Get associated covariate info (remove _i from the name)
       covar <- sub("_\\d+$", "", coef_name)
