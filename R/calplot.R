@@ -40,7 +40,7 @@
 #'   "none": assess the model in the test data (`data` argument)/data it was
 #"   trained on.
 #'
-#'   "bootcv": `B` models are trained on boostrap samples either drawn with
+#'   "bootcv": `B` models are trained on bootstrap samples either drawn with
 #"   replacement of the same size as the original data or without replacement of
 #'   size `M`. Models are then assessed in observations not in the sample.
 #'
@@ -103,7 +103,7 @@
 #'                    ylim = c(0, 0.4), xlim = c(0, 0.4)) # optional
 #' outlist$regression_values
 #'
-#' # Boostrapping
+#' # Bootstrapping
 #' # Remember to fit the supermodel with argument 'x = TRUE'
 #' par(mfrow=c(1,2),pty="s")
 #' outlist = calplot(list("Model_1" = supermodel),

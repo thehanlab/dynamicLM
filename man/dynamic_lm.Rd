@@ -106,5 +106,8 @@ formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment +
            bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
 supermodel <- dynamic_lm(as.formula(formula), lmdata, "CSC")
 print(supermodel)
+
+par(mfrow = c(2,3))
+plot(supermodel)
 }
 }

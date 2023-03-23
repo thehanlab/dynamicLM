@@ -59,7 +59,7 @@
 #' # Stack landmark datasets
 #' lmdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
 #'                      id = "ID", rtime = "T_txgiven")
-#' # Update complex LM-varying covariates
+#' # Update complex landmark-varying covariates
 #' # note age is in years and LM is in months
 #' lmdata$data$age <- lmdata$data$age.at.time.0 + lmdata$data$LM/12
 #' # Add LM-time interactions
