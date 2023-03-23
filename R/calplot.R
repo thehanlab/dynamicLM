@@ -114,7 +114,13 @@
 #'
 #' # External validation
 #' # Either input an object from predict as the object or a supermodel and
-#' # "data" argument
+#' # "data" & "lms" argument
+#' newdata <- relapse[relapse$T_txgiven == 0, ]
+#' newdata$age <- newdata$age.at.time.0
+#' newdata$LM <- 0
+#' par(mfrow = c(1,1))
+#' cal <- calplot(list("CSC" = supermodel), cause = 1, data = newdata, lms = "LM",
+#'                method = "quantile", q = 10, ylim = c(0, 0.1), xlim = c(0, 0.1))
 #' }
 #' @import prodlim
 #' @export

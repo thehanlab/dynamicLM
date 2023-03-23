@@ -300,16 +300,15 @@ dataset. For example, we can prediction *w*-year risk from baseline
 using an entry from the very original data frame.
 
 ```{r}
-# Prediction time
-landmark_times <- c(0, 0)
 # Individuals with covariate values at 0
 individuals <- relapse[1:2, ]
 individuals$age <- individuals$age.at.time.0
+individuals$LM <- 0 # Prediction time
 print(individuals)
 ```
 
 ```{r}
-p0 <- predict(supermodel, individuals, landmark_times, cause = 1)
+p0 <- predict(supermodel, individuals, lms = "LM", cause = 1)
 p0$preds
 ```
 
@@ -384,9 +383,23 @@ outlist <- calplot(list("LM supermodel" = supermodel),
 
 **External validation** can be performed by specifying the supermodel as the 
 object argument and passing new data through the `data` argument. This data can 
-be a LMdataframe or a dataframe (in which case `tLM` must be specified). 
+be a LMdataframe or a dataframe (in which case `lms` must be specified). 
 Alternatively, predictions can be made on new data using `predict()` and this 
 object can be input.
+
+```{r, eval = FALSE}
+# Use all data from baseline as "new" data
+newdata <- relapse[relapse$T_txgiven == 0, ]
+newdata$age <- newdata$age.at.time.0
+newdata$LM <- 0 # specify the landmark time of the data points
+
+par(mfrow = c(1,1))
+cal <- calplot(list("CSC" = supermodel), cause = 1, data = newdata, lms = "LM",
+               method = "quantile", q = 10, ylim = c(0, 0.1), xlim = c(0, 0.1))
+
+score(list("CSC" = supermodel), cause = 1, data = newdata, lms = "LM")
+```
+
 
 ### Visualize individual dynamic risk trajectories
 

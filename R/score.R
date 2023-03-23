@@ -119,7 +119,12 @@
 #' plot(scores)
 #'
 #' # External validation
-#' # Specify "data" argument
+#' # Either input an object from predict as the object or a supermodel and
+#' # "data" & "lms" argument
+#' newdata <- relapse[relapse$T_txgiven == 0, ]
+#' newdata$age <- newdata$age.at.time.0
+#' newdata$LM <- 0
+#' score(list("CSC" = supermodel), cause = 1, data = newdata, lms = "LM")
 #' }
 #'
 #' @import riskRegression

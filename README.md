@@ -77,29 +77,8 @@ You can install the development version of `dynamicLM` from
 ``` r
 # install.packages("devtools")
 devtools::install_github("thehanlab/dynamicLM", ref = "proposed-updates")
-#> Downloading GitHub repo thehanlab/dynamicLM@proposed-updates
-#> parallelly (1.34.0 -> 1.35.0) [CRAN]
-#> cli        (3.6.0  -> 3.6.1 ) [CRAN]
-#> htmltools  (0.5.4  -> 0.5.5 ) [CRAN]
-#> Installing 3 packages: parallelly, cli, htmltools
-#> 
-#>   There are binary versions available but the source versions are later:
-#>           binary source needs_compilation
-#> cli        3.6.0  3.6.1              TRUE
-#> htmltools  0.5.4  0.5.5              TRUE
-#> 
-#> 
-#> The downloaded binary packages are in
-#>  /var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T//RtmphVob4J/downloaded_packages
-#> installing the source packages 'cli', 'htmltools'
-#>      checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmphVob4J/remotes48d431d5785d/thehanlab-dynamicLM-287689d/DESCRIPTION’ ...  ✔  checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmphVob4J/remotes48d431d5785d/thehanlab-dynamicLM-287689d/DESCRIPTION’
-#>   ─  preparing ‘dynamicLM’:
-#>      checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
-#>   ─  checking for LF line-endings in source and make files and shell scripts
-#>   ─  checking for empty or unneeded directories
-#>   ─  building ‘dynamicLM_0.3.0.tar.gz’
-#>      
-#> 
+#> Skipping install of 'dynamicLM' from a github remote, the SHA1 (65058e60) has not changed since last install.
+#>   Use `force = TRUE` to force installation
 ```
 
 Requirements for the package can be found in the description file.
@@ -450,22 +429,21 @@ dataset. For example, we can prediction *w*-year risk from baseline
 using an entry from the very original data frame.
 
 ``` r
-# Prediction time
-landmark_times <- c(0, 0)
 # Individuals with covariate values at 0
 individuals <- relapse[1:2, ]
 individuals$age <- individuals$age.at.time.0
+individuals$LM <- 0 # Prediction time
 print(individuals)
 #>       ID       Time event age.at.time.0 male stage  bmi treatment T_txgiven
 #> 1 ID1007 62.6849315     0      60.25936    0     1 25.9         0         0
 #> 2  ID101  0.6575342     1      59.97808    0     0 29.3         0         0
-#>        age
-#> 1 60.25936
-#> 2 59.97808
+#>        age LM
+#> 1 60.25936  0
+#> 2 59.97808  0
 ```
 
 ``` r
-p0 <- predict(supermodel, individuals, landmark_times, cause = 1)
+p0 <- predict(supermodel, individuals, lms = "LM", cause = 1)
 p0$preds
 #>   LM       risk
 #> 1  0 0.11514265
@@ -573,9 +551,22 @@ outlist <- calplot(list("LM supermodel" = supermodel),
 
 **External validation** can be performed by specifying the supermodel as
 the object argument and passing new data through the `data` argument.
-This data can be a LMdataframe or a dataframe (in which case `tLM` must
+This data can be a LMdataframe or a dataframe (in which case `lms` must
 be specified). Alternatively, predictions can be made on new data using
 `predict()` and this object can be input.
+
+``` r
+# Use all data from baseline as "new" data
+newdata <- relapse[relapse$T_txgiven == 0, ]
+newdata$age <- newdata$age.at.time.0
+newdata$LM <- 0 # specify the landmark time of the data points
+
+par(mfrow = c(1,1))
+cal <- calplot(list("CSC" = supermodel), cause = 1, data = newdata, lms = "LM",
+               method = "quantile", q = 10, ylim = c(0, 0.1), xlim = c(0, 0.1))
+
+score(list("CSC" = supermodel), cause = 1, data = newdata, lms = "LM")
+```
 
 ### 3.5.1 Visualize individual dynamic risk trajectories
 
