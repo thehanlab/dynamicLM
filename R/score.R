@@ -24,9 +24,10 @@
 #'   a subset of LM times used during the prediction
 #' @param metrics  Character vector specifying which metrics to apply. Choices
 #'   are "auc" and "brier". Case matters.
-#' @param formula A survival or event history formula (`Hist(...)`). The left
-#'   hand side is used to compute the expected event status.
-#'   If none is given, it is obtained from the prediction object.
+#' @param formula A survival or event history formula
+#'   ([prodlim::Hist()]). The left hand side is used to compute the
+#'   expected event status. If none is given, it is obtained from the prediction
+#'   object.
 #' @param data Data for external validation.
 #' @param tLM Landmark times corresponding to the patient entries in data. Only
 #'   required if data is specified and is a dataframe.
@@ -62,7 +63,7 @@
 #' @param ... Additional arguments to pass to [riskRegression::Score()].
 #'   These arguments have been included for user flexibility but have not been
 #'   tested and should be used with precaution.
-#' @param silent Show any error messages when computing `Score` for each
+#' @param silent Show any error messages when computing `score` for each
 #'   landmark time (and potentially bootstrap iteration)
 #' @param na.rm Ignore bootstraps where there are errors (for example not
 #'   enough datasamples) and calculate metrics on remaining values. This is not
@@ -103,16 +104,19 @@
 #' @examples
 #' \dontrun{
 #' # Internal validation
-#' scores <- Score(list("Model1" = supermodel),
+#' scores <- score(list("Model1" = supermodel),
 #'                 times = c(0, 6)) # landmarks at which to provide calibration plots
 #' scores
 #'
-#' # Boostrapping
+#' # Bootstrapping
 #' # Remember to fit the supermodel with argument 'x = TRUE'
-#' scores <- Score(list("Model1" = supermodel),
+#' scores <- score(list("Model1" = supermodel),
 #'                 times = c(0, 6),
 #'                 split.method = "bootcv", B = 10) # 10 bootstraps
 #' scores
+#'
+#' par(mfrow=c(1,2))
+#' plot(scores)
 #'
 #' # External validation
 #' # Specify "data" argument
@@ -121,7 +125,7 @@
 #' @import riskRegression
 #' @importFrom data.table .SD
 #' @export
-Score <-
+score <-
   function(object,
            times,
            metrics = c("auc", "brier"),
@@ -142,7 +146,7 @@ Score <-
            ...) {
 
     if (!requireNamespace("data.table", quietly = TRUE)) {
-      stop("Package \"data.table\" must be installed to use function Score",
+      stop("Package \"data.table\" must be installed to use function score()",
            call. = FALSE)
     }
 

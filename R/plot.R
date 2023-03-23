@@ -133,10 +133,10 @@ plot.dynamicLM <- function(object, covars, conf_int = TRUE, cause, end_time,
 }
 
 
-#' Plot an object output from [Score()]: plot the landmark and time-dependent
+#' Plot an object output from [score()]: plot the landmark and time-dependent
 #' Brier and/or AUC of dynamic landmark supermodels.
 #'
-#' @param object An object of class "LMScore" output from [Score()]
+#' @param object An object of class "LMScore" output from [score()]
 #' @param metrics One or both of "auc" and "brier"
 #' @param se Boolean, default TRUE. To include point wise confidence intervals.
 #' @param xlab,ylab,y,x,pch,ylim,xlim graphical parameters
@@ -198,7 +198,7 @@ plot.LMScore <- function(object, metrics, se = TRUE, xlab, ylab, x, pch, ylim,
 
   if ("auc" %in% metrics) {
     if (is.null(object$auct)) {
-      warning("AUC was not set as a metric when calling LMScore. No results to plot. Either call LMScore again with auc as a metric or do not include it as a metric here.")
+      warning("AUC was not set as a metric when calling score() No results to plot. Either call score() again with auc as a metric or do not include it as a metric here.")
     } else {
       if(set_x) x <- "topright"
       plot.metric(object$auct, "AUC", x, ylim, xlim)
@@ -206,7 +206,7 @@ plot.LMScore <- function(object, metrics, se = TRUE, xlab, ylab, x, pch, ylim,
   }
   if ("brier" %in% metrics) {
     if (is.null(object$briert)) {
-      warning("Brier was not set as a metric when calling LMScore. No results to plot. Either call LMScore again with auc as a metric or do not include it as a metric here.")
+      warning("Brier was not set as a metric when calling score() No results to plot. Either call score() again with auc as a metric or do not include it as a metric here.")
     } else {
       if (set_x) x <- "bottomright"
       plot.metric(object$briert, "Brier", x, ylim, xlim)

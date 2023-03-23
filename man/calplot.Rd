@@ -54,7 +54,7 @@ is obtained from the prediction object.}
 
 "none": assess the model in the test data (\code{data} argument)/data it was
 
-"bootcv": \code{B} models are trained on boostrap samples either drawn with
+"bootcv": \code{B} models are trained on bootstrap samples either drawn with
 size \code{M}. Models are then assessed in observations not in the sample.}
 
 \item{B}{Number of times bootstrapping is performed.}
@@ -142,7 +142,7 @@ outlist <- calplot(list("Model_1" = supermodel),
                    ylim = c(0, 0.4), xlim = c(0, 0.4)) # optional
 outlist$regression_values
 
-# Boostrapping
+# Bootstrapping
 # Remember to fit the supermodel with argument 'x = TRUE'
 par(mfrow=c(1,2),pty="s")
 outlist = calplot(list("Model_1" = supermodel),

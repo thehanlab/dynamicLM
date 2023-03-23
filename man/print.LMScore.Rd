@@ -2,7 +2,7 @@
 % Please edit documentation in R/print.R
 \name{print.LMScore}
 \alias{print.LMScore}
-\title{Print function for object of class LMScore}
+\title{Print function for object of class LMScore, i.e., output from \code{\link[=score]{score()}}}
 \usage{
 \method{print}{LMScore}(x, digits = 3, ...)
 }
@@ -17,5 +17,5 @@
 Printed output.
 }
 \description{
-Print function for object of class LMScore
+Print function for object of class LMScore, i.e., output from \code{\link[=score]{score()}}
 }

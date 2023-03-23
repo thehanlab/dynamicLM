@@ -120,7 +120,7 @@ print.LMdataframe <- function(x, verbose = FALSE, ...) {
   }
 }
 
-#' Print function for object of class LMScore
+#' Print function for object of class LMScore, i.e., output from [score()]
 #'
 #' @param x Object of class LMScore
 #' @param digits Number of significant digits to include
