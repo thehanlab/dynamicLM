@@ -223,12 +223,12 @@ check_evaluation_inputs <- function(
       data_train_b <- LMdata
       data_train_b$data <- data[id_train_b, ]
 
-      preds.b <- do.call("cbind",lapply(1:NF,function(f){
+      preds.b <- do.call("cbind", lapply(1:NF, function(f) {
         original_model <- object[[f]]
         args <- original_model$args
         args$lmdata <- NULL
         args$lmdata <- data_train_b
-        model.b <- eval(args)
+        model.b <- eval(args, envir = globalenv())
         base_data <- 0 * model.b$model$coefficients
 
         pred.b <- try(
@@ -252,9 +252,8 @@ check_evaluation_inputs <- function(
             return(P)
           }
         }
-
-
       }))
+
       if (length(preds.b) > 0) {
         colnames(preds.b) <- names(object)
         return(cbind(outcomes_val_b, preds.b, b=rep(b, nrow(outcomes_val_b))))
