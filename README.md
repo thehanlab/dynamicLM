@@ -78,25 +78,23 @@ You can install the development version of `dynamicLM` from
 # install.packages("devtools")
 devtools::install_github("thehanlab/dynamicLM", ref = "proposed-updates")
 #> Downloading GitHub repo thehanlab/dynamicLM@proposed-updates
-#> pillar       (1.8.1      -> 1.9.0     ) [CRAN]
-#> vctrs        (0.6.0      -> 0.6.1     ) [CRAN]
-#> tibble       (3.2.0      -> 3.2.1     ) [CRAN]
-#> gtable       (0.3.2      -> 0.3.3     ) [CRAN]
-#> riskRegre... (2022.11.28 -> 2023.03.22) [CRAN]
-#> Installing 5 packages: pillar, vctrs, tibble, gtable, riskRegression
+#> parallelly (1.34.0 -> 1.35.0) [CRAN]
+#> cli        (3.6.0  -> 3.6.1 ) [CRAN]
+#> htmltools  (0.5.4  -> 0.5.5 ) [CRAN]
+#> Installing 3 packages: parallelly, cli, htmltools
 #> 
 #>   There are binary versions available but the source versions are later:
-#>        binary source needs_compilation
-#> pillar  1.8.1  1.9.0             FALSE
-#> vctrs   0.5.2  0.6.1              TRUE
+#>           binary source needs_compilation
+#> cli        3.6.0  3.6.1              TRUE
+#> htmltools  0.5.4  0.5.5              TRUE
 #> 
 #> 
 #> The downloaded binary packages are in
-#>  /var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T//Rtmpt1twYc/downloaded_packages
-#> installing the source packages 'pillar', 'vctrs'
-#>      checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/Rtmpt1twYc/remotes17ae12928e967/thehanlab-dynamicLM-83271d1/DESCRIPTION’ ...  ✔  checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/Rtmpt1twYc/remotes17ae12928e967/thehanlab-dynamicLM-83271d1/DESCRIPTION’
+#>  /var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T//RtmphVob4J/downloaded_packages
+#> installing the source packages 'cli', 'htmltools'
+#>      checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmphVob4J/remotes48d431d5785d/thehanlab-dynamicLM-287689d/DESCRIPTION’ ...  ✔  checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmphVob4J/remotes48d431d5785d/thehanlab-dynamicLM-287689d/DESCRIPTION’
 #>   ─  preparing ‘dynamicLM’:
-#>    checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
+#>      checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
 #>   ─  checking for LF line-endings in source and make files and shell scripts
 #>   ─  checking for empty or unneeded directories
 #>   ─  building ‘dynamicLM_0.3.0.tar.gz’
@@ -138,11 +136,6 @@ library(dynamicLM)
 #> Loading required package: prodlim
 #> Loading required package: riskRegression
 #> riskRegression version 2023.03.22
-#> 
-#> Attaching package: 'dynamicLM'
-#> The following object is masked from 'package:riskRegression':
-#> 
-#>     Score
 ```
 
 ``` r
@@ -225,7 +218,7 @@ our case, only treatment varies).
 ``` r
 # Stack landmark datasets
 lmdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
-                     id = "ID", rtime = "T_txgiven", right = F)
+                     id = "ID", rtime = "T_txgiven")
 data <- lmdata$data
 print(data[data$ID == "ID1029",])
 #>         ID     Time event age.at.time.0 male stage  bmi treatment T_txgiven LM
@@ -297,9 +290,13 @@ print(data[data$ID == "ID1029",])
 #> 751          24         576   24  576
 #> 786          30         900   30  900
 #> 788          36        1296   36 1296
+```
 
-# E.g., of additional arguments to print
-# print(lmdata, verbose = TRUE)
+One can print `lmdata`. The argument `verbose` allows for additional
+stored objects to be printed (default is FALSE).
+
+``` r
+print(lmdata, verbose = TRUE)
 ```
 
 ## 3.3 Fit the super model
@@ -389,6 +386,8 @@ There are additional ways of printing/accessing the model:
 
 ``` r
 # E.g., of additional arguments to print
+# * cause: only print this cause-specific model
+# * verbose: show additional stored objects
 print(supermodel, cause = 1, verbose = TRUE)
 
 # Coefficients can easily be accessed via
@@ -431,9 +430,13 @@ print(p1)
 #> 5  0 0.04485027
 #> 6  0 0.04585672
 #>  [ omitted 2782 rows ]
+```
 
-# E.g., of additional arguments to print
-# print(p1, verbose = TRUE)
+One can print the predictions. The argument `verbose` allows for
+additional stored objects to be printed (default is FALSE).
+
+``` r
+print(p1, verbose = TRUE)
 ```
 
 ### 3.4.2 For new data
@@ -481,8 +484,8 @@ between models. This list can be of supermodels or prediction objects
 ``` r
 par(mfrow = c(2, 3), pty = "s")
 outlist <- calplot(list("LM supermodel" = p1), 
-                    times = c(0,6,12,18,24,30),# landmarks at which to provide calibration plots
-                    method = "quantile", q=10, # method for calibration plot
+                    times = c(0,6,12,18,24,30), # landmarks to plot at
+                    method = "quantile", q=10,  # method for calibration plot
                     # Optional plotting parameters to alter
                     ylim = c(0, 0.36), xlim = c(0, 0.36), 
                     lwd = 1, xlab = "Predicted Risk", ylab = "Observed Risk", legend = F)
@@ -502,7 +505,7 @@ Brier score (BSt).
   that time point.
 
 ``` r
-scores <- Score(list("LM supermodel" = p1),
+scores <- score(list("LM supermodel" = p1),
                      times = c(6, 12, 18, 24)) # landmarks at which to assess
 scores
 #> 
@@ -543,9 +546,9 @@ par(mfrow = c(1, 2))
 plot(scores)
 ```
 
-<img src="man/figures/README-unnamed-chunk-20-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-22-1.png" width="100%" />
 
-**Bootstrapping** can be performed by calling `calplot()` or `Score()`
+**Bootstrapping** can be performed by calling `calplot()` or `score()`
 and setting the arguments `split.method = "bootcv"` and `B = 10` (or
 however many bootstrap replications are desired). Note that the argument
 `x = TRUE` must be specified when fitting the model (i.e., when calling
@@ -553,9 +556,19 @@ however many bootstrap replications are desired). Note that the argument
 
 ``` r
 # Remember to fit the supermodel with argument 'x = TRUE'
-scores <- Score(list("Model1" = supermodel),
+scores <- score(list("LM supermodel" = supermodel),
               times = c(0, 6),
-              split.method = "bootcv", B = 10) # 10 bootstraps
+              split.method = "bootcv", B = 10)       # 10 bootstraps
+
+par(mfrow = c(1, 2))
+outlist <- calplot(list("LM supermodel" = supermodel), 
+                    times = c(0, 6),                 # landmarks to plot at
+                    method = "quantile", q = 10,     # calibration plot method
+                    split.method = "bootcv", B = 10, # 10 bootstraps
+                    # Optional plotting parameters to alter
+                    ylim = c(0, 0.36), xlim = c(0, 0.36), 
+                    lwd = 1, xlab = "Predicted Risk", ylab = "Observed Risk", 
+                    legend = FALSE)
 ```
 
 **External validation** can be performed by specifying the supermodel as

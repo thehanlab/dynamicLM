@@ -182,7 +182,7 @@ our case, only treatment varies).
 ```{r}
 # Stack landmark datasets
 lmdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
-                     id = "ID", rtime = "T_txgiven", right = F)
+                     id = "ID", rtime = "T_txgiven")
 data <- lmdata$data
 print(data[data$ID == "ID1029",])
 ```
@@ -206,10 +206,15 @@ covariates that will have landmark time interactions.
 lmdata <- add_interactions(lmdata, pred_covars, func_covars, func_lms) 
 data <- lmdata$data
 print(data[data$ID == "ID1029",])
-
-# E.g., of additional arguments to print
-# print(lmdata, verbose = TRUE)
 ```
+
+One can print `lmdata`. The argument `verbose` allows for additional stored 
+objects to be printed (default is FALSE).
+
+```{r, eval = FALSE}
+print(lmdata, verbose = TRUE)
+```
+
 
 ## Fit the super model
 
@@ -242,6 +247,8 @@ There are additional ways of printing/accessing the model:
 
 ```{r, eval = FALSE}
 # E.g., of additional arguments to print
+# * cause: only print this cause-specific model
+# * verbose: show additional stored objects
 print(supermodel, cause = 1, verbose = TRUE)
 
 # Coefficients can easily be accessed via
@@ -273,9 +280,13 @@ landmarks they are still alive.
 ```{r}
 p1 <- predict(supermodel)
 print(p1)
+```
 
-# E.g., of additional arguments to print
-# print(p1, verbose = TRUE)
+One can print the predictions. The argument `verbose` allows for additional 
+stored objects to be printed (default is FALSE).
+
+```{r, eval = FALSE}
+print(p1, verbose = TRUE)
 ```
 
 ### For new data
@@ -314,8 +325,8 @@ calling `predict()`).
 ```{r calplot}
 par(mfrow = c(2, 3), pty = "s")
 outlist <- calplot(list("LM supermodel" = p1), 
-                    times = c(0,6,12,18,24,30),# landmarks at which to provide calibration plots
-                    method = "quantile", q=10, # method for calibration plot
+                    times = c(0,6,12,18,24,30), # landmarks to plot at
+                    method = "quantile", q=10,  # method for calibration plot
                     # Optional plotting parameters to alter
                     ylim = c(0, 0.36), xlim = c(0, 0.36), 
                     lwd = 1, xlab = "Predicted Risk", ylab = "Observed Risk", legend = F)
@@ -334,7 +345,7 @@ Brier score (BSt).
     estimates by that time point.
     
 ```{r}
-scores <- Score(list("LM supermodel" = p1),
+scores <- score(list("LM supermodel" = p1),
                      times = c(6, 12, 18, 24)) # landmarks at which to assess
 scores
 ```
@@ -348,16 +359,26 @@ plot(scores)
 ```
 
 
-**Bootstrapping** can be performed by calling `calplot()` or `Score()` and setting 
+**Bootstrapping** can be performed by calling `calplot()` or `score()` and setting 
 the arguments `split.method = "bootcv"` and `B = 10` (or however many bootstrap 
 replications are desired). Note that the argument `x = TRUE` must be specified 
 when fitting the model (i.e., when calling `dynamic_lm()`).
 
 ```{r, eval = FALSE}
 # Remember to fit the supermodel with argument 'x = TRUE'
-scores <- Score(list("Model1" = supermodel),
+scores <- score(list("LM supermodel" = supermodel),
               times = c(0, 6),
-              split.method = "bootcv", B = 10) # 10 bootstraps
+              split.method = "bootcv", B = 10)       # 10 bootstraps
+
+par(mfrow = c(1, 2))
+outlist <- calplot(list("LM supermodel" = supermodel), 
+                    times = c(0, 6),                 # landmarks to plot at
+                    method = "quantile", q = 10,     # calibration plot method
+                    split.method = "bootcv", B = 10, # 10 bootstraps
+                    # Optional plotting parameters to alter
+                    ylim = c(0, 0.36), xlim = c(0, 0.36), 
+                    lwd = 1, xlab = "Predicted Risk", ylab = "Observed Risk", 
+                    legend = FALSE)
 ```
 
 
