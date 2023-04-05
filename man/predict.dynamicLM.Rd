@@ -4,7 +4,17 @@
 \alias{predict.dynamicLM}
 \title{Calculate w-year risk from a landmark time point}
 \usage{
-\method{predict}{dynamicLM}(object, newdata, lms, cause, w, extend = F, silence = F, complete = T)
+\method{predict}{dynamicLM}(
+  object,
+  newdata,
+  lms,
+  cause,
+  w,
+  extend = FALSE,
+  silence = FALSE,
+  complete = TRUE,
+  ...
+)
 }
 \arguments{
 \item{object}{Fitted landmark supermodel}

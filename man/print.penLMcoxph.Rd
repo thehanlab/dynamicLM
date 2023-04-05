@@ -9,7 +9,7 @@
 \arguments{
 \item{x}{Object of class penLMcoxph}
 
-\item{verbose}{Logical, if verbose print func_covars, func_LMs, w, end_time
+\item{verbose}{Logical, if verbose print func_covars, func_lms, w, end_time
 and type.}
 
 \item{...}{Arguments passed to print.}

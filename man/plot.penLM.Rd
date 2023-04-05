@@ -2,17 +2,17 @@
 % Please edit documentation in R/plot.R
 \name{plot.penLM}
 \alias{plot.penLM}
-\title{Plot coefficients from an object created by calling \code{penLM}, analogous to
-plotting from \code{glmnet}}
+\title{Plot coefficients from an object created by calling \code{\link[=penLM]{penLM()}}, analogous to
+plotting from \code{\link[=glmnet]{glmnet()}}}
 \usage{
 \method{plot}{penLM}(x, xvar = "norm", all_causes = FALSE, silent = FALSE, label = FALSE, ...)
 }
 \arguments{
-\item{x}{a fitted \code{penLM} object}
+\item{x}{a fitted \code{\link[=penLM]{penLM()}} object}
 
-\item{xvar}{As in \code{glmnet}: "What is on the X-axis. "\code{norm}" plots against the
-L1-norm of the coefficients, "\code{lambda}" against the log-lambda sequence,
-and "\code{dev}" against the percent deviance explained."}
+\item{xvar}{As in \code{\link[=glmnet]{glmnet()}}: "What is on the X-axis. "\code{norm}" plots against
+the L1-norm of the coefficients, "\code{lambda}" against the log-lambda
+sequence, and "\code{dev}" against the percent deviance explained."}
 
 \item{all_causes}{if penLM fit a cause-specific Cox model, set TRUE to plot
 coefficient profile plots for each model.}

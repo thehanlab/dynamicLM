@@ -4,10 +4,10 @@
 \alias{plot.penLMcoxph}
 \title{Plot the coefficients of a penalized Cox supermodel}
 \usage{
-\method{plot}{penLMcoxph}(object, single.plot = FALSE, max_coefs = 10, ...)
+\method{plot}{penLMcoxph}(x, single.plot = FALSE, max_coefs = 10, ...)
 }
 \arguments{
-\item{object}{a penalized Cox supermodel - created by calling \code{fitLM} on an
+\item{x}{a penalized Cox supermodel - created by calling \code{fitLM} on an
 object created from \code{penLM}/\code{cv.pen}}
 
 \item{single.plot}{Logical, defaults to FALSE. A single plot for both

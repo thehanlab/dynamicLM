@@ -2,7 +2,8 @@
 % Please edit documentation in R/print.R
 \name{print.cv.penLM}
 \alias{print.cv.penLM}
-\title{Print the output from calling \code{cv.LMpen}, similar to the output of printing a \code{cv.glmnet} object}
+\title{Print the output from calling \code{cv.LMpen}, similar to the output of printing
+a \code{cv.glmnet} object}
 \usage{
 \method{print}{cv.penLM}(x, all_causes = FALSE, silent = FALSE, digits = 3, ...)
 }
@@ -28,5 +29,6 @@ default is only to print the output for the cause of interest (first cause).
 Further events can be examined by setting \code{all_causes = TRUE}.
 }
 \references{
-Friedman, J., Hastie, T. and Tibshirani, R. (2008). Regularization Paths for Generalized Linear Models via Coordinate Descent
+Friedman, J., Hastie, T. and Tibshirani, R. (2008).
+Regularization Paths for Generalized Linear Models via Coordinate Descent
 }

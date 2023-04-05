@@ -2,8 +2,8 @@
 % Please edit documentation in R/plot.R
 \name{plot.cv.penLM}
 \alias{plot.cv.penLM}
-\title{Plot cross-validation curve created by \code{cv.penLM}, analogous to plotting from
-\code{cv.glmnet}}
+\title{Plot cross-validation curve created by \code{\link[=cv.penLM]{cv.penLM()}}, analogous to plotting
+from \code{\link[=cv.glmnet]{cv.glmnet()}}}
 \usage{
 \method{plot}{cv.penLM}(
   x,
@@ -16,12 +16,14 @@
 )
 }
 \arguments{
-\item{x}{a fitted \code{cv.penLM} object}
+\item{x}{a fitted \code{\link[=cv.penLM]{cv.penLM()}} object}
 
 \item{all_causes}{if penLM fit a cause-specific Cox model, set TRUE to plot
 coefficient profile plots for each model.}
 
 \item{silent}{Set TRUE to hide messages.}
+
+\item{label}{Set TRUE to label the curves by variable index numbers.}
 
 \item{sign.lambda}{Plot against \code{log(lambda)} (default) or its negative
 if set to -1.}

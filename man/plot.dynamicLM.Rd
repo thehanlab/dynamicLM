@@ -5,7 +5,7 @@
 \title{Plots the dynamic log-hazard ratio of a cox or CSC supermodel}
 \usage{
 \method{plot}{dynamicLM}(
-  object,
+  x,
   covars,
   conf_int = TRUE,
   cause,
@@ -21,7 +21,7 @@
 )
 }
 \arguments{
-\item{object}{An object of class "LMcoxph" or "LMCSC", i.e. a fitted
+\item{x}{An object of class "LMcoxph" or "LMCSC", i.e. a fitted
 supermodel}
 
 \item{covars}{Vector or list of strings indicating the variables to plot

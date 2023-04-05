@@ -19,6 +19,7 @@ Depends:
     survival (>= 2.44.1)
 Imports: 
     data.table,
+    glmnet,
     graphics,
     stats,
     utils

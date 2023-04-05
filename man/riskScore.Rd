@@ -10,13 +10,17 @@ riskScore(object, tLM, data, func_covars, func_lms)
 \arguments{
 \item{object}{A coxph object}
 
-\item{tLM}{Landmarking time point at which to calculate risk score (time at which the prediction is made)}
+\item{tLM}{Landmarking time point at which to calculate risk score
+(time at which the prediction is made)}
 
-\item{data}{Dataframe (single row) of individual. Must contain the original covariates.}
+\item{data}{Dataframe (single row) of individual. Must contain the
+original covariates.}
 
-\item{func_covars}{A list of functions to use for interactions between LMs and covariates.}
+\item{func_covars}{A list of functions to use for interactions
+between LMs and covariates.}
 
-\item{func_lms}{A list of functions to use for transformations of the landmark times.}
+\item{func_lms}{A list of functions to use for transformations of
+the landmark times.}
 }
 \value{
 Numeric risk score

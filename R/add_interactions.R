@@ -115,7 +115,6 @@ add_interactions <- function(lmdata, lm_covs, func_covars, func_lms, lm_col,
     data <- data[remaining]
   }
   lmdata$data <- data
-
   lmdata$func_covars <- func_covars
   lmdata$func_lms <- func_lms
   lmdata$lm_covs <- lm_covs

@@ -4,11 +4,11 @@
 \alias{plot.penLMCSC}
 \title{Plot the coefficients of a penalized Cause-specific Cox supermodel}
 \usage{
-\method{plot}{penLMCSC}(object, single.plot = FALSE, max_coefs = 10, all_causes = FALSE, ...)
+\method{plot}{penLMCSC}(x, single.plot = FALSE, max_coefs = 10, all_causes = FALSE, ...)
 }
 \arguments{
-\item{object}{a penalized cause-specific Cox supermodel - created by calling
-\code{fitLM} on an object created from \code{penLM}/\code{cv.pen}}
+\item{x}{a penalized cause-specific Cox supermodel - created by calling
+\code{\link[=dynamic_lm]{dynamic_lm()}} on an object created from \code{\link[=penLM]{penLM()}}/\code{\link[=cv.penLM]{cv.penLM()}}.}
 
 \item{single.plot}{Logical, defaults to FALSE. A single plot for both
 positive and negative coefficients, or two separate plots.}

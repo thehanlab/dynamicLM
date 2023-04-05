@@ -76,34 +76,36 @@ stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"),
   if (missing(id)){
     if ("ID" %in% colnames(data))
       id = "ID"
+    else
+      stop("argument id must be specified.")
   }
   if (!(id %in% colnames(data))){
-    stop(paste("ID column ", id,"is not in the data."))
+    stop(paste("ID column ", id, "is not in the data."))
   }
 
   if (format == "wide"){
     if (!(id %in% covs$fixed)){
       covs$fixed = c(id, covs$fixed)
     }
-    lmdata = dynpred::cutLM(data=data,
-                    outcome=outcome,
-                    LM=lms[1],
-                    horizon=lms[1]+w,
-                    covs=covs,
-                    format="wide",
-                    right=right)
+    lmdata = dynpred::cutLM(data = data,
+                            outcome = outcome,
+                            LM = lms[1],
+                            horizon = lms[1] + w,
+                            covs = covs,
+                            format = "wide",
+                            right = right)
     if (length(lms) > 1){
       for (i in 2:length(lms))
-        lmdata = rbind(lmdata,dynpred::cutLM(data=data,
-                                     outcome=outcome,
-                                     LM=lms[i],
-                                     horizon=lms[i]+w,
-                                     covs=covs,
-                                     format="wide",
-                                     right=right))
+        lmdata = rbind(lmdata,dynpred::cutLM(data = data,
+                                             outcome = outcome,
+                                             LM = lms[i],
+                                             horizon = lms[i] + w,
+                                             covs = covs,
+                                             format = "wide",
+                                             right = right))
     }
-    lmdata = lmdata[,c(which(colnames(lmdata)==id),
-                       which(colnames(lmdata)!=id))]
+    lmdata = lmdata[, c(which(colnames(lmdata) == id),
+                       which(colnames(lmdata) != id))]
 
   } else if (format == "long"){
     # guard against errors in cutLM
@@ -113,29 +115,30 @@ stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"),
     }
 
     # call cutLM
-    lmdata = dynpred::cutLM(data=data,
-                    outcome=outcome,
-                    LM=lms[1],
-                    horizon=lms[1]+w,
-                    covs=covs,
-                    format, id, rtime, right)
+    lmdata = dynpred::cutLM(data = data,
+                            outcome = outcome,
+                            LM = lms[1],
+                            horizon = lms[1] + w,
+                            covs = covs,
+                            format, id, rtime, right)
     if (length(lms) > 1){
       for (i in 2:length(lms))
-        lmdata = rbind(lmdata,dynpred::cutLM(data=data,
-                                     outcome=outcome,
-                                     LM=lms[i],
-                                     horizon=lms[i]+w,
-                                     covs=covs,
-                                     format, id, rtime, right))
+        lmdata = rbind(lmdata,dynpred::cutLM(data = data,
+                                             outcome = outcome,
+                                             LM = lms[i],
+                                             horizon = lms[i] + w,
+                                             covs = covs,
+                                             format, id, rtime, right))
     }
   }
-  out=list(
-    data=lmdata,
-    outcome=outcome,
-    w=w,
-    end_time=lms[length(lms)],
-    lm_col="LM"
+  out <- list(
+    data = lmdata,
+    outcome = outcome,
+    w = w,
+    end_time = lms[length(lms)],
+    lm_col = "LM",
+    id_col = id
   )
-  class(out)="LMdataframe"
+  class(out) <- "LMdataframe"
   return(out)
 }

@@ -28,6 +28,7 @@
 #' @param silence Silence the warning message when extend is set to TRUE.
 #' @param complete Only make predictions for data entries with non-NA entries
 #'   (i.e., non-NA predictions). Default is TRUE.
+#' @param ...
 #'
 #' @return An object of class "LMpred" with components:
 #'   - preds: a dataframe with columns LM and risk, each entry corresponds to
@@ -72,8 +73,8 @@
 #' @import survival
 #' @export
 #'
-predict.dynamicLM <- function(object, newdata, lms, cause, w, extend=F,
-                              silence=F, complete=T)
+predict.dynamicLM <- function(object, newdata, lms, cause, w, extend = FALSE,
+                              silence = FALSE, complete = TRUE, ...)
 {
   func_covars <- object$func_covars
   func_lms <- object$func_lms

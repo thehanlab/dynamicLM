@@ -1,6 +1,6 @@
 #' Plots the dynamic log-hazard ratio of a cox or CSC supermodel
 #'
-#' @param object An object of class "LMcoxph" or "LMCSC", i.e. a fitted
+#' @param x An object of class "LMcoxph" or "LMCSC", i.e. a fitted
 #'   supermodel
 #' @param covars Vector or list of strings indicating the variables to plot
 #'   (note these must be given without time interaction label, for e.g., as in
@@ -28,10 +28,10 @@
 #'   code
 #' @export
 #'
-plot.dynamicLM <- function(object, covars, conf_int = TRUE, cause, end_time,
+plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
                            logHR = TRUE, extend = FALSE, silence = FALSE,
                            xlab = "LM time", ylab, ylim, main, ...) {
-  fm = object$model
+  fm = x$model
 
   if(conf_int) {
     if (!requireNamespace("msm", quietly = TRUE))
@@ -39,7 +39,7 @@ plot.dynamicLM <- function(object, covars, conf_int = TRUE, cause, end_time,
            call. = FALSE)
   }
 
-  if (missing(covars)) covars <- object$lm_covs
+  if (missing(covars)) covars <- x$lm_covs
   if (missing(main)) {
     if (is.null(names(covars))) main <- covars
     else main <- names(covars)
@@ -52,33 +52,33 @@ plot.dynamicLM <- function(object, covars, conf_int = TRUE, cause, end_time,
     else ylab <- "HR"
   }
   if (missing(end_time)) {
-    end_time <- object$end_time
+    end_time <- x$end_time
 
-  } else if (end_time > object$end_time && !extend) {
-    if (!silence) message(paste0("NOTE: arg end_time (=",end_time,") is later than the last LM used in model fitting (=",object$end_time,")",
-                                 "\nand has been set back to the last LM used in model fitting. (=",object$end_time,")",
-                                 "\nIf you wish to still plot until ",end_time, ", set arg extend=T but note that results after time ",object$end_time," may be unreliable."))
-    end_time <- object$end_time
+  } else if (end_time > x$end_time && !extend) {
+    if (!silence) message(paste0("NOTE: arg end_time (=",end_time,") is later than the last LM used in model fitting (=",x$end_time,")",
+                                 "\nand has been set back to the last LM used in model fitting. (=",x$end_time,")",
+                                 "\nIf you wish to still plot until ",end_time, ", set arg extend=T but note that results after time ",x$end_time," may be unreliable."))
+    end_time <- x$end_time
 
-  } else if (end_time > object$end_time && extend) {
-    if (!silence) warning(paste0("NOTE: arg end_time (=",end_time,") is later than the last LM used in model fitting (=",object$end_time,")",
-                                 "\nResults after time ",object$end_time," may be unreliable."))
+  } else if (end_time > x$end_time && extend) {
+    if (!silence) warning(paste0("NOTE: arg end_time (=",end_time,") is later than the last LM used in model fitting (=",x$end_time,")",
+                                 "\nResults after time ",x$end_time," may be unreliable."))
   }
 
-  if (object$type == "coxph") {
+  if (x$type == "coxph") {
     if (!missing(cause)) stop("no cause should be input for coxph supermodels.")
     bet <- fm$coefficients
-    func_covars <- object$func_covars
+    func_covars <- x$func_covars
     if (conf_int) sig <- stats::vcov(fm)
 
-  } else if (object$type == "CauseSpecificCox" | object$type == "CSC") {
+  } else if (x$type == "CauseSpecificCox" | x$type == "CSC") {
     if (missing(cause)) cause <- as.numeric(fm$theCause)
     if (length(cause) > 1)
       stop(paste0("Can only predict one cause. Provided are: ",
                   paste(cause, collapse = ", "), sep = ""))
 
     bet <- fm$models[[cause]]$coefficients
-    func_covars <- object$func_covars
+    func_covars <- x$func_covars
 
     if(conf_int) sig <- stats::vcov(fm$models[[cause]])
   }
@@ -137,20 +137,21 @@ plot.dynamicLM <- function(object, covars, conf_int = TRUE, cause, end_time,
 #' Plot an object output from [score()]: plot the landmark and time-dependent
 #' Brier and/or AUC of dynamic landmark supermodels.
 #'
-#' @param object An object of class "LMScore" output from [score()]
+#' @param x An object of class "LMScore" output from [score()]
 #' @param metrics One or both of "auc" and "brier"
 #' @param se Boolean, default TRUE. To include point wise confidence intervals.
-#' @param xlab,ylab,y,x,pch,ylim,xlim graphical parameters
-#' @param ...
+#' @param loc Location for legend.
+#' @param xlab,ylab,pch,ylim,xlim graphical parameters
+#' @param ... Additional arguments to `plot()`
 #'
 #' @export
 #'
-plot.LMScore <- function(object, metrics, se = TRUE, xlab, ylab, x, pch, ylim,
+plot.LMScore <- function(x, metrics, se = TRUE, loc, xlab, ylab, pch, ylim,
                          xlim, ...) {
   if (missing(metrics)) {
     metrics <- c()
-    if (!is.null(object$auct)) metrics <- c("auc")
-    if (!is.null(object$briert)) metrics <- c(metrics, "brier")
+    if (!is.null(x$auct)) metrics <- c("auc")
+    if (!is.null(x$briert)) metrics <- c(metrics, "brier")
   }
 
   if (missing(xlab))
@@ -162,11 +163,11 @@ plot.LMScore <- function(object, metrics, se = TRUE, xlab, ylab, x, pch, ylim,
   if (missing(ylab))
     set_ylab <- TRUE
   set_x <- FALSE
-  if (missing(x))
+  if (missing(loc))
     set_x <- TRUE
 
   plot.metric <- function(df, metric, loc, ylim, xlim) {
-    if (set_ylab) ylab <- paste0(metric, "(t, t + ", object$w, ")")
+    if (set_ylab) ylab <- paste0(metric, "(t, t + ", x$w, ")")
 
     num_models = length(unique(df$model))
     model_names = df$model[1:num_models]
@@ -198,19 +199,19 @@ plot.LMScore <- function(object, metrics, se = TRUE, xlab, ylab, x, pch, ylim,
   }
 
   if ("auc" %in% metrics) {
-    if (is.null(object$auct)) {
+    if (is.null(x$auct)) {
       warning("AUC was not set as a metric when calling score() No results to plot. Either call score() again with auc as a metric or do not include it as a metric here.")
     } else {
-      if(set_x) x <- "topright"
-      plot.metric(object$auct, "AUC", x, ylim, xlim)
+      if(set_x) loc <- "topright"
+      plot.metric(x$auct, "AUC", loc, ylim, xlim)
     }
   }
   if ("brier" %in% metrics) {
-    if (is.null(object$briert)) {
+    if (is.null(x$briert)) {
       warning("Brier was not set as a metric when calling score() No results to plot. Either call score() again with auc as a metric or do not include it as a metric here.")
     } else {
-      if (set_x) x <- "bottomright"
-      plot.metric(object$briert, "Brier", x, ylim, xlim)
+      if (set_x) loc <- "bottomright"
+      plot.metric(x$briert, "Brier", loc, ylim, xlim)
     }
   }
 }
@@ -218,20 +219,20 @@ plot.LMScore <- function(object, metrics, se = TRUE, xlab, ylab, x, pch, ylim,
 
 #' Plot an object output from [calplot()]: plot the calibration plots.
 #'
-#' @param object An object of class "LMcalibrationPlot" output from [calplot()]
-#' @param ...
+#' @param x An object of class "LMcalibrationPlot" output from [calplot()]
+#' @param ...  Additional arguments to `plot()`
 #'
 #' @export
 #'
-plot.LMcalibrationPlot <- function(object) {
-  for (i in 1:length(object)) {
-    plot(object[[i]])
+plot.LMcalibrationPlot <- function(x, ...) {
+  for (i in 1:length(x)) {
+    plot(x[[i]], ...)
   }
 }
 
 
-#' Plot coefficients from an object created by calling `penLM`, analogous to
-#' plotting from `glmnet`
+#' Plot coefficients from an object created by calling [penLM()], analogous to
+#' plotting from [glmnet()]
 #'
 #' As in the glmnet package, produces a coefficient profile plot of the
 #' coefficient paths.
@@ -243,10 +244,10 @@ plot.LMcalibrationPlot <- function(object) {
 #' interest (first cause) Further events can be examined by setting
 #' `all_causes = TRUE`.
 #'
-#' @param x a fitted `penLM` object
-#' @param xvar As in `glmnet`: "What is on the X-axis. "`norm`" plots against the
-#'   L1-norm of the coefficients, "`lambda`" against the log-lambda sequence,
-#'   and "`dev`" against the percent deviance explained."
+#' @param x a fitted [penLM()] object
+#' @param xvar As in [glmnet()]: "What is on the X-axis. "`norm`" plots against
+#'   the L1-norm of the coefficients, "`lambda`" against the log-lambda
+#'   sequence, and "`dev`" against the percent deviance explained."
 #' @param all_causes if penLM fit a cause-specific Cox model, set TRUE to plot
 #'   coefficient profile plots for each model.
 #' @param silent Set TRUE to hide messages.
@@ -268,8 +269,8 @@ plot.penLM <- function(x, xvar = "norm", all_causes = FALSE, silent = FALSE,
 }
 
 
-#' Plot cross-validation curve created by `cv.penLM`, analogous to plotting from
-#' `cv.glmnet`
+#' Plot cross-validation curve created by [cv.penLM()], analogous to plotting
+#' from [cv.glmnet()]
 #'
 #' The cross-validation curve is plotted as a function of the lambda values
 #' used. Upper and lower standard deviation is plotted too.
@@ -281,10 +282,11 @@ plot.penLM <- function(x, xvar = "norm", all_causes = FALSE, silent = FALSE,
 #' interest (first cause) Further events can be examined by setting
 #' `all_causes = TRUE`.
 #'
-#' @param x a fitted `cv.penLM` object
+#' @param x a fitted [cv.penLM()] object
 #' @param all_causes if penLM fit a cause-specific Cox model, set TRUE to plot
 #'   coefficient profile plots for each model.
 #' @param silent Set TRUE to hide messages.
+#' @param label Set TRUE to label the curves by variable index numbers.
 #' @param sign.lambda Plot against `log(lambda)` (default) or its negative
 #'   if set to -1.
 #' @param se.bands Logical. If TRUE, shading is produced to show stand-error
@@ -312,14 +314,15 @@ plot.cv.penLM <- function(x, all_causes = FALSE, silent = FALSE, label = FALSE,
 #' Can plot positive and negative coefficients in two separate plots or the
 #' same. X-axes are the same if separate plots are used.
 #'
-#' @param coefs (Named) Vector of coefficients
+#' @param x (Named) Vector of coefficients
 #' @param single.plot Logical, defaults to FALSE. A single plot for both
 #'   positive and negative coefficients, or two separate plots.
 #' @param max_coefs Default is 10. The maximum number of coefficients to plot.
 #'   Can be set to NULL if plotting all coefficients is desired.
 #' @param ... Additional arguments to barplot.
 #' @export
-plot.coefs <- function(coefs, single.plot, max_coefs, ...) {
+plot.coefs <- function(x, single.plot, max_coefs, ...) {
+  coefs <- x
   pos_coefs <- sort(coefs[coefs>0], decreasing = T)
   neg_coefs <- (-sort(-(coefs[coefs<0]), decreasing = T))
 
@@ -372,7 +375,7 @@ plot.coefs <- function(coefs, single.plot, max_coefs, ...) {
 #' Can plot positive and negative coefficients in two separate plots or the
 #' same. X-axes are the same if separate plots are used.
 #'
-#' @param object a penalized Cox supermodel - created by calling `fitLM` on an
+#' @param x a penalized Cox supermodel - created by calling `fitLM` on an
 #'   object created from `penLM`/`cv.pen`
 #' @param single.plot Logical, defaults to FALSE. A single plot for both
 #'   positive and negative coefficients, or two separate plots.
@@ -381,19 +384,20 @@ plot.coefs <- function(coefs, single.plot, max_coefs, ...) {
 #' @param ... Additional arguments to barplot.
 #' @export
 plot.penLMcoxph <- function(
-    object,
+    x,
     single.plot = FALSE,
     max_coefs = 10,
     ...
 ) {
-  coefs <- object$model$coefficients
+  coefs <- x$model$coefficients
   plot.coefs(coefs, single.plot, max_coefs, ...)
 }
 
+
 #' Plot the coefficients of a penalized Cause-specific Cox supermodel
 #'
-#' @param object a penalized cause-specific Cox supermodel - created by calling
-#'   `fitLM` on an object created from `penLM`/`cv.pen`
+#' @param x a penalized cause-specific Cox supermodel - created by calling
+#'   [dynamic_lm()] on an object created from [penLM()]/[cv.penLM()].
 #' @param single.plot Logical, defaults to FALSE. A single plot for both
 #'   positive and negative coefficients, or two separate plots.
 #' @param max_coefs Default is 10. The maximum number of coefficients to plot.
@@ -403,40 +407,40 @@ plot.penLMcoxph <- function(
 #' @param ... Additional arguments to barplot.
 #' @export
 plot.penLMCSC <- function(
-    object,
+    x,
     single.plot = FALSE,
     max_coefs = 10,
     all_causes = FALSE,
     ...
 ) {
   if (!all_causes) {
-    coefs <- object$model$models[[1]]$coefficients
+    coefs <- x$model$models[[1]]$coefficients
     plot.coefs(coefs, single.plot, max_coefs, ...)
   }
   else {
-    lapply(1:length(object$model),
-           function(i) plot.coefs(object$model$models[[i]]$coefficients, single.plot, max_coefs, ...))
+    lapply(1:length(x$model),
+           function(i) plot.coefs(x$model$models[[i]]$coefficients, single.plot, max_coefs, ...))
   }
 }
 
-#' Plot an object output from `LMScore`: plot the landmark and time-dependent
+
+#' Plot an object output from [score()]: plot the landmark and time-dependent
 #' Brier and/or AUC of dynamic landmark supermodels.
 #'
-#' @param object An object of class "LMScore" output from `LMScore`
+#' @param x An object of class "LMScore" output from `score`
 #' @param metrics One or both of "auc" and "brier"
 #' @param xlab x label
 #' @param ylab y label
-#' @param x legend location
+#' @param loc legend location
 #' @param pch size of points
 #' @param ...
 #'
 #' @export
-#'
-plot.LMScore <- function(object, metrics, xlab, ylab, x, pch, ...){
-  if (missing(metrics)){
+plot.LMScore <- function(x, metrics, xlab, ylab, loc, pch, ...) {
+  if (missing(metrics)) {
     metrics <- c()
-    if (!is.null(object$auct)) metrics <- c("auc")
-    if (!is.null(object$briert)) metrics <- c(metrics, "brier")
+    if (!is.null(x$auct)) metrics <- c("auc")
+    if (!is.null(x$briert)) metrics <- c(metrics, "brier")
   }
 
   if (missing(xlab))
@@ -448,9 +452,10 @@ plot.LMScore <- function(object, metrics, xlab, ylab, x, pch, ...){
   if (missing(ylab))
     set_ylab <- T
   set_x <- F
-  if (missing(x))
+  if (missing(loc))
     set_x <- T
-  plot.metric <- function(df, metric, loc){
+
+  plot.metric <- function(df, metric, loc) {
     if (set_ylab) ylab <- metric
 
     num_models = length(unique(df$model))
@@ -460,7 +465,6 @@ plot.LMScore <- function(object, metrics, xlab, ylab, x, pch, ...){
     models = df$model
 
     plot(tLM, metric, col = models, pch = pch, xlab=xlab, ylab=ylab, ...)
-
     for (i in 1:num_models){
       idx = models == model_names[i]
       lines(tLM[idx], metric[idx], col = models[idx], pch = pch)
@@ -468,22 +472,22 @@ plot.LMScore <- function(object, metrics, xlab, ylab, x, pch, ...){
     legend(loc, legend = model_names, col = models, pch = pch, bty = "n")
   }
 
-  if ("auc" %in% metrics){
-    if (is.null(object$auct)){
+  if ("auc" %in% metrics) {
+    if (is.null(x$auct)) {
       warning("AUC was not set as a metric when calling LMScore. No results to plot. Either call LMScore again with auc as a metric or do not include it as a metric here.")
     }
     else {
-      if(set_x) x <- "topright"
-      plot.metric(object$auct, "AUC", x)
+      if(set_x) loc <- "topright"
+      plot.metric(x$auct, "AUC", loc)
     }
   }
-  if ("brier" %in% metrics){
-    if (is.null(object$briert)){
+  if ("brier" %in% metrics) {
+    if (is.null(x$briert)) {
       warning("Brier was not set as a metric when calling LMScore. No results to plot. Either call LMScore again with auc as a metric or do not include it as a metric here.")
     }
     else {
-      if(set_x) x <- "bottomright"
-      plot.metric(object$briert, "Brier", x)
+      if(set_x) loc <- "bottomright"
+      plot.metric(x$briert, "Brier", loc)
     }
   }
 }

@@ -2,7 +2,8 @@
 % Please edit documentation in R/print.R
 \name{print.penLM}
 \alias{print.penLM}
-\title{Print the output from calling \code{LMpen}, similar to the output of printing a \code{glmnet} object}
+\title{Print the output from calling \code{LMpen}, similar to the output of printing a
+\code{glmnet} object}
 \usage{
 \method{print}{penLM}(x, all_causes = FALSE, silent = FALSE, digits = 3, ...)
 }
@@ -34,5 +35,6 @@ reasonable name only for lasso fits). \verb{\%Dev} is the percent deviance
 explained (relative to the null deviance)."
 }
 \references{
-Friedman, J., Hastie, T. and Tibshirani, R. (2008). Regularization Paths for Generalized Linear Models via Coordinate Descent
+Friedman, J., Hastie, T. and Tibshirani, R. (2008).
+Regularization Paths for Generalized Linear Models via Coordinate Descent
 }
