@@ -1,4 +1,4 @@
-#' Plots the dynamic log-hazard ratio of a cox or CSC supermodel
+s#' Plots the dynamic log-hazard ratio of a cox or CSC supermodel
 #'
 #' @param x An object of class "LMcoxph" or "LMCSC", i.e. a fitted
 #'   supermodel
@@ -33,7 +33,7 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
                            xlab = "LM time", ylab, ylim, main, ...) {
   fm = x$model
 
-  if(conf_int) {
+  if (conf_int) {
     if (!requireNamespace("msm", quietly = TRUE))
       stop("Package \"msm\" must be installed to use this function.",
            call. = FALSE)
@@ -80,7 +80,7 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
     bet <- fm$models[[cause]]$coefficients
     func_covars <- x$func_covars
 
-    if(conf_int) sig <- stats::vcov(fm$models[[cause]])
+    if (conf_int) sig <- stats::vcov(fm$models[[cause]])
   }
   if (missing(ylim)) set_ylim <- TRUE
 
@@ -100,12 +100,11 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
         }
       })) # bet0 + bet1*x + bet2*x^2 + ...
     })
-    if (!logHR) {
-      HR <- exp(HR)
-    }
 
+    if (!logHR) HR <- exp(HR)
     if (set_ylim) ylim <- c(min(HR), max(HR))
-    if(conf_int) {
+
+    if (conf_int) {
       if (logHR) {
         se <- sapply(t, find_se_log, bet_var, sig[idx, idx], func_covars)
       } else {
@@ -263,8 +262,8 @@ plot.penLM <- function(x, xvar = "norm", all_causes = FALSE, silent = FALSE,
     }
   } else {
     plot(x[[1]], xvar, label, ...)
-    if (length(x) > 1 & !silent)
-    message("\n (To print plot paths for remaining cause-specific models, call plot with argument all_causes = TRUE)\n")
+    if (length(x) > 1 && !silent)
+      message("\n (To print plot paths for remaining cause-specific models, call plot with argument all_causes = TRUE)\n")
   }
 }
 
@@ -323,50 +322,47 @@ plot.cv.penLM <- function(x, all_causes = FALSE, silent = FALSE, label = FALSE,
 #' @export
 plot.coefs <- function(x, single.plot, max_coefs, ...) {
   coefs <- x
-  pos_coefs <- sort(coefs[coefs>0], decreasing = T)
-  neg_coefs <- (-sort(-(coefs[coefs<0]), decreasing = T))
+  pos_coefs <- sort(coefs[coefs > 0], decreasing = TRUE)
+  neg_coefs <- (-sort(-(coefs[coefs < 0]), decreasing = TRUE))
 
-  if (!single.plot){
-    xmax <- 1.1 * max(c(pos_coefs, -neg_coefs), na.rm=T)
+  if (!single.plot) {
+    xmax <- 1.1 * max(c(pos_coefs, -neg_coefs), na.rm = TRUE)
     ymax <- max(
       min(length(pos_coefs), max_coefs),
       min(length(neg_coefs), max_coefs)
     )
-    if (length(neg_coefs)>0){
-      neg_coefs <- neg_coefs[1:min(length(neg_coefs),max_coefs)]
+    if (length(neg_coefs) > 0) {
+      neg_coefs <- neg_coefs[1:min(length(neg_coefs), max_coefs)]
       barplot(neg_coefs,
-              col="blue",
+              col = "blue",
               names.arg = names(neg_coefs),
-              horiz = TRUE, las=1, xpd = F,
-              xlim=c(-xmax, 0),
-              ylim=c(0,ymax),
+              horiz = TRUE, las = 1, xpd = FALSE,
+              xlim = c(-xmax, 0),
+              ylim = c(0, ymax),
               width = 0.8,
               xlab = "Value")
     }
-    if (length(pos_coefs)>0) {
-      pos_coefs <- pos_coefs[1:min(length(pos_coefs),max_coefs)]
+    if (length(pos_coefs) > 0) {
+      pos_coefs <- pos_coefs[1:min(length(pos_coefs), max_coefs)]
       barplot(pos_coefs,
               col = "blue",
               names.arg = names(pos_coefs),
-              horiz = TRUE, las=1, xpd = F,
-              xlim=c(0, xmax),
-              ylim=c(0,ymax),
+              horiz = TRUE, las = 1, xpd = FALSE,
+              xlim = c(0, xmax),
+              ylim = c(0, ymax),
               width = 0.8,
               xlab = "Value")
     }
-  }
 
-  else {
-    if (length(pos_coefs)>0)
-      pos_coefs <- pos_coefs[1:min(length(pos_coefs),max_coefs)]
-    if (length(neg_coefs)>0)
-      neg_coefs <- neg_coefs[1:min(length(neg_coefs),max_coefs)]
+  } else {
+    if (length(pos_coefs) > 0)
+      pos_coefs <- pos_coefs[1:min(length(pos_coefs), max_coefs)]
+    if (length(neg_coefs) > 0)
+      neg_coefs <- neg_coefs[1:min(length(neg_coefs), max_coefs)]
 
-    barplot(c(pos_coefs, neg_coefs),
-            col="blue",
-            names.arg = c(names(pos_coefs),names(neg_coefs)),
-            horiz = TRUE, las=1, xpd = F,
-            xlab = "Value", ...)
+    barplot(c(pos_coefs, neg_coefs), col = "blue",
+            names.arg = c(names(pos_coefs), names(neg_coefs)),
+            horiz = TRUE, las = 1, xpd = FALSE, xlab = "Value", ...)
   }
 }
 
@@ -383,12 +379,7 @@ plot.coefs <- function(x, single.plot, max_coefs, ...) {
 #'   Can be set to NULL if plotting all coefficients is desired.
 #' @param ... Additional arguments to barplot.
 #' @export
-plot.penLMcoxph <- function(
-    x,
-    single.plot = FALSE,
-    max_coefs = 10,
-    ...
-) {
+plot.penLMcoxph <- function(x, single.plot = FALSE, max_coefs = 10, ...) {
   coefs <- x$model$coefficients
   plot.coefs(coefs, single.plot, max_coefs, ...)
 }
@@ -406,20 +397,17 @@ plot.penLMcoxph <- function(
 #'   cause-specific models.
 #' @param ... Additional arguments to barplot.
 #' @export
-plot.penLMCSC <- function(
-    x,
-    single.plot = FALSE,
-    max_coefs = 10,
-    all_causes = FALSE,
-    ...
-) {
+plot.penLMCSC <- function(x, single.plot = FALSE, max_coefs = 10,
+                          all_causes = FALSE, ...) {
   if (!all_causes) {
     coefs <- x$model$models[[1]]$coefficients
     plot.coefs(coefs, single.plot, max_coefs, ...)
-  }
-  else {
+  } else {
     lapply(1:length(x$model),
-           function(i) plot.coefs(x$model$models[[i]]$coefficients, single.plot, max_coefs, ...))
+           function(i) {
+             plot.coefs(x$model$models[[i]]$coefficients,
+                        single.plot, max_coefs, ...)
+           })
   }
 }
 
@@ -448,12 +436,12 @@ plot.LMScore <- function(x, metrics, xlab, ylab, loc, pch, ...) {
   if (missing(pch))
     pch <- 19
 
-  set_ylab <- F
+  set_ylab <- FALSE
   if (missing(ylab))
-    set_ylab <- T
-  set_x <- F
+    set_ylab <- TRUE
+  set_x <- FALSE
   if (missing(loc))
-    set_x <- T
+    set_x <- TRUE
 
   plot.metric <- function(df, metric, loc) {
     if (set_ylab) ylab <- metric
@@ -475,18 +463,16 @@ plot.LMScore <- function(x, metrics, xlab, ylab, loc, pch, ...) {
   if ("auc" %in% metrics) {
     if (is.null(x$auct)) {
       warning("AUC was not set as a metric when calling LMScore. No results to plot. Either call LMScore again with auc as a metric or do not include it as a metric here.")
-    }
-    else {
-      if(set_x) loc <- "topright"
+    } else {
+      if (set_x) loc <- "topright"
       plot.metric(x$auct, "AUC", loc)
     }
   }
   if ("brier" %in% metrics) {
     if (is.null(x$briert)) {
       warning("Brier was not set as a metric when calling LMScore. No results to plot. Either call LMScore again with auc as a metric or do not include it as a metric here.")
-    }
-    else {
-      if(set_x) loc <- "bottomright"
+    } else {
+      if (set_x) loc <- "bottomright"
       plot.metric(x$briert, "Brier", loc)
     }
   }

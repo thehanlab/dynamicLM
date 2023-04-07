@@ -94,7 +94,7 @@ print.LMdataframe <- function(x, verbose = FALSE, ...) {
     }
     if ("func_lms" %in% names.LMdata) {
       cat("$func_lms\n")
-      names.fc = names(x$func_lms)
+      names.fc <- names(x$func_lms)
       for (i in 1:length(x$func_lms)) {
         if (is.null(names.fc[i])) label <- paste0("[[", i, "]]")
         else paste0("$", names.fc[i])
@@ -135,7 +135,7 @@ print.LMdataframe <- function(x, verbose = FALSE, ...) {
 #'
 print.LMScore <- function(x, digits = 3, ...) {
 
-  if (nrow(x$auct)>0) {
+  if (nrow(x$auct) > 0) {
     cat(paste0("\nMetric: Time-dependent AUC (window ", x$w, ")\n"))
     cat("\nResults by model:\n")
 
@@ -158,14 +158,14 @@ print.LMScore <- function(x, digits = 3, ...) {
     message("NOTE: The higher AUC the better.")
     message(paste("NOTE: Predictions are made at time tLM for risk windows of length", x$w))
   }
-  if (nrow(x$briert)>0) {
+  if (nrow(x$briert) > 0) {
     cat(paste0("\nMetric: Time-dependent Brier Score (window ", x$w, ")\n"))
     cat("\nResults by model:\n")
 
     Brier = se = times = se.conservative = lower = upper = NULL
     fmt <- paste0("%1.", digits[[1]], "f")
     X <- data.table::copy(x$briert)
-    X[, Brier:=sprintf(fmt = fmt, 100 * Brier)]
+    X[, Brier := sprintf(fmt = fmt, 100 * Brier)]
     if (match("se", colnames(X), nomatch = 0)) X[, se := NULL]
     if (match("times", colnames(X), nomatch = 0)) X[, times := NULL]
     if (match("se.conservative", colnames(X), nomatch = 0))
@@ -217,10 +217,29 @@ print.LMCSC <- function(x, verbose = FALSE, cause, ...) {
     print(cox_model)
     cat("\n\n")
   }
+  if(verbose) {
+    cat("$func_covars\n")
+    names.fc <- names(x$func_covars)
+    for (i in 1:length(x$func_covars)){
+      if (is.null(names.fc[i])) label <- paste0("[[", i, "]]")
+      else paste0("$", names.fc[i])
+      cat(paste0("$func_covars$", label, "\n"))
+      print(x$func_covars[[i]])
+      cat("\n")
+    }
+    cat("$func_LMs\n")
+    names.fc = names(x$func_LMs)
+    for (i in 1:length(x$func_LMs)){
+      if (is.null(names.fc[i])) label <- paste0("[[", i, "]]")
+      else paste0("$", names.fc[i])
+      cat(paste0("$func_LMs$", label, "\n"))
+      print(x$func_LMs[[i]])
+      cat("\n")
+    }
 
   if (verbose) {
     cat("$func_covars\n")
-    names.fc = names(x$func_covars)
+    names.fc <- names(x$func_covars)
     for (i in 1:length(x$func_covars)) {
       if (is.null(names.fc[i])) label <- paste0("[[", i, "]]")
       else paste0("$", names.fc[i])
@@ -229,7 +248,7 @@ print.LMCSC <- function(x, verbose = FALSE, cause, ...) {
       cat("\n")
     }
     cat("$func_lms\n")
-    names.fc = names(x$func_lms)
+    names.fc <- names(x$func_lms)
     for (i in 1:length(x$func_lms)) {
       if (is.null(names.fc[i])) label <- paste0("[[", i, "]]")
       else paste0("$", names.fc[i])
@@ -274,9 +293,8 @@ print.LMcoxph <- function(x, verbose = FALSE, ...) {
 
   if (verbose) {
     cat("\n\n")
-
     cat("$func_covars\n")
-    names.fc = names(x$func_covars)
+    names.fc <- names(x$func_covars)
     for (i in 1:length(x$func_covars)){
       if (is.null(names.fc[i])) label <- paste0("[[", i, "]]")
       else paste0("$", names.fc[i])
@@ -285,10 +303,10 @@ print.LMcoxph <- function(x, verbose = FALSE, ...) {
       cat("\n")
     }
     cat("$func_lms\n")
-    names.fc = names(x$func_lms)
+    names.fc <- names(x$func_lms)
     for (i in 1:length(x$func_lms)){
       if (is.null(names.fc[i])) label <- paste0("[[", i, "]]")
-      else paste0("$",names.fc[i])
+      else paste0("$", names.fc[i])
       cat(paste0("$func_lms$", label, "\n"))
       print(x$func_lms[[i]])
       cat("\n")
@@ -334,7 +352,7 @@ print.LMcoxph <- function(x, verbose = FALSE, ...) {
 #' @references Friedman, J., Hastie, T. and Tibshirani, R. (2008).
 #'  Regularization Paths for Generalized Linear Models via Coordinate Descent
 #' @export
-print.penLM <- function (x, all_causes = FALSE, silent = FALSE,
+print.penLM <- function(x, all_causes = FALSE, silent = FALSE,
                          digits = 3, ...) {
     num_causes <- length(x)
 
@@ -349,7 +367,7 @@ print.penLM <- function (x, all_causes = FALSE, silent = FALSE,
       cat("\n\n")
       if (num_causes > 1) cat(paste0("First Cause:\n"))
       print(x[[1]])
-      if (num_causes > 1 & !silent)
+      if (num_causes > 1 && !silent)
         message("\n (To print paths for remaining cause-specific models, call print with argument all_causes = TRUE)\n")
     }
 }
@@ -381,7 +399,7 @@ print.cv.penLM <- function(x, all_causes = FALSE, silent = FALSE,
   cat(paste0("\nCross-validated penalized landmark Cox super model fit for dynamic prediction:"))
   if (all_causes){
     for (i in 1:num_causes){
-      cat(paste0("\n\nCause ",i,":\n"))
+      cat(paste0("\n\nCause ", i, ":\n"))
       print(x[[i]])
     }
 
@@ -410,7 +428,7 @@ print.penLMCSC <- function(x, verbose = FALSE, ...) {
              x$w, "\n"))
   cat("(Note that zero-valued coefficients are not printed)\n\n")
 
-  if(verbose) cat("$model\n")
+  if (verbose) cat("$model\n")
   num_causes <- length(x$model$causes)
   for (i in 1:num_causes){
     cat(paste0("----------> Cause: ", i, "\n"))
@@ -468,7 +486,7 @@ print.penLMCSC <- function(x, verbose = FALSE, ...) {
 #' @return Printed output.
 #' @export
 #'
-print.penLMcoxph <- function(x, verbose=FALSE, ...) {
+print.penLMcoxph <- function(x, verbose = FALSE, ...) {
   cat(paste0("\nPenalized landmark Cox super model fit for dynamic prediction of window size ",
              x$w, " (lambda = ", x$lambda, ")", ":\n\n"))
   if (verbose) cat("$model\n")
@@ -480,7 +498,7 @@ print.penLMcoxph <- function(x, verbose=FALSE, ...) {
   print(non_zero_coefs)
   cat("\n\n")
 
-  if(verbose) {
+  if (verbose) {
     cat("$func_covars\n")
     names.fc = names(x$func_covars)
     for (i in 1:length(x$func_covars)){
