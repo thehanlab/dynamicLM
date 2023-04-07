@@ -7,6 +7,9 @@ regularization.}
 \usage{
 dynamic_lm(...)
 }
+\arguments{
+\item{...}{Arguments to pass to dynamic_lm}
+}
 \value{
 An object of class "LMcoxph", "LMCSC", "penLMcoxph" or "penLMCSC"
 with components:

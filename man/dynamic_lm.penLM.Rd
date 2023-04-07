@@ -13,6 +13,9 @@ calling \code{\link[=penLM]{penLM()}} using arguments \code{lmdata} and \code{xc
 \item{lambda}{Value of the penalty parameter \code{lambda} at which to fit a
 model. For cause-specific Cox super models, this must be a list or vector
 of values: one for each cause.}
+
+\item{...}{Additional arguments to pass to \code{\link[survival:coxph]{survival::coxph()}} or
+\code{\link[riskRegression:CSC]{riskRegression::CSC()}}}
 }
 \value{
 An object of class "penLMcoxph" or "penLMCSC" with components:

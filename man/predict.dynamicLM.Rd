@@ -52,6 +52,8 @@ Default is FALSE. If set to TRUE, predictions may be unreliable.}
 
 \item{complete}{Only make predictions for data entries with non-NA entries
 (i.e., non-NA predictions). Default is TRUE.}
+
+\item{...}{Unimplemented for now.}
 }
 \value{
 An object of class "LMpred" with components:

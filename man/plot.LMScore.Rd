@@ -5,33 +5,22 @@
 \title{Plot an object output from \code{\link[=score]{score()}}: plot the landmark and time-dependent
 Brier and/or AUC of dynamic landmark supermodels.}
 \usage{
-\method{plot}{LMScore}(x, metrics, xlab, ylab, loc, pch, ...)
-
-\method{plot}{LMScore}(x, metrics, xlab, ylab, loc, pch, ...)
+\method{plot}{LMScore}(x, metrics, se = TRUE, loc, xlab, ylab, pch, ylim, xlim, ...)
 }
 \arguments{
-\item{x}{An object of class "LMScore" output from \code{score}}
+\item{x}{An object of class "LMScore" output from \code{\link[=score]{score()}}}
 
 \item{metrics}{One or both of "auc" and "brier"}
 
-\item{xlab, ylab, pch, ylim, xlim}{graphical parameters}
-
-\item{ylab}{y label}
-
-\item{loc}{legend location}
-
-\item{pch}{size of points}
-
-\item{...}{}
-
 \item{se}{Boolean, default TRUE. To include point wise confidence intervals.}
 
-\item{xlab}{x label}
+\item{loc}{Location for legend.}
+
+\item{xlab, ylab, pch, ylim, xlim}{graphical parameters}
+
+\item{...}{Additional arguments to \code{plot()}}
 }
 \description{
-Plot an object output from \code{\link[=score]{score()}}: plot the landmark and time-dependent
-Brier and/or AUC of dynamic landmark supermodels.
-
 Plot an object output from \code{\link[=score]{score()}}: plot the landmark and time-dependent
 Brier and/or AUC of dynamic landmark supermodels.
 }

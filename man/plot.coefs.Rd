@@ -4,10 +4,10 @@
 \alias{plot.coefs}
 \title{Generic function to plot coefficients}
 \usage{
-\method{plot}{coefs}(coefs, single.plot, max_coefs, ...)
+\method{plot}{coefs}(x, single.plot, max_coefs, ...)
 }
 \arguments{
-\item{coefs}{(Named) Vector of coefficients}
+\item{x}{(Named) Vector of coefficients}
 
 \item{single.plot}{Logical, defaults to FALSE. A single plot for both
 positive and negative coefficients, or two separate plots.}

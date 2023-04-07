@@ -28,7 +28,7 @@
 #' @param silence Silence the warning message when extend is set to TRUE.
 #' @param complete Only make predictions for data entries with non-NA entries
 #'   (i.e., non-NA predictions). Default is TRUE.
-#' @param ...
+#' @param ... Unimplemented for now.
 #'
 #' @return An object of class "LMpred" with components:
 #'   - preds: a dataframe with columns LM and risk, each entry corresponds to
