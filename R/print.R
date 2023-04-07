@@ -217,25 +217,6 @@ print.LMCSC <- function(x, verbose = FALSE, cause, ...) {
     print(cox_model)
     cat("\n\n")
   }
-  if(verbose) {
-    cat("$func_covars\n")
-    names.fc <- names(x$func_covars)
-    for (i in 1:length(x$func_covars)){
-      if (is.null(names.fc[i])) label <- paste0("[[", i, "]]")
-      else paste0("$", names.fc[i])
-      cat(paste0("$func_covars$", label, "\n"))
-      print(x$func_covars[[i]])
-      cat("\n")
-    }
-    cat("$func_LMs\n")
-    names.fc = names(x$func_LMs)
-    for (i in 1:length(x$func_LMs)){
-      if (is.null(names.fc[i])) label <- paste0("[[", i, "]]")
-      else paste0("$", names.fc[i])
-      cat(paste0("$func_LMs$", label, "\n"))
-      print(x$func_LMs[[i]])
-      cat("\n")
-    }
 
   if (verbose) {
     cat("$func_covars\n")

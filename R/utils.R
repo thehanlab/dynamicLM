@@ -84,11 +84,8 @@ getLHS <- function(formula){
 # Cox model
 # TODO: licensing / referencing
 # ----------------------------------------------------------
-CSC.fixed.coefs <- function(formula,
-                            data,
-                            cause,
-                            cause.specific.coefs,
-                            ...){
+CSC.fixed.coefs <- function(formula, data, cause,
+                            cause.specific.coefs, ...){
   fitter <- "coxph"
   surv.type <- "hazard"
 
@@ -96,7 +93,7 @@ CSC.fixed.coefs <- function(formula,
   if (inherits(x=formula,what="formula")) formula <- list(formula)
   call <- match.call()
   # get outcome information from formula
-  Rform <- update(formula[[1]],".~1")
+  Rform <- stats::update(formula[[1]],".~1")
   response <- eval(Rform[[2]],envir=data)
   if (any(is.na(response)))
     stop("Event history response may not contain missing values")
@@ -123,7 +120,7 @@ CSC.fixed.coefs <- function(formula,
   # {{{ causes
   causes <- prodlim::getStates(response)
   NC <- length(causes)
-  if (length(cause.specific.coefs) != NC) stop("There should be one entry for each cause specific argument but there are ", NC, " causes and ",length(cause.specific.args)," elements in cause.specific.args")
+  if (length(cause.specific.coefs) != NC) stop("There should be one entry for each cause specific argument but there are ", NC, " causes and ",length(cause.specific.coefs)," elements in cause.specific.coefs")
 
   if (length(formula)!=NC[1] && length(formula)>1) stop("Wrong number of formulae. Should be one for each cause ",NC,".")
   if (length(formula)==1) {
@@ -174,10 +171,10 @@ CSC.fixed.coefs <- function(formula,
     ## check whether right hand side of formula includes ~.
     allvars <- all.vars(formula[[x]])
     if (any(grepl("^\\.$",allvars))){
-      formulaXX <- as.formula(paste0(survresponse,"~."))
+      formulaXX <- stats::as.formula(paste0(survresponse,"~."))
     }
     else {
-      formulaXX <- update(formula[[x]],paste0(survresponse,"~."))
+      formulaXX <- stats::update(formula[[x]],paste0(survresponse,"~."))
     }
 
     args <- list(formulaXX, data = workData)

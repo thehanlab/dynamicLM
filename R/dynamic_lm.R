@@ -119,7 +119,7 @@ dynamic_lm.LMdataframe <-  function(formula,
   lm_covs <- lmdata$lm_covs
   all_covs <- lmdata$all_covs
 
-  out <- dynamic_lm_helper(formula, type, data, method, w, end_time,
+  out <- dynamic_lm_helper(formula, type, data, lmdata, method, x, w, end_time,
                            func_covars, func_lms, lm_covs, all_covs,
                            outcome, lm_col, original.landmarks, args, ...)
 
@@ -223,7 +223,7 @@ dynamic_lm.data.frame <- function(formula,
   original.landmarks <- data[[lm_col]]
   end_time <- max(original.landmarks)
 
-  out <- dynamic_lm_helper(formula, type, data, method, w, end_time,
+  out <- dynamic_lm_helper(formula, type, data, lmdata, method, x, w, end_time,
                            func_covars, func_lms, lm_covs, all_covs,
                            outcome, lm_col, original.landmarks, args, ...)
   return(out)
@@ -279,7 +279,7 @@ dynamic_lm.penLM <- function(object, lambda, ...) {
   all_covs <- lmdata$all_covs
 
   if (survival.type == "survival") {
-    if (class(lambda) == "list") lambda <- lambda[[1]]
+    if (inherits(class(lambda), "list")) lambda <- lambda[[1]]
     glmnet_coefs <- as.vector(coef(object[[1]], s = lambda))
 
     entry = lmdata$lm_col
@@ -287,7 +287,7 @@ dynamic_lm.penLM <- function(object, lambda, ...) {
     status = lmdata$outcome$status
     LHS_surv <- paste0("Surv(", entry, ",", exit, ",", status, ")")
     formula <- paste0(LHS_surv, "~", paste0(xcols, collapse="+"))
-    superfm <- survival::coxph(as.formula(formula), data, method = "breslow",
+    superfm <- survival::coxph(stats::as.formula(formula), data, method = "breslow",
                                iter.max = 0, init = glmnet_coefs, ...)
 
     LHS <- paste0("Hist(", exit, ",", status, ",", entry, ") ~ 1")
@@ -313,7 +313,8 @@ dynamic_lm.penLM <- function(object, lambda, ...) {
     LHS <- paste0("Hist(", exit, ",", status, ",", entry, ")")
     formula <- paste0(LHS, "~", paste0(xcols, collapse="+"))
 
-    superfm <- CSC.fixed.coefs(as.formula(formula), data, method = "breslow",
+    superfm <- CSC.fixed.coefs(stats::as.formula(formula), data,
+                               method = "breslow",
                                cause.specific.coefs = glmnet_coefs, ...)
 
     LHS <- paste0(LHS, " ~ 1")
@@ -387,7 +388,7 @@ dynamic_lm.penLM <- function(object, lambda, ...) {
 #' @import survival glmnet
 #' @export
 dynamic_lm.cv.penLM <- function(object, lambda = "lambda.min", ...) {
-  if (class(lambda) == "character") {
+  if (inherits(class(lambda), "character")) {
     if (lambda == "lambda.1se")
       lambda <- lapply(object, function(o) o$lambda.1se)
     else if (lambda == "lambda.min")

@@ -40,7 +40,7 @@ penLM <- function(x, y, lmdata, xcols, alpha = 1, ...) {
   checked_input <- eval(checked_input, parent.frame())
 
   # can call penLM again depending on inputs
-  if (class(checked_input) == "penLM") return(checked_input)
+  if (inherits(class(checked_input), "penLM")) return(checked_input)
 
   # if not, use checked inputs
   x = checked_input$x

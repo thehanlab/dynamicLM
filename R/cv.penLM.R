@@ -56,7 +56,7 @@ cv.penLM <- function(x, y,
   checked_input[[1L]] <- quote(check_penLM_inputs)
   checked_input <- eval(checked_input, parent.frame())
 
-  if (class(checked_input) == "cv.penLM") return(checked_input)
+  if (inherits(class(checked_input), "cv.penLM")) return(checked_input)
 
   x = checked_input$x
   y = checked_input$y

@@ -1,4 +1,4 @@
-s#' Plots the dynamic log-hazard ratio of a cox or CSC supermodel
+#' Plots the dynamic log-hazard ratio of a cox or CSC supermodel
 #'
 #' @param x An object of class "LMcoxph" or "LMCSC", i.e. a fitted
 #'   supermodel
@@ -55,14 +55,20 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
     end_time <- x$end_time
 
   } else if (end_time > x$end_time && !extend) {
-    if (!silence) message(paste0("NOTE: arg end_time (=",end_time,") is later than the last LM used in model fitting (=",x$end_time,")",
-                                 "\nand has been set back to the last LM used in model fitting. (=",x$end_time,")",
-                                 "\nIf you wish to still plot until ",end_time, ", set arg extend=T but note that results after time ",x$end_time," may be unreliable."))
+    if (!silence)
+      message(paste0(
+        "NOTE: arg end_time (=", end_time, ") is later than the last LM used in model fitting (=", x$end_time, ")",
+        "\nand has been set back to the last LM used in model fitting. (=", x$end_time, ")",
+        "\nIf you wish to still plot until ", end_time, ", set arg extend=T but note that results after time ", x$end_time, " may be unreliable."
+      ))
     end_time <- x$end_time
 
   } else if (end_time > x$end_time && extend) {
-    if (!silence) warning(paste0("NOTE: arg end_time (=",end_time,") is later than the last LM used in model fitting (=",x$end_time,")",
-                                 "\nResults after time ",x$end_time," may be unreliable."))
+    if (!silence)
+      warning(paste0(
+        "NOTE: arg end_time (=",end_time,") is later than the last LM used in model fitting (=",x$end_time,")",
+        "\nResults after time ", x$end_time, " may be unreliable."
+      ))
   }
 
   if (x$type == "coxph") {
@@ -93,8 +99,9 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
       sum(sapply(1:length(bet_var), function(j){
         var = bet_var[j]
         name = names(bet_var)[j]
-        if (name == covars[i]) { return(var) }
-        else {
+        if (name == covars[i]) {
+          return(var)
+        } else {
           idx <- as.numeric(sub(".*\\D+", "\\1", name))
           return(func_covars[[idx]](x) * var)
         }
@@ -188,13 +195,15 @@ plot.LMScore <- function(x, metrics, se = TRUE, loc, xlab, ylab, pch, ylim,
 
     for (i in 1:num_models){
       idx = models == model_names[i]
-      lines(tLM[idx], metric[idx], col = models[idx], pch = pch)
+      graphics::lines(tLM[idx], metric[idx], col = models[idx], pch = pch)
       if (se) {
-        lines(tLM[idx], upper[idx], col = models[idx], pch = pch, lty = 2)
-        lines(tLM[idx], lower[idx], col = models[idx], pch = pch, lty = 2)
+        graphics::lines(tLM[idx], upper[idx], col = models[idx],
+                        pch = pch, lty = 2)
+        graphics::lines(tLM[idx], lower[idx], col = models[idx],
+                        pch = pch, lty = 2)
       }
     }
-    legend(loc, legend = model_names, col = models, pch = pch, bty = "n")
+    graphics::legend(loc, legend = model_names, col = models, pch = pch, bty = "n")
   }
 
   if ("auc" %in% metrics) {
@@ -333,25 +342,25 @@ plot.coefs <- function(x, single.plot, max_coefs, ...) {
     )
     if (length(neg_coefs) > 0) {
       neg_coefs <- neg_coefs[1:min(length(neg_coefs), max_coefs)]
-      barplot(neg_coefs,
-              col = "blue",
-              names.arg = names(neg_coefs),
-              horiz = TRUE, las = 1, xpd = FALSE,
-              xlim = c(-xmax, 0),
-              ylim = c(0, ymax),
-              width = 0.8,
-              xlab = "Value")
+      graphics::barplot(neg_coefs,
+                        col = "blue",
+                        names.arg = names(neg_coefs),
+                        horiz = TRUE, las = 1, xpd = FALSE,
+                        xlim = c(-xmax, 0),
+                        ylim = c(0, ymax),
+                        width = 0.8,
+                        xlab = "Value")
     }
     if (length(pos_coefs) > 0) {
       pos_coefs <- pos_coefs[1:min(length(pos_coefs), max_coefs)]
-      barplot(pos_coefs,
-              col = "blue",
-              names.arg = names(pos_coefs),
-              horiz = TRUE, las = 1, xpd = FALSE,
-              xlim = c(0, xmax),
-              ylim = c(0, ymax),
-              width = 0.8,
-              xlab = "Value")
+      graphics::barplot(pos_coefs,
+                        col = "blue",
+                        names.arg = names(pos_coefs),
+                        horiz = TRUE, las = 1, xpd = FALSE,
+                        xlim = c(0, xmax),
+                        ylim = c(0, ymax),
+                        width = 0.8,
+                        xlab = "Value")
     }
 
   } else {
@@ -360,9 +369,9 @@ plot.coefs <- function(x, single.plot, max_coefs, ...) {
     if (length(neg_coefs) > 0)
       neg_coefs <- neg_coefs[1:min(length(neg_coefs), max_coefs)]
 
-    barplot(c(pos_coefs, neg_coefs), col = "blue",
-            names.arg = c(names(pos_coefs), names(neg_coefs)),
-            horiz = TRUE, las = 1, xpd = FALSE, xlab = "Value", ...)
+    graphics::barplot(c(pos_coefs, neg_coefs), col = "blue",
+                      names.arg = c(names(pos_coefs), names(neg_coefs)),
+                      horiz = TRUE, las = 1, xpd = FALSE, xlab = "Value", ...)
   }
 }
 
@@ -404,76 +413,7 @@ plot.penLMCSC <- function(x, single.plot = FALSE, max_coefs = 10,
     plot.coefs(coefs, single.plot, max_coefs, ...)
   } else {
     lapply(1:length(x$model),
-           function(i) {
-             plot.coefs(x$model$models[[i]]$coefficients,
-                        single.plot, max_coefs, ...)
-           })
-  }
-}
-
-
-#' Plot an object output from [score()]: plot the landmark and time-dependent
-#' Brier and/or AUC of dynamic landmark supermodels.
-#'
-#' @param x An object of class "LMScore" output from `score`
-#' @param metrics One or both of "auc" and "brier"
-#' @param xlab x label
-#' @param ylab y label
-#' @param loc legend location
-#' @param pch size of points
-#' @param ...
-#'
-#' @export
-plot.LMScore <- function(x, metrics, xlab, ylab, loc, pch, ...) {
-  if (missing(metrics)) {
-    metrics <- c()
-    if (!is.null(x$auct)) metrics <- c("auc")
-    if (!is.null(x$briert)) metrics <- c(metrics, "brier")
-  }
-
-  if (missing(xlab))
-    xlab <- "Landmark Time (tLM)"
-  if (missing(pch))
-    pch <- 19
-
-  set_ylab <- FALSE
-  if (missing(ylab))
-    set_ylab <- TRUE
-  set_x <- FALSE
-  if (missing(loc))
-    set_x <- TRUE
-
-  plot.metric <- function(df, metric, loc) {
-    if (set_ylab) ylab <- metric
-
-    num_models = length(unique(df$model))
-    model_names = df$model[1:num_models]
-    tLM = df$tLM
-    metric = df[[metric]]
-    models = df$model
-
-    plot(tLM, metric, col = models, pch = pch, xlab=xlab, ylab=ylab, ...)
-    for (i in 1:num_models){
-      idx = models == model_names[i]
-      lines(tLM[idx], metric[idx], col = models[idx], pch = pch)
-    }
-    legend(loc, legend = model_names, col = models, pch = pch, bty = "n")
-  }
-
-  if ("auc" %in% metrics) {
-    if (is.null(x$auct)) {
-      warning("AUC was not set as a metric when calling LMScore. No results to plot. Either call LMScore again with auc as a metric or do not include it as a metric here.")
-    } else {
-      if (set_x) loc <- "topright"
-      plot.metric(x$auct, "AUC", loc)
-    }
-  }
-  if ("brier" %in% metrics) {
-    if (is.null(x$briert)) {
-      warning("Brier was not set as a metric when calling LMScore. No results to plot. Either call LMScore again with auc as a metric or do not include it as a metric here.")
-    } else {
-      if (set_x) loc <- "bottomright"
-      plot.metric(x$briert, "Brier", loc)
-    }
+           function(i) plot.coefs(x$model$models[[i]]$coefficients,
+                                  single.plot, max_coefs, ...))
   }
 }

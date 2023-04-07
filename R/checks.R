@@ -305,15 +305,16 @@ check_penLM_inputs <- function(x, y, lmdata, xcols, id_col = NULL, alpha = 1,
   if (!use_lmdata) {
     if (missing(x))
       stop("argument x is missing with no default, or provide lmdata")
-    if (class(x)[1] == "LMdataframe") {
+    if (inherits(class(x)[1], "LMdataframe")) {
       if (!missing(xcols)) {
         return(parent_func(lmdata = x, xcol = xcols, id_col = id_col,
                            alpha = alpha, ...))
       } else if (!missing(y)) {
-        if (class(y) == "character")
+        if (inherits(class(y), "character"))
           return(parent_func(lmdata = x, xcols = y, id_col = id_col,
                              alpha = alpha, ...))
-        else stop("Inputs are mismatched. Arguments (x, y) should be of type (matrix, Surv object) or arguments (lmdata, xcols) should be (LMdataframe, vector of column names)")
+        else
+          stop("Inputs are mismatched. Arguments (x, y) should be of type (matrix, Surv object) or arguments (lmdata, xcols) should be (LMdataframe, vector of column names)")
       } else {
         return(parent_func(lmdata = x, id_col = id_col, ...))
       }
@@ -324,7 +325,7 @@ check_penLM_inputs <- function(x, y, lmdata, xcols, id_col = NULL, alpha = 1,
       stop("argument y should be a Surv or Hist object")
   }
   if (use_lmdata) {
-    if (class(lmdata) == "LMdataframe") {
+    if (inherits(class(lmdata), "LMdataframe")) {
       if (!missing(x))
         message("Argument x was provided but is redundent with argument lmdata. Ignoring x.")
       if (!missing(y))
@@ -349,7 +350,7 @@ check_penLM_inputs <- function(x, y, lmdata, xcols, id_col = NULL, alpha = 1,
       IDs <- lmdata$data[[id_col]]
     } else {
       IDs <- x[,id_col]
-      if (class(id_col) == "numeric") x <- x[, -id_col]
+      if (inherits(class(id_col), "numeric")) x <- x[, -id_col]
       else x <- x[, colnames(x) != id_col]
     }
   }
@@ -377,11 +378,11 @@ check_penLM_inputs <- function(x, y, lmdata, xcols, id_col = NULL, alpha = 1,
 
   # check if x is competing risks (CR) or not
   # if CR create the correct number of x's: one for each cause
-  if (class(y) == "Surv") {
+  if (inherits(class(y), "Surv")) {
     if (!("start" %in% attr(y, "dimnames")[[2]]))
       stop("There is no left-truncated data, which is unusual for a landmark supermodel. Did you forget to include an entry time?")
     y <- list(y)
-  } else if (class(y) == "Hist") {
+  } else if (inherits(class(y), "Hist")) {
     censor_type = attr(y, "cens.type")
     if (censor_type != "rightCensored")
       stop(paste("Only right-censoring is currently supported, not type",
