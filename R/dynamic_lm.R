@@ -279,7 +279,7 @@ dynamic_lm.penLM <- function(object, lambda, ...) {
   all_covs <- lmdata$all_covs
 
   if (survival.type == "survival") {
-    if (inherits(class(lambda), "list")) lambda <- lambda[[1]]
+    if (inherits(lambda, "list")) lambda <- lambda[[1]]
     glmnet_coefs <- as.vector(coef(object[[1]], s = lambda))
 
     entry = lmdata$lm_col
@@ -388,7 +388,7 @@ dynamic_lm.penLM <- function(object, lambda, ...) {
 #' @import survival glmnet
 #' @export
 dynamic_lm.cv.penLM <- function(object, lambda = "lambda.min", ...) {
-  if (inherits(class(lambda), "character")) {
+  if (inherits(lambda, "character")) {
     if (lambda == "lambda.1se")
       lambda <- lapply(object, function(o) o$lambda.1se)
     else if (lambda == "lambda.min")
