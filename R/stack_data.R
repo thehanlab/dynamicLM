@@ -87,7 +87,7 @@ stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"),
     if (!(id %in% covs$fixed)){
       covs$fixed = c(id, covs$fixed)
     }
-    lmdata = dynpred::cutLM(data = data,
+    lmdata = get_lm_data(data = data,
                             outcome = outcome,
                             LM = lms[1],
                             horizon = lms[1] + w,
@@ -96,7 +96,7 @@ stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"),
                             right = right)
     if (length(lms) > 1){
       for (i in 2:length(lms))
-        lmdata = rbind(lmdata,dynpred::cutLM(data = data,
+        lmdata = rbind(lmdata, get_lm_data(data = data,
                                              outcome = outcome,
                                              LM = lms[i],
                                              horizon = lms[i] + w,
@@ -115,7 +115,7 @@ stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"),
     }
 
     # call cutLM
-    lmdata = dynpred::cutLM(data = data,
+    lmdata = get_lm_data(data = data,
                             outcome = outcome,
                             LM = lms[1],
                             horizon = lms[1] + w,
@@ -123,7 +123,7 @@ stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"),
                             format, id, rtime, right)
     if (length(lms) > 1){
       for (i in 2:length(lms))
-        lmdata = rbind(lmdata,dynpred::cutLM(data = data,
+        lmdata = rbind(lmdata, get_lm_data(data = data,
                                              outcome = outcome,
                                              LM = lms[i],
                                              horizon = lms[i] + w,
