@@ -412,7 +412,7 @@ plot.penLMCSC <- function(x, single.plot = FALSE, max_coefs = 10,
     coefs <- x$model$models[[1]]$coefficients
     plot.coefs(coefs, single.plot, max_coefs, ...)
   } else {
-    lapply(1:length(x$model),
+    lapply(1:length(x$model$models),
            function(i) plot.coefs(x$model$models[[i]]$coefficients,
                                   single.plot, max_coefs, ...))
   }
