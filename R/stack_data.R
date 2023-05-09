@@ -128,6 +128,7 @@ stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"),
                                      covs=covs,
                                      format, id, rtime, right))
     }
+    lmdata["fake_column1234"] = NULL
   }
   out=list(
     data=lmdata,
