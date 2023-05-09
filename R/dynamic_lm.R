@@ -3,11 +3,11 @@
 #'
 #' dynamic (dyn) landmark (lm) supermodel --> dynamic_lm
 #'
+#' @param lmdata  An object of class "LMdataframe", this can be created by
+#'   running [dynamicLM::stack_data()] and [dynamicLM::add_interactions()]
 #' @param formula The formula to be used, remember to include "+cluster(ID)" for
 #'  the column that indicates the ID of the individual for robust error
 #'  estimates.
-#' @param lmdata  An object of class "LMdataframe", this can be created by
-#'   running [dynamicLM::stack_data()] and [dynamicLM::add_interactions()]
 #' @param type "coxph" or "CSC"/"CauseSpecificCox"
 #' @param method A character string specifying the method for tie handling.
 #'   Default is "breslow". More information can be found in coxph.
@@ -67,7 +67,7 @@
 #' formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment +
 #'            age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 +
 #'            bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
-#' supermodel <- dynamic_lm(as.formula(formula), lmdata, "CSC")
+#' supermodel <- dynamic_lm(lmdata, as.formula(formula), "CSC")
 #' print(supermodel)
 #'
 #' par(mfrow = c(2,3))
@@ -76,8 +76,8 @@
 #' @import survival
 #' @export
 #'
-dynamic_lm <-  function(formula,
-                        lmdata,
+dynamic_lm <-  function(lmdata,
+                        formula,
                         type = "coxph",
                         method = "breslow",
                         func_covars,
