@@ -5,8 +5,8 @@
 \title{Fit a dynamic Cox or cause-specific Cox landmark supermodel to a dataframe.}
 \usage{
 \method{dynamic_lm}{data.frame}(
-  formula,
   lmdata,
+  formula,
   type = "coxph",
   method = "breslow",
   func_covars,
@@ -21,12 +21,12 @@
 )
 }
 \arguments{
+\item{lmdata}{A dataframe that should be a stacked dataset across landmark
+times.}
+
 \item{formula}{The formula to be used, remember to include "+cluster(ID)" for
 the column that indicates the ID of the individual for robust error
 estimates.}
-
-\item{lmdata}{A dataframe that should be a stacked dataset across landmark
-times.}
 
 \item{type}{"coxph" or "CSC"/"CauseSpecificCox"}
 

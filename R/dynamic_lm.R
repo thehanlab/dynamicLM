@@ -35,11 +35,11 @@ dynamic_lm <- function(...) {
 #' Fit a dynamic Cox or cause-specific Cox landmark supermodel to a stacked
 #' landmark dataset
 #'
+#' @param lmdata  An object of class "LMdataframe", this can be created by
+#'   running [stack_data()] and [add_interactions()]
 #' @param formula The formula to be used, remember to include "+cluster(ID)" for
 #'  the column that indicates the ID of the individual for robust error
 #'  estimates.
-#' @param lmdata  An object of class "LMdataframe", this can be created by
-#'   running [stack_data()] and [add_interactions()]
 #' @param type "coxph" or "CSC"/"CauseSpecificCox"
 #' @param method A character string specifying the method for tie handling.
 #'   Default is "breslow". More information can be found in [survival::coxph()].
@@ -87,7 +87,7 @@ dynamic_lm <- function(...) {
 #' formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment +
 #'            age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 +
 #'            bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
-#' supermodel <- dynamic_lm(as.formula(formula), lmdata, "CSC")
+#' supermodel <- dynamic_lm(lmdata, as.formula(formula), "CSC")
 #' print(supermodel)
 #'
 #' par(mfrow = c(2,3))
@@ -96,8 +96,8 @@ dynamic_lm <- function(...) {
 #' @import survival
 #' @export
 #'
-dynamic_lm.LMdataframe <-  function(formula,
-                                    lmdata,
+dynamic_lm.LMdataframe <-  function(lmdata,
+                                    formula,
                                     type = "coxph",
                                     method = "breslow",
                                     cluster,
@@ -119,8 +119,8 @@ dynamic_lm.LMdataframe <-  function(formula,
   lm_covs <- lmdata$lm_covs
   all_covs <- lmdata$all_covs
 
-  out <- dynamic_lm_helper(formula, type, data, lmdata, method, x, w, end_time,
-                           func_covars, func_lms, lm_covs, all_covs,
+  out <- dynamic_lm_helper(formula, type, data, lmdata, method, cluster, x, w,
+                           end_time, func_covars, func_lms, lm_covs, all_covs,
                            outcome, lm_col, original.landmarks, args, ...)
 
   return(out)
@@ -134,11 +134,11 @@ dynamic_lm.LMdataframe <-  function(formula,
 #' directly calling `dynamic_lm` on a dataframe to ensure the data has the
 #' correct form.
 #'
+#' @param lmdata A dataframe that should be a stacked dataset across landmark
+#'   times.
 #' @param formula The formula to be used, remember to include "+cluster(ID)" for
 #'  the column that indicates the ID of the individual for robust error
 #'  estimates.
-#' @param lmdata A dataframe that should be a stacked dataset across landmark
-#'   times.
 #' @param type "coxph" or "CSC"/"CauseSpecificCox"
 #' @param method A character string specifying the method for tie handling.
 #'   Default is "breslow". More information can be found in [survival::coxph()].
@@ -179,8 +179,8 @@ dynamic_lm.LMdataframe <-  function(formula,
 #' @import survival
 #' @export
 #'
-dynamic_lm.data.frame <- function(formula,
-                                  lmdata,
+dynamic_lm.data.frame <- function(lmdata,
+                                  formula,
                                   type = "coxph",
                                   method = "breslow",
                                   func_covars,
@@ -223,8 +223,8 @@ dynamic_lm.data.frame <- function(formula,
   original.landmarks <- data[[lm_col]]
   end_time <- max(original.landmarks)
 
-  out <- dynamic_lm_helper(formula, type, data, lmdata, method, x, w, end_time,
-                           func_covars, func_lms, lm_covs, all_covs,
+  out <- dynamic_lm_helper(formula, type, data, lmdata, method, cluster, x, w,
+                           end_time, func_covars, func_lms, lm_covs, all_covs,
                            outcome, lm_col, original.landmarks, args, ...)
   return(out)
 }

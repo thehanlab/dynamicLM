@@ -50,6 +50,14 @@ cv.penLM <- function(x, y,
                      foldid = NULL,
                      ...
 ) {
+  # checked_input <- match.call()
+  # m <- match(c("x", "y", "lmdata", "xcols", "id_col", "alpha"), names(checked_input), 0L)
+  # checked_input <- as.list(checked_input[m]) #[m]
+  # checked_input$parent_func <- quote(cv.penLM)
+  # checked_input$CV <- TRUE
+  # print(checked_input)
+  # checked_input <- do.call(check_penLM_inputs, checked_input)
+
   checked_input <- match.call()
   checked_input$parent_func <- quote(cv.penLM)
   checked_input$CV <- TRUE

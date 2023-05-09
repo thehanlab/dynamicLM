@@ -6,8 +6,8 @@
 landmark dataset}
 \usage{
 \method{dynamic_lm}{LMdataframe}(
-  formula,
   lmdata,
+  formula,
   type = "coxph",
   method = "breslow",
   cluster,
@@ -16,12 +16,12 @@ landmark dataset}
 )
 }
 \arguments{
+\item{lmdata}{An object of class "LMdataframe", this can be created by
+running \code{\link[=stack_data]{stack_data()}} and \code{\link[=add_interactions]{add_interactions()}}}
+
 \item{formula}{The formula to be used, remember to include "+cluster(ID)" for
 the column that indicates the ID of the individual for robust error
 estimates.}
-
-\item{lmdata}{An object of class "LMdataframe", this can be created by
-running \code{\link[=stack_data]{stack_data()}} and \code{\link[=add_interactions]{add_interactions()}}}
 
 \item{type}{"coxph" or "CSC"/"CauseSpecificCox"}
 
@@ -81,7 +81,7 @@ head(lmdata$data)
 formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment +
            age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 +
            bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
-supermodel <- dynamic_lm(as.formula(formula), lmdata, "CSC")
+supermodel <- dynamic_lm(lmdata, as.formula(formula), "CSC")
 print(supermodel)
 
 par(mfrow = c(2,3))

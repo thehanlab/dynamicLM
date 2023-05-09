@@ -296,18 +296,21 @@ check_evaluation_inputs <- function(
 
 check_penLM_inputs <- function(x, y, lmdata, xcols, id_col = NULL, alpha = 1,
                                parent_func, CV = FALSE, ...) {
-  parent_func <- eval(parent_func)
+  print("check_penLM_inputs")
+  # print(y)
   # check which data inputs are provided
   # i.e., are all provided? & can we replace lmdata and xcols with x and y?
   use_lmdata <- TRUE
   if (missing(lmdata)) use_lmdata <- FALSE
+
+  print(use_lmdata)
 
   if (!use_lmdata) {
     if (missing(x))
       stop("argument x is missing with no default, or provide lmdata")
     if (inherits(x, "LMdataframe")) {
       if (!missing(xcols)) {
-        return(parent_func(lmdata = x, xcol = xcols, id_col = id_col,
+        return(parent_func(lmdata = x, xcols = xcols, id_col = id_col,
                            alpha = alpha, ...))
       } else if (!missing(y)) {
         if (inherits(y, "character"))
