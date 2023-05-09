@@ -77,8 +77,16 @@ You can install the development version of `dynamicLM` from
 ``` r
 # install.packages("devtools")
 devtools::install_github("thehanlab/dynamicLM", ref = "proposed-updates")
-#> Skipping install of 'dynamicLM' from a github remote, the SHA1 (65058e60) has not changed since last install.
-#>   Use `force = TRUE` to force installation
+#> Downloading GitHub repo thehanlab/dynamicLM@proposed-updates
+#> 
+#>      checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/Rtmp2mvzaq/remotes1812773b50144/thehanlab-dynamicLM-37b19d3/DESCRIPTION’ ...  ✔  checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/Rtmp2mvzaq/remotes1812773b50144/thehanlab-dynamicLM-37b19d3/DESCRIPTION’
+#>   ─  preparing ‘dynamicLM’:
+#>      checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
+#>   ─  checking for LF line-endings in source and make files and shell scripts
+#>   ─  checking for empty or unneeded directories
+#>   ─  building ‘dynamicLM_0.3.0.tar.gz’
+#>      
+#> 
 ```
 
 Requirements for the package can be found in the description file.
@@ -305,7 +313,7 @@ information on how the landmark interaction terms must be named.
 
 ``` r
 formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment + age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 + bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
-supermodel <- dynamic_lm(as.formula(formula), lmdata, "CSC") 
+supermodel <- dynamic_lm(lmdata, as.formula(formula), "CSC") 
 #> Warning in agreg.fit(X, Y, istrat, offset, init, control, weights = weights, :
 #> Loglik converged before variable 8,9 ; beta may be infinite.
 print(supermodel)
