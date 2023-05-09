@@ -1,5 +1,5 @@
-dynamic_lm_helper <- function(formula, type, data, lmdata, method, x, w,
-                              end_time, func_covars, func_lms, lm_covs,
+dynamic_lm_helper <- function(formula, type, data, lmdata, method, cluster,
+                              x, w, end_time, func_covars, func_lms, lm_covs,
                               all_covs, outcome, lm_col, original.landmarks,
                               args, ...) {
   # extra LHS of formula
