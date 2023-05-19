@@ -79,7 +79,7 @@ You can install the development version of `dynamicLM` from
 devtools::install_github("thehanlab/dynamicLM", ref = "proposed-updates")
 #> Downloading GitHub repo thehanlab/dynamicLM@proposed-updates
 #> 
-#>      checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/Rtmp2mvzaq/remotes1812773b50144/thehanlab-dynamicLM-37b19d3/DESCRIPTION’ ...  ✔  checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/Rtmp2mvzaq/remotes1812773b50144/thehanlab-dynamicLM-37b19d3/DESCRIPTION’
+#>      checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpCMyhqz/remotesb320b5d543f/thehanlab-dynamicLM-308ce7e/DESCRIPTION’ ...  ✔  checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpCMyhqz/remotesb320b5d543f/thehanlab-dynamicLM-308ce7e/DESCRIPTION’
 #>   ─  preparing ‘dynamicLM’:
 #>      checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
 #>   ─  checking for LF line-endings in source and make files and shell scripts
@@ -154,18 +154,14 @@ the model. This means we are only interested in prediction between 0 and
 3 years.
 
 We will consider linear and quadratic landmark interactions with the
-covariates (given in `func_covars`) and the landmarks (`func_lms`). The
-covariates that should have these landmark interactions are given in
-`pred_covars`.
+covariates (given by `func_covars = "quadratic"`) and the landmarks
+(`func_lms = "quadratic"`). The covariates that should have these
+landmark interactions are given in `pred_covars`.
 
 ``` r
 w <- 60                    # risk prediction window (risk within time w)
 lms <- seq(0,36,by=6)      # landmarks on which to build the model
 
-# Covariate-landmark time interactions
-func_covars <- list(function(t) t, function(t) t^2)
-# let hazard depend on landmark time
-func_lms <- list(function(t) t, function(t) t^2)
 # Choose variables that will have time interaction
 pred_covars <- c("age", "male", "stage", "bmi", "treatment") 
 ```
@@ -250,7 +246,8 @@ interaction in `func_covars`, `_2` refers to the second interaction in
 covariates that will have landmark time interactions.
 
 ``` r
-lmdata <- add_interactions(lmdata, pred_covars, func_covars, func_lms) 
+lmdata <- add_interactions(lmdata, pred_covars, func_covars = "quadratic", 
+                           func_lms = "quadratic") 
 data <- lmdata$data
 print(data[data$ID == "ID1029",])
 #>         ID     Time event age.at.time.0 male stage  bmi treatment T_txgiven LM
