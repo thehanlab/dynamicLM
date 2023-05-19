@@ -131,9 +131,9 @@ print.LMdataframe <- function(x, verbose = FALSE, ...) {
 #' @return Printed output.
 #' @export
 #'
-print.LMScore <- function(x, digits=3, ...) {
+print.LMScore <- function(x, digits = 3, ...) {
 
-  if (nrow(x$auct)>0) {
+  if (!is.null(x$auct)) {
     cat(paste0("\nMetric: Time-dependent AUC (window ", x$w, ")\n"))
     cat("\nResults by model:\n")
 
@@ -156,7 +156,7 @@ print.LMScore <- function(x, digits=3, ...) {
     message("NOTE: The higher AUC the better.")
     message(paste("NOTE: Predictions are made at time tLM for risk windows of length", x$w))
   }
-  if (nrow(x$briert)>0) {
+  if (!is.null(x$briert)) {
     cat(paste0("\nMetric: Time-dependent Brier Score (window ", x$w, ")\n"))
     cat("\nResults by model:\n")
 
