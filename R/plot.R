@@ -187,13 +187,13 @@ plot.LMScore <- function(object, metrics, se = TRUE, xlab, ylab, x, pch, ylim,
 
     for (i in 1:num_models){
       idx = models == model_names[i]
-      lines(tLM[idx], metric[idx], col = models[idx], pch = pch)
+      graphics::lines(tLM[idx], metric[idx], col = models[idx], pch = pch)
       if (se) {
-        lines(tLM[idx], upper[idx], col = models[idx], pch = pch, lty = 2)
-        lines(tLM[idx], lower[idx], col = models[idx], pch = pch, lty = 2)
+        graphics::lines(tLM[idx], upper[idx], col = models[idx], pch = pch, lty = 2)
+        graphics::lines(tLM[idx], lower[idx], col = models[idx], pch = pch, lty = 2)
       }
     }
-    legend(loc, legend = model_names, col = models, pch = pch, bty = "n")
+    graphics::legend(loc, legend = model_names, col = models, pch = pch, bty = "n")
   }
 
   if ("auc" %in% metrics) {

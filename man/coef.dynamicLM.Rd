@@ -4,7 +4,7 @@
 \alias{coef.dynamicLM}
 \title{Get the coefficients of a fitted supermodel in dynamicLM}
 \usage{
-\method{coef}{dynamicLM}(object)
+\method{coef}{dynamicLM}(object, ...)
 }
 \arguments{
 \item{object}{}
