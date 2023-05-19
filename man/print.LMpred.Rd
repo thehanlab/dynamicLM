@@ -2,12 +2,14 @@
 % Please edit documentation in R/print.R
 \name{print.LMpred}
 \alias{print.LMpred}
-\title{Print function for object of class LM.data.frame}
+\title{Print function for object of class LMpred}
 \usage{
-\method{print}{LMpred}(x, ...)
+\method{print}{LMpred}(x, verbose = FALSE, ...)
 }
 \arguments{
 \item{x}{Object of class LMpred}
+
+\item{verbose}{Boolean, default is FALSE. Print further components.}
 
 \item{...}{Arguments passed to print.}
 }
@@ -15,5 +17,5 @@
 Printed output.
 }
 \description{
-Print function for object of class LM.data.frame
+Print function for object of class LMpred
 }

@@ -14,14 +14,18 @@ A data frame with 989 rows and 9 columns:
 \item{male}{Sex of patient, 1=male, 0=female}
 \item{stage}{Cancer stage at diagnosis}
 \item{bmi}{Patient's body mass index at diagnosis}
-\item{treatment}{Patient's treatment status, treatment=1=on treatment, treament=0=patient is off treatment}
-\item{T_txgiven}{Follow-up time, i.e., time at which updated treatment (tx) information was provided, which is equivalent to the time point at which the patient entry was created.}
+\item{treatment}{Patient's treatment status, treatment = 1 = on treatment,
+treament = 0 = patient is off treatment}
+\item{T_txgiven}{Follow-up time, i.e., time at which updated treatment (tx)
+information was provided, which is equivalent to the time
+point at which the patient entry was created.}
 }
 }
 \usage{
 relapse
 }
 \description{
-Synthetic dataset containing the time-to-event of cancer relapse (event=1) with the competing risk death (event=2) in long-form with patient information.
+Simple synthetic dataset containing the time-to-event of cancer relapse
+(event=1) with the competing risk in long-form with patient information.
 }
 \keyword{datasets}

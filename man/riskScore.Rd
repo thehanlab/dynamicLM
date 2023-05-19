@@ -2,9 +2,10 @@
 % Please edit documentation in R/riskScore.R
 \name{riskScore}
 \alias{riskScore}
-\title{Calcutes dynamic risk score at a time for an individual (helper to predLMrisk)}
+\title{Calcutes dynamic risk score at a time for an individual (helper to
+predict.dynamicLM)}
 \usage{
-riskScore(object, tLM, data, func_covars, func_LMs)
+riskScore(object, tLM, data, func_covars, func_lms)
 }
 \arguments{
 \item{object}{A coxph object}
@@ -15,11 +16,12 @@ riskScore(object, tLM, data, func_covars, func_LMs)
 
 \item{func_covars}{A list of functions to use for interactions between LMs and covariates.}
 
-\item{func_LMs}{A list of functions to use for transformations of the landmark times.}
+\item{func_lms}{A list of functions to use for transformations of the landmark times.}
 }
 \value{
 Numeric risk score
 }
 \description{
-Calcutes dynamic risk score at a time for an individual (helper to predLMrisk)
+Calcutes dynamic risk score at a time for an individual (helper to
+predict.dynamicLM)
 }

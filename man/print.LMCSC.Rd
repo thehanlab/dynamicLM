@@ -4,10 +4,15 @@
 \alias{print.LMCSC}
 \title{Print function for object of class LMCSC}
 \usage{
-\method{print}{LMCSC}(x, ...)
+\method{print}{LMCSC}(x, verbose = FALSE, cause, ...)
 }
 \arguments{
 \item{x}{Object of class LMCSC}
+
+\item{verbose}{Boolean, default is FALSE. Print further components.}
+
+\item{cause}{Print the model for a given cause.
+If left out, all models are printed.}
 
 \item{...}{Arguments passed to print.}
 }

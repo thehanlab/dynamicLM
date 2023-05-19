@@ -4,10 +4,12 @@
 \alias{print.LMcoxph}
 \title{Print function for object of class LMcoxph}
 \usage{
-\method{print}{LMcoxph}(x, ...)
+\method{print}{LMcoxph}(x, verbose = FALSE, ...)
 }
 \arguments{
 \item{x}{Object of class LMcoxph}
+
+\item{verbose}{Boolean, default is FALSE. Print further components.}
 
 \item{...}{Arguments passed to print.}
 }
