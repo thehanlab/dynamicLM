@@ -136,7 +136,7 @@ score <-
            metrics = c("auc", "brier"),
            formula,
            data,
-           lms,
+           lms = "LM",
            id_col="ID",
            se.fit = TRUE,
            conf.int = 0.95,
@@ -158,10 +158,13 @@ score <-
     get.auc <- FALSE; get.brier <- FALSE
     if ("auc" %in% metrics) get.auc <- TRUE
     if ("brier" %in% metrics) get.brier <- TRUE
+    if (!get.auc && !get.brier)
+      stop("At least one of the following metrics must be specified: \"auc\", \"brier\".")
 
     checked_input <- match.call()
     m <- match(c("object", "times", "formula", "data", "lms", "id_col",
-                 "split.method", "B", "M", "cores", "seed", "cause"), names(checked_input), 0L)
+                 "split.method", "B", "M", "cores", "seed", "cause"),
+               names(checked_input), 0L)
     checked_input <- as.list(checked_input[m])
     checked_input <- do.call(check_evaluation_inputs, checked_input)
 

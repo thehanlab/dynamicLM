@@ -27,7 +27,9 @@ running \code{\link[=stack_data]{stack_data()}} and \code{\link[=add_interaction
 
 \item{formula}{The formula to be used, remember to include "+cluster(ID)" for
 the column that indicates the ID of the individual for robust error
-estimates.}
+estimates.
+Note that transformations (e.g., \code{x1*x2}) cannot be used in the formula and
+factors/categorical variables must first be made into dummy variables.}
 
 \item{type}{"coxph" or "CSC"/"CauseSpecificCox"}
 
@@ -82,24 +84,22 @@ dynamic (dyn) landmark (lm) supermodel --> dynamic_lm
 \dontrun{
 data(relapse)
 outcome <- list(time = "Time", status = "event")
-covars <- list(fixed = c("ID","age.at.time.0","male","stage","bmi"),
+covars <- list(fixed = c("age.at.time.0", "male", "stage", "bmi"),
                varying = c("treatment"))
 w <- 60; lms <- c(0, 6, 12, 18)
-LMs = seq(0,36,by=6)
-# Covariate-landmark time interactions
-func_covars <- list(function(t) t, function(t) t^2)
-# let hazard depend on landmark time
-func_lms <- list(function(t) t, function(t) t^2)
+LMs = seq(0, 36, by = 6)
 # Choose covariates that will have time interaction
-pred_covars <- c("age","male","stage","bmi","treatment")
+pred_covars <- c("age", "male", "stage", "bmi", "treatment")
 # Stack landmark datasets
 lmdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
                      id = "ID", rtime = "T_txgiven")
-# Update complex LM-varying covariates, note age is in years and LM is in months
+
+# Update complex landmark-varying covariates
+# note age is in years and LM is in months
 lmdata$data$age <- lmdata$data$age.at.time.0 + lmdata$data$LM/12
 # Add LM-time interactions
-lmdata <- add_interactions(lmdata, pred_covars, func_covars, func_lms)
-head(lmdata$data)
+lmdata <- add_interactions(lmdata, pred_covars, func_covars = "quadratic",
+                           func_lms = "quadratic")
 
 formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment +
            age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 +

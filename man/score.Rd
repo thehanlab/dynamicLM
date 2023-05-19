@@ -11,7 +11,7 @@ score(
   metrics = c("auc", "brier"),
   formula,
   data,
-  lms,
+  lms = "LM",
   id_col = "ID",
   se.fit = TRUE,
   conf.int = 0.95,
