@@ -21,7 +21,7 @@
 #' @param format Character string specifying whether the original data are in
 #'   wide (default) or in long format.
 #' @param id Character string specifying the column name in data containing the
-#'   subject id; only needed if format = "long".
+#'   subject id.
 #' @param rtime Character string specifying the column name in data containing
 #'   the (running) time variable associated with the time-varying variables;
 #'   only needed if format = "long".
@@ -38,25 +38,19 @@
 #'   - end_time: final landmarking point used in training
 #'   - lm_col: "LM", identifies the landmark time column.
 #'
-#' @details This function calls [dynpred::cutLM()] from the library dynpred, more
-#'   documentation can be found there. Furthermore, note that for every landmark
-#'   time given in `lms`, there must be at least one patient alive after that
-#'   time.
-#'
 #' @examples
 #' \dontrun{
-#' head(lmdata$data)
 #' data(relapse)
 #' outcome <- list(time = "Time", status = "event")
-#' covars <- list(fixed = c("ID","age.at.time.0","male","stage","bmi"),
+#' covars <- list(fixed = c("age.at.time.0", "male", "stage", "bmi"),
 #'                varying = c("treatment"))
 #' w <- 60; lms <- c(0, 6, 12, 18)
+#' LMs = seq(0, 36, by = 6)
 #' # Stack landmark datasets
 #' lmdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
 #'                      id = "ID", rtime = "T_txgiven")
 #' head(lmdata$data)
 #' }
-#' @import dynpred
 #' @export
 #'
 stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"),
@@ -85,50 +79,43 @@ stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"),
     if (!(id %in% covs$fixed)){
       covs$fixed = c(id, covs$fixed)
     }
-    lmdata = dynpred::cutLM(data=data,
-                    outcome=outcome,
-                    LM=lms[1],
-                    horizon=lms[1]+w,
-                    covs=covs,
-                    format="wide",
-                    right=right)
+    lmdata = get_lm_data(data=data,
+                         outcome=outcome,
+                         lm=lms[1],
+                         horizon=lms[1]+w,
+                         covs=covs,
+                         format="wide",
+                         right=right)
     if (length(lms) > 1){
       for (i in 2:length(lms))
-        lmdata = rbind(lmdata,dynpred::cutLM(data=data,
-                                     outcome=outcome,
-                                     LM=lms[i],
-                                     horizon=lms[i]+w,
-                                     covs=covs,
-                                     format="wide",
-                                     right=right))
+        lmdata = rbind(lmdata, get_lm_data(data=data,
+                                           outcome=outcome,
+                                           lm=lms[i],
+                                           horizon=lms[i]+w,
+                                           covs=covs,
+                                           format="wide",
+                                           right=right))
     }
     lmdata = lmdata[,c(which(colnames(lmdata)==id),
                        which(colnames(lmdata)!=id))]
 
   } else if (format == "long"){
-    # guard against errors in cutLM
-    if (is.null(covs$varying)) {
-      covs$varying = "fake_column1234"
-      data["fake_column1234"] = NA
-    }
-
     # call cutLM
-    lmdata = dynpred::cutLM(data=data,
-                    outcome=outcome,
-                    LM=lms[1],
-                    horizon=lms[1]+w,
-                    covs=covs,
-                    format, id, rtime, right)
+    lmdata = get_lm_data(data=data,
+                         outcome=outcome,
+                         lm=lms[1],
+                         horizon=lms[1]+w,
+                         covs=covs,
+                         format, id, rtime, right)
     if (length(lms) > 1){
       for (i in 2:length(lms))
-        lmdata = rbind(lmdata,dynpred::cutLM(data=data,
-                                     outcome=outcome,
-                                     LM=lms[i],
-                                     horizon=lms[i]+w,
-                                     covs=covs,
-                                     format, id, rtime, right))
+        lmdata = rbind(lmdata, get_lm_data(data=data,
+                                           outcome=outcome,
+                                           lm=lms[i],
+                                           horizon=lms[i]+w,
+                                           covs=covs,
+                                           format, id, rtime, right))
     }
-    lmdata["fake_column1234"] = NULL
   }
   out=list(
     data=lmdata,
