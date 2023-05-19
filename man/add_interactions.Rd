@@ -17,13 +17,18 @@ and w), end_time is the largest landmarking time.}
 \item{lm_covs}{Vector of strings indicating the columns (covariates) that are
 to have an interaction with the landmark times.}
 
-\item{func_covars}{A list of functions to use for interactions between
-landmarks and covariates. For example,
-\code{list( function(t) t, function(t) t^2)} will, for each covariate \code{x},
-create \code{x}, \code{x*t}, \code{x*t^2}.}
+\item{func_covars}{Either a string (or vector of strings) specifying which
+covariate(\code{x})-landmark(\code{t}) interactions to include. One or
+multiple of "linear" (\verb{x, x*t}), "quadratic" (\verb{x, x*t, x*t^2}),
+"log" (\verb{x, log(1 + x)}), or or "exp" (\verb{x, exp(x)}).
 
-\item{func_lms}{A list of functions to use for transformations of the
-landmark times.}
+Otherwise, a custom list of functions can be specified. For example,
+\code{list( function(t) t, function(t) exp(20*t))} will, for each covariate \code{x},
+create \verb{x, x*t, exp(20*t)}.}
+
+\item{func_lms}{Similar to \code{func_covars}: A list of functions to use for
+transformations of the landmark times. Either a string or vector of
+strings or a custom list of functions.}
 
 \item{lm_col}{Character string specifying the column name that indicates the
 landmark time point for a row. Obtained from \code{lmdata} if not input.}
@@ -62,16 +67,12 @@ is added.
 \dontrun{
 data(relapse)
 outcome <- list(time = "Time", status = "event")
-covars <- list(fixed = c("ID","age.at.time.0","male","stage","bmi"),
+covars <- list(fixed = c("age.at.time.0", "male", "stage", "bmi"),
                varying = c("treatment"))
 w <- 60; lms <- c(0, 6, 12, 18)
-LMs = seq(0,36,by=6)
-# Covariate-landmark time interactions
-func_covars <- list(function(t) t, function(t) t^2)
-# let hazard depend on landmark time
-func_lms <- list(function(t) t, function(t) t^2)
+LMs = seq(0, 36, by = 6)
 # Choose covariates that will have time interaction
-pred_covars <- c("age","male","stage","bmi","treatment")
+pred_covars <- c("age", "male", "stage", "bmi", "treatment")
 # Stack landmark datasets
 lmdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
                      id = "ID", rtime = "T_txgiven")
@@ -79,7 +80,8 @@ lmdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
 # note age is in years and LM is in months
 lmdata$data$age <- lmdata$data$age.at.time.0 + lmdata$data$LM/12
 # Add LM-time interactions
-lmdata <- add_interactions(lmdata, pred_covars, func_covars, func_lms)
+lmdata <- add_interactions(lmdata, pred_covars, func_covars = "quadratic",
+                           func_lms = "quadratic")
 head(lmdata$data)
 }
 
