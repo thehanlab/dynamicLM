@@ -76,10 +76,10 @@ You can install the development version of `dynamicLM` from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("thehanlab/dynamicLM", ref = "proposed-updates")
-#> Downloading GitHub repo thehanlab/dynamicLM@proposed-updates
+devtools::install_github("thehanlab/dynamicLM")
+#> Downloading GitHub repo thehanlab/dynamicLM@HEAD
 #> 
-#>      checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpCMyhqz/remotesb320b5d543f/thehanlab-dynamicLM-308ce7e/DESCRIPTION’ ...  ✔  checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpCMyhqz/remotesb320b5d543f/thehanlab-dynamicLM-308ce7e/DESCRIPTION’
+#>      checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpGvXo0v/remotesb47c12dbd99a/thehanlab-dynamicLM-6c5bf99/DESCRIPTION’ ...  ✔  checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpGvXo0v/remotesb47c12dbd99a/thehanlab-dynamicLM-6c5bf99/DESCRIPTION’
 #>   ─  preparing ‘dynamicLM’:
 #>      checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
 #>   ─  checking for LF line-endings in source and make files and shell scripts
