@@ -132,8 +132,7 @@ time points (`lms`) are set as every year between 0 and 3 years to train
 the model. This means we are only interested in prediction between 0 and
 3 years.
 
-We will consider linear and quadratic landmark interactions with the covariates (given by `func_covars = "quadratic"`) and the landmarks (`func_lms = "quadratic"`). The covariates that should have these landmark interactions are given in
-`pred_covars`.
+We will consider linear and quadratic landmark interactions with the covariates (given by `func_covars = c("linear", "quadratic")`) and the landmarks (`func_lms = c("linear", "quadratic")`). The covariates that should have these landmark interactions are given in `pred_covars`.
 
 
 ```{r}
@@ -197,8 +196,8 @@ interaction in `func_covars`, `_2` refers to the second interaction in
 covariates that will have landmark time interactions.
 
 ```{r}
-lmdata <- add_interactions(lmdata, pred_covars, func_covars = "quadratic", 
-                           func_lms = "quadratic") 
+lmdata <- add_interactions(lmdata, pred_covars, func_covars = c("linear", "quadratic"), 
+                           func_lms = c("linear", "quadratic")) 
 data <- lmdata$data
 print(data[data$ID == "ID1029",])
 ```

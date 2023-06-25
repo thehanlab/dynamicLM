@@ -77,16 +77,8 @@ You can install the development version of `dynamicLM` from
 ``` r
 # install.packages("devtools")
 devtools::install_github("thehanlab/dynamicLM")
-#> Downloading GitHub repo thehanlab/dynamicLM@HEAD
-#> 
-#>      checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpGvXo0v/remotesb47c12dbd99a/thehanlab-dynamicLM-6c5bf99/DESCRIPTION’ ...  ✔  checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpGvXo0v/remotesb47c12dbd99a/thehanlab-dynamicLM-6c5bf99/DESCRIPTION’
-#>   ─  preparing ‘dynamicLM’:
-#>      checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
-#>   ─  checking for LF line-endings in source and make files and shell scripts
-#>   ─  checking for empty or unneeded directories
-#>   ─  building ‘dynamicLM_0.3.0.tar.gz’
-#>      
-#> 
+#> Skipping install of 'dynamicLM' from a github remote, the SHA1 (75485561) has not changed since last install.
+#>   Use `force = TRUE` to force installation
 ```
 
 Requirements for the package can be found in the description file.
@@ -154,9 +146,9 @@ the model. This means we are only interested in prediction between 0 and
 3 years.
 
 We will consider linear and quadratic landmark interactions with the
-covariates (given by `func_covars = "quadratic"`) and the landmarks
-(`func_lms = "quadratic"`). The covariates that should have these
-landmark interactions are given in `pred_covars`.
+covariates (given by `func_covars = c("linear", "quadratic")`) and the
+landmarks (`func_lms = c("linear", "quadratic")`). The covariates that
+should have these landmark interactions are given in `pred_covars`.
 
 ``` r
 w <- 60                    # risk prediction window (risk within time w)
@@ -246,8 +238,8 @@ interaction in `func_covars`, `_2` refers to the second interaction in
 covariates that will have landmark time interactions.
 
 ``` r
-lmdata <- add_interactions(lmdata, pred_covars, func_covars = "quadratic", 
-                           func_lms = "quadratic") 
+lmdata <- add_interactions(lmdata, pred_covars, func_covars = c("linear", "quadratic"), 
+                           func_lms = c("linear", "quadratic")) 
 data <- lmdata$data
 print(data[data$ID == "ID1029",])
 #>         ID     Time event age.at.time.0 male stage  bmi treatment T_txgiven LM

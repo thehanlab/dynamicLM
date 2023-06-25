@@ -14,7 +14,7 @@
 #'   to have an interaction with the landmark times.
 #' @param func_covars Either a string (or vector of strings) specifying which
 #'   covariate(`x`)-landmark(`t`) interactions to include. One or
-#'   multiple of "linear" (`x, x*t`), "quadratic" (`x, x*t, x*t^2`),
+#'   multiple of "linear" (`x, x*t`), "quadratic" (`x, x*t^2`),
 #'   "log" (`x, log(1 + x)`), or or "exp" (`x, exp(x)`).
 #'
 #'   Otherwise, a custom list of functions can be specified. For example,
@@ -54,7 +54,6 @@
 #' covars <- list(fixed = c("age.at.time.0", "male", "stage", "bmi"),
 #'                varying = c("treatment"))
 #' w <- 60; lms <- c(0, 6, 12, 18)
-#' LMs = seq(0, 36, by = 6)
 #' # Choose covariates that will have time interaction
 #' pred_covars <- c("age", "male", "stage", "bmi", "treatment")
 #' # Stack landmark datasets
@@ -64,8 +63,9 @@
 #' # note age is in years and LM is in months
 #' lmdata$data$age <- lmdata$data$age.at.time.0 + lmdata$data$LM/12
 #' # Add LM-time interactions
-#' lmdata <- add_interactions(lmdata, pred_covars, func_covars = "quadratic",
-#'                            func_lms = "quadratic")
+#' lmdata <- add_interactions(lmdata, pred_covars,
+#'                            func_covars = c("linear", "quadratic"),
+#'                            func_lms = c("linear", "quadratic"))
 #' head(lmdata$data)
 #' }
 #'
@@ -80,26 +80,26 @@ add_interactions <- function(lmdata, lm_covs, func_covars, func_lms, lm_col,
                 ") should not be in arg func_covars."))
   }
   data <- lmdata$data
+
   f1 <- function(t) t
   f2 <- function(t) t^2
   f3 <- function(t) log(1 + t)
   f4 <- function(t) exp(t)
+
   if (missing(func_covars)) func_covars <- list(f1, f2)
   if (missing(func_lms)) func_lms <- list(f1, f2)
   if (inherits(func_covars, "character")){
     funcs <- list()
-    if ("linear" %in% func_covars && !("quadratic" %in% func_covars))
-      funcs <- c(funcs, list(f1))
-    if ("quadratic" %in% func_covars) funcs <- c(funcs, list(f1, f2))
+    if ("linear" %in% func_covars) funcs <- c(funcs, list(f1))
+    if ("quadratic" %in% func_covars) funcs <- c(funcs, list(f2))
     if ("log" %in% func_covars) funcs <- c(funcs, list(f3))
     if ("exp" %in% func_covars) funcs <- c(funcs, list(f4))
     func_covars <- funcs
   }
   if (inherits(func_lms, "character")){
     funcs <- list()
-    if ("linear" %in% func_lms && !("quadratic" %in% func_lms))
-      funcs <- c(funcs, list(f1))
-    if ("quadratic" %in% func_lms) funcs <- c(funcs, list(f1, f2))
+    if ("linear" %in% func_lms) funcs <- c(funcs, list(f1))
+    if ("quadratic" %in% func_lms) funcs <- c(funcs, list(f2))
     if ("log" %in% func_lms) funcs <- c(funcs, list(f3))
     if ("exp" %in% func_lms) funcs <- c(funcs, list(f4))
     func_lms <- funcs

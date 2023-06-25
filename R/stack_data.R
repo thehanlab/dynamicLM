@@ -45,7 +45,6 @@
 #' covars <- list(fixed = c("age.at.time.0", "male", "stage", "bmi"),
 #'                varying = c("treatment"))
 #' w <- 60; lms <- c(0, 6, 12, 18)
-#' LMs = seq(0, 36, by = 6)
 #' # Stack landmark datasets
 #' lmdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
 #'                      id = "ID", rtime = "T_txgiven")

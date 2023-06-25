@@ -50,7 +50,6 @@
 #' covars <- list(fixed = c("age.at.time.0", "male", "stage", "bmi"),
 #'                varying = c("treatment"))
 #' w <- 60; lms <- c(0, 6, 12, 18)
-#' LMs = seq(0, 36, by = 6)
 #' # Choose covariates that will have time interaction
 #' pred_covars <- c("age", "male", "stage", "bmi", "treatment")
 #' # Stack landmark datasets
@@ -61,8 +60,9 @@
 #' # note age is in years and LM is in months
 #' lmdata$data$age <- lmdata$data$age.at.time.0 + lmdata$data$LM/12
 #' # Add LM-time interactions
-#' lmdata <- add_interactions(lmdata, pred_covars, func_covars = "quadratic",
-#'                            func_lms = "quadratic")
+#' lmdata <- add_interactions(lmdata, pred_covars,
+#'                            func_covars = c("linear", "quadratic"),
+#'                            func_lms = c("linear", "quadratic"))
 #'
 #' formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment +
 #'            age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 +
