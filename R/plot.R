@@ -1,6 +1,6 @@
 #' Plots the dynamic log-hazard ratio of a cox or CSC supermodel
 #'
-#' @param object An object of class "LMcoxph" or "LMCSC", i.e. a fitted
+#' @param x An object of class "LMcoxph" or "LMCSC", i.e. a fitted
 #'   supermodel
 #' @param covars Vector or list of strings indicating the variables to plot
 #'   (note these must be given without time interaction label, for e.g., as in
@@ -28,10 +28,11 @@
 #'   code
 #' @export
 #'
-plot.dynamicLM <- function(object, covars, conf_int = TRUE, cause, end_time,
+plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
                            logHR = TRUE, extend = FALSE, silence = FALSE,
                            xlab = "LM time", ylab, ylim, main, ...) {
-  fm = object$model
+  object <- x
+  fm <- object$model
 
   if(conf_int) {
     if (!requireNamespace("msm", quietly = TRUE))
@@ -136,16 +137,19 @@ plot.dynamicLM <- function(object, covars, conf_int = TRUE, cause, end_time,
 #' Plot an object output from [score()]: plot the landmark and time-dependent
 #' Brier and/or AUC of dynamic landmark supermodels.
 #'
-#' @param object An object of class "LMScore" output from [score()]
+#' @param x An object of class "LMScore" output from [score()]
 #' @param metrics One or both of "auc" and "brier"
 #' @param se Boolean, default TRUE. To include point wise confidence intervals.
-#' @param xlab,ylab,y,x,pch,ylim,xlim graphical parameters
-#' @param ...
+#' @param legend Location of legend
+#' @param xlab,ylab,pch,ylim,xlim graphical parameters
+#' @param ... Additional arguments to `plot`
 #'
 #' @export
 #'
-plot.LMScore <- function(object, metrics, se = TRUE, xlab, ylab, x, pch, ylim,
+plot.LMScore <- function(x, metrics, se = TRUE, xlab, ylab, legend, pch, ylim,
                          xlim, ...) {
+  object <- x
+  x <- legend
   if (missing(metrics)) {
     metrics <- c()
     if (!is.null(object$auct)) metrics <- c("auc")
@@ -217,13 +221,13 @@ plot.LMScore <- function(object, metrics, se = TRUE, xlab, ylab, x, pch, ylim,
 
 #' Plot an object output from [calplot()]: plot the calibration plots.
 #'
-#' @param object An object of class "LMcalibrationPlot" output from [calplot()]
-#' @param ...
+#' @param x An object of class "LMcalibrationPlot" output from [calplot()]
+#' @param ... Other arguments to pass to pass to plot
 #'
 #' @export
 #'
-plot.LMcalibrationPlot <- function(object) {
+plot.LMcalibrationPlot <- function(x, ...) {
   for (i in 1:length(object)) {
-    plot(object[[i]])
+    plot(x[[i]], ...)
   }
 }

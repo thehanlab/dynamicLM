@@ -4,7 +4,17 @@
 \alias{predict.dynamicLM}
 \title{Calculate w-year risk from a landmark time point}
 \usage{
-\method{predict}{dynamicLM}(object, newdata, lms, cause, w, extend = F, silence = F, complete = T)
+\method{predict}{dynamicLM}(
+  object,
+  newdata,
+  lms,
+  cause,
+  w,
+  extend = F,
+  silence = F,
+  complete = T,
+  ...
+)
 }
 \arguments{
 \item{object}{Fitted landmark supermodel}
@@ -42,6 +52,8 @@ Default is FALSE. If set to TRUE, predictions may be unreliable.}
 
 \item{complete}{Only make predictions for data entries with non-NA entries
 (i.e., non-NA predictions). Default is TRUE.}
+
+\item{...}{Unused}
 }
 \value{
 An object of class "LMpred" with components:

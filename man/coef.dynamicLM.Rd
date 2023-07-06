@@ -7,7 +7,9 @@
 \method{coef}{dynamicLM}(object, ...)
 }
 \arguments{
-\item{object}{}
+\item{object}{Fitted supermodel}
+
+\item{...}{Other arguments to pass to \code{stats::coef()}}
 }
 \value{
 Vector of coefficients for a Cox landmark supermodel or list of
