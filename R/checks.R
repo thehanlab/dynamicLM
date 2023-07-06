@@ -254,7 +254,7 @@ check_evaluation_inputs <- function(
       }
     })#, mc.cores=cores)
 
-    pred.df <- do.call("rbind",pred.list)
+    pred.df <- do.call("rbind", pred.list)
     pred.df <- pred.df[stats::complete.cases(pred.df), ] # TODO: remove/fix
     preds <- pred.df[names(object)]
     pred_LMs <- pred.df[[lm_col]]

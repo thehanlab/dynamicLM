@@ -137,16 +137,21 @@ score <-
            formula,
            data,
            lms,
-           id_col="ID",
+           id_col = "ID",
            se.fit = TRUE,
            conf.int = 0.95,
            split.method = "none",
            B = 1,
            M,
+
+           #TODO: * maybe combine summary and weights, summary = TRUE, summary = "km"
+           summary = FALSE, # TODO - description, checks
+           weights = NULL,  # TODO - description, checks
+
            cores = 1,
            seed,
            cause,
-           silent = T,
+           silent = TRUE,
            na.rm = FALSE,
            ...) {
 
@@ -155,40 +160,50 @@ score <-
            call. = FALSE)
     }
 
-    get.auc <- FALSE; get.brier <- FALSE
-    if ("auc" %in% metrics) get.auc <- TRUE
-    if ("brier" %in% metrics) get.brier <- TRUE
+    get.auc <- FALSE
+    get.bs <- FALSE
+    if ("auc" %in% tolower(metrics)) get.auc <- TRUE
+    if ("brier" %in% tolower(metrics)) get.bs <- TRUE
+    get.a.iid <- FALSE
+    get.b.iid <- FALSE
+    if ("auc" %in% tolower(metrics) && summary) get.a.iid <- TRUE
+    if ("brier" %in% tolower(metrics) && summary) get.b.iid <- TRUE
+
+    # TODO: check if other arguments make sense with summary = TRUE
+    # TODO: add bootstrapping option for summary metric
 
     checked_input <- match.call()
     m <- match(c("object", "times", "formula", "data", "lms", "id_col",
-                 "split.method", "B", "M", "cores", "seed", "cause"), names(checked_input), 0L)
+                 "split.method", "B", "M", "cores", "seed", "cause"),
+               names(checked_input), 0L)
     checked_input <- as.list(checked_input[m])
-    checked_input <- do.call(check_evaluation_inputs, checked_input)
+    checked_input <- do.call(check_evaluation_inputs, checked_input,
+                             envir = parent.frame())
 
-    object = checked_input$object
-    times = checked_input$times
-    preds = checked_input$preds
-    pred_LMs = checked_input$pred_LMs
-    data = checked_input$data
-    NF = checked_input$NF
-    w = checked_input$w
-    formula = checked_input$formula
-    cause = checked_input$cause
+    object <- checked_input$object
+    times <- checked_input$times
+    preds <- checked_input$preds
+    pred_LMs <- checked_input$pred_LMs
+    data <- checked_input$data
+    NF <- checked_input$NF
+    w <- checked_input$w
+    formula <- checked_input$formula
+    cause <- checked_input$cause
 
     if(!all("b" %in% colnames(data))) data$b = 1
 
-    num_B = length(unique(data$b))
+    num_B <- length(unique(data$b))
     se.fit.b <- se.fit
     if (num_B > 1) se.fit.b <- FALSE
 
     # TODO: parallelize?
-    metrics <- lapply(unique(data$b), function(b){
-      m_b <- lapply(1:length(times), function(t){
-        tLM = times[t]
+    metrics <- lapply(unique(data$b), function(b) {
+      m_b <- lapply(seq_along(times), function(t) {
+        tLM <- times[t]
 
-        idx = (pred_LMs == tLM) & (data$b == b)
-        data_to_test = data[idx,]
-        risks_to_test = lapply(1:NF, function(i) {
+        idx <- (pred_LMs == tLM) & (data$b == b)
+        data_to_test <- data[idx, ]
+        risks_to_test <- lapply(1:NF, function(i) {
           preds[idx, i]
         })
         names(risks_to_test) = names(object)
@@ -207,80 +222,123 @@ score <-
             times = c(tLM + w - 10e-5),
             se.fit = se.fit.b,
             conf.int = conf.int,
+            keep = "iid",
             ...
-          ), silent = T
+          ), silent = TRUE
         ))
 
+
+        errored <- FALSE
         if (inherits(score_t, "try-error")) {
-          auct_b <- data.frame(model=names(object), times=NA, AUC=NA)
-          briert_b <- data.frame(model=names(object), times=NA, Brier=NA)
+          errored <- TRUE
+          auct_b <- data.frame(model = names(object), times = NA, AUC = NA,
+                               se = NA, lower = NA, upper = NA)
+          briert_b <- data.frame(model = names(object), times = NA, Brier = NA,
+                                 se = NA, lower = NA, upper = NA)
+          ###{
+          # TODO: should be NAs as above so we can catch them
+          if (get.a.iid) a_iid <- data.frame()
+          if (get.b.iid) b_iid <- data.frame()
+          ###}
+
         } else {
           auct_b <- score_t$AUC$score
           briert_b <- score_t$Brier$score
+          ###{
+          if (get.a.iid) {
+            a_iid <- score_t$AUC$iid.decomp
+            a_iid$b <- b
+            a_iid <- cbind(tLM, a_iid)
+          }
+          if (get.b.iid) {
+            b_iid <- score_t$Brier$iid.decomp
+            b_iid$b <- b
+            b_iid <- cbind(tLM, b_iid)
+          }
+          ###}
         }
-        auct_b$b <- b; briert_b$b <- b
-
+        auct_b$b <- b
+        briert_b$b <- b
         metrics_b_t <- list()
         if (get.auc) metrics_b_t$AUC <- cbind(tLM, auct_b)
-        if (get.brier) metrics_b_t$Brier <- cbind(tLM, briert_b)
+        if (get.bs) metrics_b_t$Brier <- cbind(tLM, briert_b)
+
+        ###{
+        if (get.a.iid) metrics_b_t$a_iid <- a_iid
+        if (get.b.iid) metrics_b_t$b_iid <- b_iid
+        ###}
+
         metrics_b_t
       })
 
       m_out <- list()
-      if (get.auc) m_out$AUC <- do.call("rbind", lapply(m_b, function(m) m$AUC))
-      if (get.brier) m_out$Brier <- do.call("rbind", lapply(m_b, function(m) m$Brier))
+      if (get.auc)
+        m_out$AUC <- do.call("rbind", lapply(m_b, function(m) m$AUC))
+      if (get.bs)
+        m_out$Brier <- do.call("rbind", lapply(m_b, function(m) m$Brier))
+      ###{
+      if (get.a.iid)
+        m_out$a_iid <- do.call("rbind", lapply(m_b, function(m) m$a_iid))
+      if (get.b.iid)
+        m_out$b_iid <- do.call("rbind", lapply(m_b, function(m) m$b_iid))
+      ###}
       m_out
     })
 
     auct <- do.call("rbind", lapply(metrics, function(m) m$AUC))
     briert <- do.call("rbind", lapply(metrics, function(m) m$Brier))
+    ###{
+    a_iid <- do.call("rbind", lapply(metrics, function(m) m$a_iid))
+    b_iid <- do.call("rbind", lapply(metrics, function(m) m$b_iid))
+    ###}
 
     if (B > 1) {
-      if (se.fit==TRUE) {
-        alpha = 1-conf.int
-        auct_out <- auct[,
-                     data.table::data.table(
-                       mean(.SD[["AUC"]],na.rm=na.rm),
-                       se=stats::sd(.SD[["AUC"]],na.rm=T),
-                       lower=stats::quantile(.SD[["AUC"]],alpha/2,na.rm=T),
-                       upper=stats::quantile(.SD[["AUC"]],(1-alpha/2),na.rm=T)),
-                     by=c("model","tLM"),.SDcols="AUC"
-                     ]
-        briert_out <- briert[,
-                         data.table::data.table(
-                           mean(.SD[["Brier"]],na.rm=na.rm),
-                           se=stats::sd(.SD[["Brier"]],na.rm=T),
-                           lower=stats::quantile(.SD[["Brier"]],alpha/2,na.rm=T),
-                           upper=stats::quantile(.SD[["Brier"]],(1-alpha/2),na.rm=T)),
-                         by=c("model","tLM"),.SDcols="Brier"
-                         ]
-        data.table::setnames(auct_out,c("model","tLM","AUC","se","lower","upper"))
-        data.table::setnames(briert_out,c("model","tLM","Brier","se","lower","upper"))
+      if (se.fit == TRUE) {
+        alpha <- 1 - conf.int
+        auct_out <- auct[, data.table::data.table(
+          mean(.SD[["AUC"]], na.rm = na.rm),
+          se = stats::sd(.SD[["AUC"]], na.rm = TRUE),
+          lower = stats::quantile(.SD[["AUC"]], alpha / 2, na.rm = TRUE),
+          upper = stats::quantile(.SD[["AUC"]], (1 - alpha / 2), na.rm = TRUE)
+        ), by = c("model", "tLM"), .SDcols = "AUC"]
+        briert_out <- briert[, data.table::data.table(
+          mean(.SD[["Brier"]], na.rm = na.rm),
+          se = stats::sd(.SD[["Brier"]], na.rm = TRUE),
+          lower = stats::quantile(.SD[["Brier"]], alpha / 2, na.rm = TRUE),
+          upper = stats::quantile(.SD[["Brier"]], (1 - alpha / 2), na.rm = TRUE)
+        ), by = c("model", "tLM"), .SDcols = "Brier"]
+        data.table::setnames(
+          auct_out, c("model", "tLM", "AUC", "se", "lower", "upper"))
+        data.table::setnames(
+          briert_out, c("model", "tLM", "Brier", "se", "lower", "upper"))
 
         if (!silent) {
           b_na <- auct$b[is.na(auct$AUC)]
-          tLM_na <- auct$tLM[is.na(auct$AUC)]
+          tlm_na <- auct$tLM[is.na(auct$AUC)]
           model_na <- auct$model[is.na(auct$AUC)]
-
-          if(length(b_na) != 0) {
+          if (length(b_na) != 0) {
             message("Upper limit of followup in bootstrap samples was too low. Results at evaluation time(s) beyond these points could not be computed and are left as NA.")
             message(paste0("Metrics not computed for (model, b, tLM) = ",
-                       paste0("(",model_na,", ",b_na,", ",tLM_na,")",
-                              collapse=", ")))
+                           paste0("(", model_na, ", ", b_na, ", ", tlm_na, ")",
+                                  collapse = ", ")))
           }
         }
-
         if (na.rm == FALSE) {
-          auct_out <- auct_out[c(is.na(auct_out[,3])), `:=` ("se"=NA,"lower"=NA,"upper"=NA)]
-          briert_out <- briert_out[c(is.na(briert_out[,3])), `:=` ("se"=NA,"lower"=NA,"upper"=NA)]
+          auct_out <- auct_out[is.na(auct_out[, 3]),
+                               `:=`("se" = NA, "lower" = NA, "upper" = NA)]
+          briert_out <- briert_out[is.na(briert_out[, 3]),
+                                   `:=`("se" = NA, "lower" = NA, "upper" = NA)]
         }
 
-
       } else {
-        auct_out <- auct[,data.table::data.table(mean(.SD[["AUC"]],na.rm=na.rm)),by=c("model","tLM"),.SDcols="AUC"]
-        briert_out <- briert[,data.table::data.table(mean(.SD[["Brier"]],na.rm=na.rm)),by=c("model","tLM"),.SDcols="Brier"]
-        data.table::setnames(auct_out,c("model","tLM","AUC"))
-        data.table::setnames(briert_out,c("model","tLM","Brier"))
+        auct_out <- auct[, data.table::data.table(
+          mean(.SD[["AUC"]], na.rm = na.rm)
+        ), by = c("model", "tLM"), .SDcols = "AUC"]
+        briert_out <- briert[, data.table::data.table(
+          mean(.SD[["Brier"]], na.rm = na.rm)
+        ), by = c("model", "tLM"), .SDcols = "Brier"]
+        data.table::setnames(auct_out, c("model", "tLM", "AUC"))
+        data.table::setnames(briert_out, c("model", "tLM", "Brier"))
       }
     } else {
       auct_out <- auct
@@ -294,6 +352,24 @@ score <-
       briert = briert_out,
       w = w
     )
-    class(outlist) = "LMScore"
+    ###{
+    # TODO: add as an argument
+    # TODO: add checks for left-censoring
+    # TODO: if tolower(weighted) %in% c("km", "survival") || weighted == TRUE
+    #   -> then either need preds (to use p1$data with p1$outcome)
+    #   -> or need supermodel to be fit with x = TRUE ... (TODO)
+
+    if (summary) {
+      if (get.a.iid) {
+        outlist$auc_summary <- summary_metric("AUC", auct, a_iid,
+                                              conf.int, weights, object)
+      }
+      if (get.b.iid) {
+        outlist$brier_summary <- summary_metric("Brier", briert, b_iid,
+                                                conf.int, weights, object)
+      }
+    }
+    ###}
+    class(outlist) <- "LMScore"
     return(outlist)
   }
