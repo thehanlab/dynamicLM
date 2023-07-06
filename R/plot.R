@@ -149,7 +149,7 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
 plot.LMScore <- function(x, metrics, se = TRUE, xlab, ylab, legend, pch, ylim,
                          xlim, ...) {
   object <- x
-  x <- legend
+
   if (missing(metrics)) {
     metrics <- c()
     if (!is.null(object$auct)) metrics <- c("auc")
@@ -165,8 +165,10 @@ plot.LMScore <- function(x, metrics, se = TRUE, xlab, ylab, legend, pch, ylim,
   if (missing(ylab))
     set_ylab <- TRUE
   set_x <- FALSE
-  if (missing(x))
+  if (missing(legend))
     set_x <- TRUE
+  else
+    x <- legend
 
   plot.metric <- function(df, metric, loc, ylim, xlim) {
     if (set_ylab) ylab <- paste0(metric, "(t, t + ", object$w, ")")
