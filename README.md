@@ -1,18 +1,13 @@
-- <a href="#dynamiclm" id="toc-dynamiclm">1 dynamicLM</a>
-- <a href="#what-is-landmarking-and-when-is-it-used"
-  id="toc-what-is-landmarking-and-when-is-it-used">2 What is landmarking
-  and when is it used?</a>
-  - <a href="#installation" id="toc-installation">2.1 Installation</a>
-- <a href="#basic-example" id="toc-basic-example">3 Basic Example</a>
-  - <a href="#data" id="toc-data">3.1 Data</a>
-  - <a href="#build-a-super-data-set" id="toc-build-a-super-data-set">3.2
-    Build a super data set</a>
-  - <a href="#fit-the-super-model" id="toc-fit-the-super-model">3.3 Fit the
-    super model</a>
-  - <a href="#obtain-predictions" id="toc-obtain-predictions">3.4 Obtain
-    predictions</a>
-  - <a href="#model-evaluationvalidation"
-    id="toc-model-evaluationvalidation">3.5 Model evaluation/validation</a>
+- [1 dynamicLM](#dynamiclm)
+- [2 What is landmarking and when is it
+  used?](#what-is-landmarking-and-when-is-it-used)
+  - [2.1 Installation](#installation)
+- [3 Basic Example](#basic-example)
+  - [3.1 Data](#data)
+  - [3.2 Build a super data set](#build-a-super-data-set)
+  - [3.3 Fit the super model](#fit-the-super-model)
+  - [3.4 Obtain predictions](#obtain-predictions)
+  - [3.5 Model evaluation/validation](#model-evaluationvalidation)
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
@@ -32,8 +27,12 @@ baseline and later points in time; it is essential for
 better-individualized treatment. Personalized risk is updated with new
 information and/or as time passes.
 
-![illustration of dynamic
-w-yearpredictions](man/figures/README-descrip.png)
+<figure>
+<img src="man/figures/README-descrip.png"
+alt="illustration of dynamic w-yearpredictions" />
+<figcaption aria-hidden="true">illustration of dynamic
+w-yearpredictions</figcaption>
+</figure>
 
 An example is cancer treatment: we may want to predict a 5-year risk of
 recurrence whenever a patient’s health information changes. For example,
@@ -77,11 +76,14 @@ You can install the development version of `dynamicLM` from
 ``` r
 # install.packages("devtools")
 devtools::install_github("thehanlab/dynamicLM")
-#> Skipping install of 'dynamicLM' from a github remote, the SHA1 (75485561) has not changed since last install.
+#> Skipping install of 'dynamicLM' from a github remote, the SHA1 (98dc3268) has not changed since last install.
 #>   Use `force = TRUE` to force installation
 ```
 
-Requirements for the package can be found in the description file.
+Requirements for the package can be found in the DESCRIPTION file.
+
+Package documentation can be found in [this
+pdf](https://github.com/thehanlab/dynamicLM/blob/main/man/dynamicLM_0.3.0.pdf).
 
 # 3 Basic Example
 
@@ -114,7 +116,7 @@ library(dynamicLM)
 #> Loading required package: survival
 #> Loading required package: prodlim
 #> Loading required package: riskRegression
-#> riskRegression version 2023.03.22
+#> riskRegression version 2023.06.30
 ```
 
 ``` r
@@ -616,7 +618,7 @@ head(dat)
 plotrisk(supermodel, dat, format = "long", ylim = c(0, 0.7), x.legend = "topright")
 ```
 
-<img src="man/figures/README-plotRisk-1.png" width="100%" />
+<img src="man/figures/README-plotrisk-1.png" width="100%" />
 
 We can see that the male has a higher and increasing 5-year risk of
 recurrence that peaks around 1 year, and then rapidly decreases. This
