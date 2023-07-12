@@ -80,8 +80,6 @@ devtools::install_github("thehanlab/dynamicLM")
 #>   Use `force = TRUE` to force installation
 ```
 
-Requirements for the package can be found in the DESCRIPTION file.
-
 Package documentation can be found in [this
 pdf](https://github.com/thehanlab/dynamicLM/blob/main/man/dynamicLM_0.3.0.pdf).
 
