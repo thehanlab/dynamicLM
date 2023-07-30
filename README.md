@@ -29,7 +29,7 @@ information and/or as time passes.
 
 <figure>
 <img src="man/figures/README-descrip.png"
-alt="illustration of dynamic w-yearpredictions" />
+alt="" />
 <figcaption aria-hidden="true">illustration of dynamic
 w-yearpredictions</figcaption>
 </figure>
