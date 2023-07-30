@@ -30,8 +30,7 @@ information and/or as time passes.
 <figure>
 <img src="man/figures/README-descrip.png"
 alt="" />
-<figcaption aria-hidden="true">illustration of dynamic
-w-yearpredictions</figcaption>
+<figcaption aria-hidden="true"></figcaption>
 </figure>
 
 An example is cancer treatment: we may want to predict a 5-year risk of
