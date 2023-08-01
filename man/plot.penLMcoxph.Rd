@@ -2,19 +2,26 @@
 % Please edit documentation in R/plot.R
 \name{plot.penLMcoxph}
 \alias{plot.penLMcoxph}
-\title{Plot the coefficients of a penalized Cox supermodel}
+\title{Plot the non-zero coefficients of a penalized Cox landmark supermodel}
 \usage{
-\method{plot}{penLMcoxph}(x, single.plot = FALSE, max_coefs = 10, ...)
+\method{plot}{penLMcoxph}(
+  x,
+  single_plot = TRUE,
+  max_coefs = NULL,
+  col = "blue",
+  xlab = "Coefficient value",
+  ...
+)
 }
 \arguments{
 \item{x}{a penalized Cox supermodel - created by calling \code{fitLM} on an
 object created from \code{penLM}/\code{cv.pen}}
 
-\item{single.plot}{Logical, defaults to FALSE. A single plot for both
+\item{single_plot}{Logical, defaults to TRUE. A single plot for both
 positive and negative coefficients, or two separate plots.}
 
-\item{max_coefs}{Default is 10. The maximum number of coefficients to plot.
-Can be set to NULL if plotting all coefficients is desired.}
+\item{max_coefs}{Default is to plot all coefficients. If specified, gives the
+maximum number of coefficients to plot.}
 
 \item{...}{Additional arguments to barplot.}
 }

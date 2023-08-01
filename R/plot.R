@@ -148,16 +148,19 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
 #' @param se Boolean, default TRUE. To include point wise confidence intervals.
 #' @param loc Location for legend.
 #' @param xlab,ylab,pch,ylim,xlim graphical parameters
+#' @param legend Include a legend or not. Default is TRUE.
+#' @param auc Plot the AUC or not (if available). Default is TRUE.
+#' @param brier Plot the Brier Score or not (if available). Default is TRUE.
 #' @param ... Additional arguments to `plot()`
 #'
 #' @export
 #'
 plot.LMScore <- function(x, metrics, se = TRUE, loc, xlab, ylab, pch, ylim,
-                         xlim, ...) {
+                         xlim, legend = TRUE, auc = TRUE, brier = TRUE, ...) {
   if (missing(metrics)) {
     metrics <- c()
-    if (!is.null(x$auct)) metrics <- c("auc")
-    if (!is.null(x$briert)) metrics <- c(metrics, "brier")
+    if (!is.null(x$auct) && auc) metrics <- c("auc")
+    if (!is.null(x$briert) && brier) metrics <- c(metrics, "brier")
   }
 
   if (missing(xlab))
@@ -203,7 +206,10 @@ plot.LMScore <- function(x, metrics, se = TRUE, loc, xlab, ylab, pch, ylim,
                         pch = pch, lty = 2)
       }
     }
-    graphics::legend(loc, legend = model_names, col = models, pch = pch, bty = "n")
+    if (legend) {
+      graphics::legend(loc, legend = model_names, col = models,
+                       pch = pch, bty = "n")
+    }
   }
 
   if ("auc" %in% metrics) {
@@ -323,18 +329,21 @@ plot.cv.penLM <- function(x, all_causes = FALSE, silent = FALSE, label = FALSE,
 #' same. X-axes are the same if separate plots are used.
 #'
 #' @param x (Named) Vector of coefficients
-#' @param single.plot Logical, defaults to FALSE. A single plot for both
+#' @param single_plot Logical, defaults to TRUE. A single plot for both
 #'   positive and negative coefficients, or two separate plots.
-#' @param max_coefs Default is 10. The maximum number of coefficients to plot.
-#'   Can be set to NULL if plotting all coefficients is desired.
+#' @param max_coefs Default is to plot all coefficients. If specified, gives the
+#'   maximum number of coefficients to plot.
+#' @param col Fill color for the barplot.
+#' @param xlab x-axis Label
 #' @param ... Additional arguments to barplot.
 #' @export
-plot.coefs <- function(x, single.plot, max_coefs, ...) {
+plot.coefs <- function(x, single_plot = TRUE, max_coefs = NULL,
+                       col = "blue", xlab = "Coefficient value", ...) {
   coefs <- x
   pos_coefs <- sort(coefs[coefs > 0], decreasing = TRUE)
   neg_coefs <- (-sort(-(coefs[coefs < 0]), decreasing = TRUE))
 
-  if (!single.plot) {
+  if (!single_plot) {
     xmax <- 1.1 * max(c(pos_coefs, -neg_coefs), na.rm = TRUE)
     ymax <- max(
       min(length(pos_coefs), max_coefs),
@@ -343,24 +352,24 @@ plot.coefs <- function(x, single.plot, max_coefs, ...) {
     if (length(neg_coefs) > 0) {
       neg_coefs <- neg_coefs[1:min(length(neg_coefs), max_coefs)]
       graphics::barplot(neg_coefs,
-                        col = "blue",
+                        col = col,
                         names.arg = names(neg_coefs),
                         horiz = TRUE, las = 1, xpd = FALSE,
                         xlim = c(-xmax, 0),
                         ylim = c(0, ymax),
                         width = 0.8,
-                        xlab = "Value")
+                        xlab = xlab)
     }
     if (length(pos_coefs) > 0) {
       pos_coefs <- pos_coefs[1:min(length(pos_coefs), max_coefs)]
       graphics::barplot(pos_coefs,
-                        col = "blue",
+                        col = col,
                         names.arg = names(pos_coefs),
                         horiz = TRUE, las = 1, xpd = FALSE,
                         xlim = c(0, xmax),
                         ylim = c(0, ymax),
                         width = 0.8,
-                        xlab = "Value")
+                        xlab = xlab)
     }
 
   } else {
@@ -369,51 +378,61 @@ plot.coefs <- function(x, single.plot, max_coefs, ...) {
     if (length(neg_coefs) > 0)
       neg_coefs <- neg_coefs[1:min(length(neg_coefs), max_coefs)]
 
-    graphics::barplot(c(pos_coefs, neg_coefs), col = "blue",
-                      names.arg = c(names(pos_coefs), names(neg_coefs)),
-                      horiz = TRUE, las = 1, xpd = FALSE, xlab = "Value", ...)
+    all_coefs <- c(pos_coefs, neg_coefs)
+    all_coefs <- all_coefs[order(abs(all_coefs))]
+    all_coefs <- all_coefs[1:min(length(all_coefs), max_coefs)]
+    graphics::barplot(all_coefs, col = col, names.arg = names(all_coefs),
+                      horiz = TRUE, las = 1, xpd = FALSE, xlab = xlab, ...)
   }
 }
 
-#' Plot the coefficients of a penalized Cox supermodel
+#' Plot the non-zero coefficients of a penalized Cox landmark supermodel
 #'
 #' Can plot positive and negative coefficients in two separate plots or the
 #' same. X-axes are the same if separate plots are used.
 #'
 #' @param x a penalized Cox supermodel - created by calling `fitLM` on an
 #'   object created from `penLM`/`cv.pen`
-#' @param single.plot Logical, defaults to FALSE. A single plot for both
+#' @param single_plot Logical, defaults to TRUE. A single plot for both
 #'   positive and negative coefficients, or two separate plots.
-#' @param max_coefs Default is 10. The maximum number of coefficients to plot.
-#'   Can be set to NULL if plotting all coefficients is desired.
+#' @param max_coefs Default is to plot all coefficients. If specified, gives the
+#'   maximum number of coefficients to plot.
 #' @param ... Additional arguments to barplot.
 #' @export
-plot.penLMcoxph <- function(x, single.plot = FALSE, max_coefs = 10, ...) {
+plot.penLMcoxph <- function(x, single_plot = TRUE, max_coefs = NULL,
+                            col = "blue", xlab = "Coefficient value", ...) {
   coefs <- x$model$coefficients
-  plot.coefs(coefs, single.plot, max_coefs, ...)
+  plot.coefs(coefs, single_plot, max_coefs, col, xlab, ...)
 }
 
 
-#' Plot the coefficients of a penalized Cause-specific Cox supermodel
+#' Plot the non-zero coefficients of a penalized cause-specific Cox landmark
+#'   supermodel
+#'
+#'Can plot positive and negative coefficients in two separate plots or the
+#' same. X-axes are the same if separate plots are used.
 #'
 #' @param x a penalized cause-specific Cox supermodel - created by calling
 #'   [dynamic_lm()] on an object created from [penLM()]/[cv.penLM()].
-#' @param single.plot Logical, defaults to FALSE. A single plot for both
+#' @param single_plot Logical, defaults to TRUE. A single plot for both
 #'   positive and negative coefficients, or two separate plots.
-#' @param max_coefs Default is 10. The maximum number of coefficients to plot.
-#'   Can be set to NULL if plotting all coefficients is desired.
+#' @param max_coefs Default is to plot all coefficients. If specified, gives the
+#'   maximum number of coefficients to plot.
 #' @param all_causes Logical, default is FALSE. Plot coefficients for all
 #'   cause-specific models.
+#' @param col Fill color for the barplot.
+#' @param xlab x-axis Label
 #' @param ... Additional arguments to barplot.
 #' @export
-plot.penLMCSC <- function(x, single.plot = FALSE, max_coefs = 10,
-                          all_causes = FALSE, ...) {
+plot.penLMCSC <- function(x, single_plot = TRUE, max_coefs = NULL,
+                          all_causes = FALSE, col = "blue",
+                          xlab = "Coefficient value", ...) {
   if (!all_causes) {
     coefs <- x$model$models[[1]]$coefficients
-    plot.coefs(coefs, single.plot, max_coefs, ...)
+    plot.coefs(coefs, single_plot, max_coefs, col, xlab, ...)
   } else {
     lapply(1:length(x$model$models),
            function(i) plot.coefs(x$model$models[[i]]$coefficients,
-                                  single.plot, max_coefs, ...))
+                                  single_plot, max_coefs, col, xlab, ...))
   }
 }

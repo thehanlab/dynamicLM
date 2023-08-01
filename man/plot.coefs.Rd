@@ -4,16 +4,27 @@
 \alias{plot.coefs}
 \title{Generic function to plot coefficients}
 \usage{
-\method{plot}{coefs}(x, single.plot, max_coefs, ...)
+\method{plot}{coefs}(
+  x,
+  single_plot = TRUE,
+  max_coefs = NULL,
+  col = "blue",
+  xlab = "Coefficient value",
+  ...
+)
 }
 \arguments{
 \item{x}{(Named) Vector of coefficients}
 
-\item{single.plot}{Logical, defaults to FALSE. A single plot for both
+\item{single_plot}{Logical, defaults to TRUE. A single plot for both
 positive and negative coefficients, or two separate plots.}
 
-\item{max_coefs}{Default is 10. The maximum number of coefficients to plot.
-Can be set to NULL if plotting all coefficients is desired.}
+\item{max_coefs}{Default is to plot all coefficients. If specified, gives the
+maximum number of coefficients to plot.}
+
+\item{col}{Fill color for the barplot.}
+
+\item{xlab}{x-axis Label}
 
 \item{...}{Additional arguments to barplot.}
 }

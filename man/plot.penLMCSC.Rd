@@ -2,25 +2,39 @@
 % Please edit documentation in R/plot.R
 \name{plot.penLMCSC}
 \alias{plot.penLMCSC}
-\title{Plot the coefficients of a penalized Cause-specific Cox supermodel}
+\title{Plot the non-zero coefficients of a penalized cause-specific Cox landmark
+supermodel}
 \usage{
-\method{plot}{penLMCSC}(x, single.plot = FALSE, max_coefs = 10, all_causes = FALSE, ...)
+\method{plot}{penLMCSC}(
+  x,
+  single_plot = TRUE,
+  max_coefs = NULL,
+  all_causes = FALSE,
+  col = "blue",
+  xlab = "Coefficient value",
+  ...
+)
 }
 \arguments{
 \item{x}{a penalized cause-specific Cox supermodel - created by calling
 \code{\link[=dynamic_lm]{dynamic_lm()}} on an object created from \code{\link[=penLM]{penLM()}}/\code{\link[=cv.penLM]{cv.penLM()}}.}
 
-\item{single.plot}{Logical, defaults to FALSE. A single plot for both
+\item{single_plot}{Logical, defaults to TRUE. A single plot for both
 positive and negative coefficients, or two separate plots.}
 
-\item{max_coefs}{Default is 10. The maximum number of coefficients to plot.
-Can be set to NULL if plotting all coefficients is desired.}
+\item{max_coefs}{Default is to plot all coefficients. If specified, gives the
+maximum number of coefficients to plot.}
 
 \item{all_causes}{Logical, default is FALSE. Plot coefficients for all
 cause-specific models.}
 
+\item{col}{Fill color for the barplot.}
+
+\item{xlab}{x-axis Label}
+
 \item{...}{Additional arguments to barplot.}
 }
 \description{
-Plot the coefficients of a penalized Cause-specific Cox supermodel
+Can plot positive and negative coefficients in two separate plots or the
+same. X-axes are the same if separate plots are used.
 }
