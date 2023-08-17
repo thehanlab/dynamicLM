@@ -1,30 +1,37 @@
 #' Fit a dynamic Cox or cause-specific Cox landmark supermodel with or without
 #'   regularization.
 #'
+#' @description
 #' To fit Cox or cause-specific Cox models without regularization see:
 #' * [dynamic_lm.LMdataframe()] for use on a stacked landmark dataset
 #' * [dynamic_lm.data.frame()] for use on a dataframe
 #'
 #' To fit penalized Cox or cause-specific Cox models see:
-#' * [dynamic_lm.penLM()] without cross-validation
-#' * [dynamic_lm.cv.penLM()] with cross-validation
+#' * [dynamic_lm.pen_lm()] without cross-validation
+#' * [dynamic_lm.cv.pen_lm()] with cross-validation
 #'
-#' @param ... Arguments to pass to dynamic_lm
+#' @param ... Arguments to pass to `dynamic_lm()`
 #'
-#' @return An object of class "LMcoxph", "LMCSC", "penLMcoxph" or "penLMCSC"
-#'   with components:
+#' @return A fitted landmark supermodel object which has components:
 #'   - model: fitted model
 #'   - type: as input
 #'   - w, func_covars, func_lms, lm_covs, all_covs, outcome: as in `lmdata`
 #'   - LHS: the survival outcome
-#'   - linear.predictors: the vector of linear predictors, one per subject. Note
-#'     that this vector has not been centered.
-#'   - args: arguments used to call model fitting                                 ####
-#'   - id_col: the cluster argument, often specifies the column with patient ID   ####
-#'   - lm_col: column name that indicates the landmark time point for a row       ####
+#'   - linear.predictors: the vector of linear predictors, one per subject.
+#'     Note that this vector has not been centered.
+#'
+#'  If the model is unpenalized (class "LMcoxph" or "LMCSC") it has additional
+#'  components:
+#'   - args: arguments used to call model fitting
+#'   - id_col: the cluster argument, often specifies the column with patient ID
+#'   - lm_col: column name that indicates the landmark time point for a row.
+#'
+#' If the model is penalized (class "penLMcoxph" or "penLMCSC") it has
+#' additional components:
+#' - lambda: the values of lambda for which this model has been fit.
 #'
 #' @seealso [dynamic_lm.LMdataframe()], [dynamic_lm.data.frame()],
-#'   [dynamic_lm.penLM()], [dynamic_lm.cv.penLM()]
+#'   [dynamic_lm.pen_lm()], [dynamic_lm.cv.pen_lm()]
 #' @export
 #'
 # TODO: regularized additions in return vs non-regularized
@@ -131,7 +138,7 @@ dynamic_lm.LMdataframe <-  function(lmdata,
 #'
 #' Note that it is recommended to rather use [stack_data()] and
 #' [add_interactions()] to create an object of class LMdataframe rather than
-#' directly calling `dynamic_lm` on a dataframe to ensure the data has the
+#' directly calling `dynamic_lm()` on a dataframe to ensure the data has the
 #' correct form.
 #'
 #' @param lmdata A dataframe that should be a stacked dataset across landmark
@@ -139,6 +146,8 @@ dynamic_lm.LMdataframe <-  function(lmdata,
 #' @param formula The formula to be used, remember to include "+cluster(ID)" for
 #'  the column that indicates the ID of the individual for robust error
 #'  estimates.
+#'  Note that transformations (e.g., `x1*x2`) cannot be used in the formula and
+#'  factors/categorical variables must first be made into dummy variables.
 #' @param type "coxph" or "CSC"/"CauseSpecificCox"
 #' @param method A character string specifying the method for tie handling.
 #'   Default is "breslow". More information can be found in [survival::coxph()].
@@ -232,11 +241,13 @@ dynamic_lm.data.frame <- function(lmdata,
 
 #' Fit a penalized coxph or CSC supermodel for a specific coefficient
 #'
+#' Use one value of `lambda` to fit a model from which predictions can be made.
+#'
 #' @details The Breslow method is used for handling ties, as we use the `glmnet`
 #'   package which does the same.
 #'
-#' @param object  A fitted object of class "LMpen". This can be created by
-#'   calling [penLM()] using arguments `lmdata` and `xcols`.
+#' @param object  A fitted object of class "pen_lm". This can be created by
+#'   calling [pen_lm()] using arguments `lmdata` and `xcols`.
 #' @param lambda Value of the penalty parameter `lambda` at which to fit a
 #'   model. For cause-specific Cox super models, this must be a list or vector
 #'   of values: one for each cause.
@@ -256,11 +267,11 @@ dynamic_lm.data.frame <- function(lmdata,
 #' }
 #' @import survival glmnet
 #' @export
-dynamic_lm.penLM <- function(object, lambda, ...) {
+dynamic_lm.pen_lm <- function(object, lambda, ...) {
   survival.type <- attr(object, "survival.type")
   lmdata <- attr(object, "lmdata")
   if(is.null(lmdata))
-    stop("To fit a penalized model, penLM or cv.penLM must be called with arguments lmdata and xcols. (x,y) is not yet implemented")
+    stop("To fit a penalized model, pen_lm() or cv.pen_lm() must be called with arguments (x,y) as a LMdataframe and colnames. Matrices and responses are not yet implemented")
   xcols <- attr(object, "xcols")
   data <- lmdata$data
   NC <- length(object)
@@ -363,14 +374,16 @@ dynamic_lm.penLM <- function(object, lambda, ...) {
 
 #' Fit a penalized cross-validated coxph or CSC super model
 #'
+#' Use one value of `lambda` to fit a model from which predictions can be made.
+#'
 #' @details The Breslow method is used for handling ties, as we use the `glmnet`
 #'   package which does the same.
 #'
-#' @param object  A fitted object of class "cv.LMpen". This can be created by
-#'   calling `cv.penLM` using arguments `lmdata` and `xcols`.
+#' @param object  A fitted object of class "cv.pen_lm". This can be created by
+#'   calling `cv.pen_lm` using arguments `lmdata` and `xcols`.
 #' @param lambda Value of the penalty parameter `lambda` to fit a model.
 #'   Default is "lambda.min"; "lambda.1se" can also be used or a specific value
-#'   can be input.For cause-specific Cox super models,
+#'   can be input. For cause-specific Cox super models,
 #'   this must be a list or vector of values: one for each cause.
 #' @param ... Additional arguments to pass to [survival::coxph()] or
 #'   [riskRegression::CSC()]
@@ -388,12 +401,12 @@ dynamic_lm.penLM <- function(object, lambda, ...) {
 #' }
 #' @import survival glmnet
 #' @export
-dynamic_lm.cv.penLM <- function(object, lambda = "lambda.min", ...) {
+dynamic_lm.cv.pen_lm <- function(object, lambda = "lambda.min", ...) {
   if (inherits(lambda, "character")) {
     if (lambda == "lambda.1se")
       lambda <- lapply(object, function(o) o$lambda.1se)
     else if (lambda == "lambda.min")
       lambda <- lapply(object, function(o) o$lambda.min)
   }
-  return(dynamic_lm.penLM(object, lambda=lambda, ...))
+  return(dynamic_lm.pen_lm(object, lambda = lambda, ...))
 }

@@ -57,7 +57,7 @@ check_evaluation_inputs <- function(
 
     # TODO: update to include penalized classes
     } else if (!(inherits(object[[i]],c("LMCSC", "LMcoxph")))) {
-      stop(paste("all prediction models in object must be of class LMCSC,",
+      stop(paste("All prediction models in object must be of class LMCSC,",
                  "LMcoxph (i.e., output from dynamic_lm) or LMpred (i.e.,",
                  "output from predict.dynamicLM) but", name, "is of class",
                  class(object[[i]])))
@@ -147,7 +147,7 @@ check_evaluation_inputs <- function(
 
   perform.boot <- FALSE
   if (split.method == "bootcv") {
-    unique.inds = unique(data[[id_col]])
+    unique.inds <- unique(data[[id_col]])
     split.method <- riskRegression::getSplitMethod(split.method, B = B,
                                                    N = length(unique.inds),
                                                    M = M, seed)
@@ -189,25 +189,25 @@ check_evaluation_inputs <- function(
           stop("LM points for individuals across prediction models are not the name.")
       }
     }
-  }
 
-  else if (!perform.boot) {
+  } else if (!perform.boot) {
     # TODO: consider including w, extend, silence, complete as args to predict
     if (!missing(data))
-      preds = lapply(object, function(o) predict.dynamicLM(o, data, lms, cause))
-    else preds = lapply(object, function(o) predict.dynamicLM(o, cause=cause))
-    args = match.call()
-    args$data = NULL
-    args$lms = NULL
-    args$object = preds
+      preds <- lapply(object,
+                      function(o) predict.dynamicLM(o, data, lms, cause))
+    else
+      preds <- lapply(object, function(o) predict.dynamicLM(o, cause = cause))
+    args <- match.call()
+    args$data <- NULL
+    args$lms <- NULL
+    args$object <- preds
     return(eval(args))
-  }
 
 
-  else if (perform.boot){
+  } else if (perform.boot){
     # pred.list <- parallel::mclapply(1:B,function(b){
-    pred.list <- lapply(1:B,function(b){
-      id_train_b <- split.idx[,b]
+    pred.list <- lapply(1:B, function(b) {
+      id_train_b <- split.idx[, b]
       id_train_b <- data[[id_col]] %in% id_train_b
 
       data_val_b <- data[!id_train_b, ]
@@ -271,8 +271,8 @@ check_evaluation_inputs <- function(
     times <- unique(pred_LMs)
   } else {
     if (!all(times %in% unique(pred_LMs))) {
-      times = paste(times, collapse = ",")
-      pred_LMs = paste(unique(pred_LMs), collapse = ",")
+      times <- paste(times, collapse = ",")
+      pred_LMs <- paste(unique(pred_LMs), collapse = ",")
       stop(paste("arg times (= ", times,
                  ") must be a subset of landmark prediction times (= ",
                  pred_LMs, ")"))
@@ -294,55 +294,42 @@ check_evaluation_inputs <- function(
 }
 
 
-check_penLM_inputs <- function(x, y, lmdata, xcols, id_col = NULL, alpha = 1,
+check_penlm_inputs <- function(x, y, id_col = NULL, alpha = 1, #lmdata, xcols,
                                parent_func, CV = FALSE, ...) {
-  print("check_penLM_inputs")
+  # print("check_penlm_inputs")
   # print(y)
   # check which data inputs are provided
   # i.e., are all provided? & can we replace lmdata and xcols with x and y?
-  use_lmdata <- TRUE
-  if (missing(lmdata)) use_lmdata <- FALSE
+  use_lmdata <- FALSE
+  lmdata <- NULL
+  xcols <- NULL
 
-  print(use_lmdata)
+  if (missing(x))
+    stop("argument x is missing with no default.")
 
-  if (!use_lmdata) {
-    if (missing(x))
-      stop("argument x is missing with no default, or provide lmdata")
-    if (inherits(x, "LMdataframe")) {
-      if (!missing(xcols)) {
-        return(parent_func(lmdata = x, xcols = xcols, id_col = id_col,
-                           alpha = alpha, ...))
-      } else if (!missing(y)) {
-        if (inherits(y, "character"))
-          return(parent_func(lmdata = x, xcols = y, id_col = id_col,
-                             alpha = alpha, ...))
-        else
-          stop("Inputs are mismatched. Arguments (x, y) should be of type (matrix, Surv object) or arguments (lmdata, xcols) should be (LMdataframe, vector of column names)")
-      } else {
-        return(parent_func(lmdata = x, id_col = id_col, ...))
-      }
+  if (inherits(x, "LMdataframe")) {
+    use_lmdata <- TRUE
+    lmdata <- x
+    if (!missing(y)) {
+      if (!inherits(y, "character"))
+        stop("Inputs are mismatched. Arguments (x, y) should be of type (matrix, Surv object) or (LMdataframe, vector of column names)")
+      else
+        xcols <- y
     }
+  } else {
+    if (!inherits(x, "matrix"))
+      stop("argument x should be of class LMdataframe or matrix.")
     if (missing(y))
-      stop("argument y is missing with no default, or provide lmdata")
-    if (!(class(y) %in% c("Surv", "Hist")))
-      stop("argument y should be a Surv or Hist object")
-  }
-  if (use_lmdata) {
-    if (inherits(lmdata, "LMdataframe")) {
-      if (!missing(x))
-        message("Argument x was provided but is redundent with argument lmdata. Ignoring x.")
-      if (!missing(y))
-        message("Argument y was provided but is redundent with argument lmdata. Ignoring y.")
-    } else {
-      stop("Argument lmdata must be of class LMdataframe. This can be created using functions stack_data and add_interactions.")
-    }
+      stop("argument y is missing with no default as x is a matrix.")
+    if (!inherits(y, c("Surv", "Hist")))
+      stop("argument y should be a Surv or Hist object as x is a matrix.")
   }
 
   # get IDs if performing cross-validation
   if (CV) {
-    # get id_col if parent function is cv.penLM
+    # get id_col if parent function is cv.pen_lm
     if (is.null(id_col) && !use_lmdata) {
-      stop("argument id_col must be provided when using arguments x and y.")
+      stop("argument id_col must be provided when x is matrix.")
     } else if (is.null(id_col) && use_lmdata) {
       id_col <- lmdata$id_col
       if (length(lmdata$data[[id_col]]) == 0)
@@ -352,27 +339,27 @@ check_penLM_inputs <- function(x, y, lmdata, xcols, id_col = NULL, alpha = 1,
     if (use_lmdata) {
       IDs <- lmdata$data[[id_col]]
     } else {
-      IDs <- x[,id_col]
+      IDs <- x[, id_col]
       if (inherits(id_col, "numeric")) x <- x[, -id_col]
       else x <- x[, colnames(x) != id_col]
     }
   }
 
   # if using an LMdataframe, create x and y for glmnet
-  if (use_lmdata){
-    entry = lmdata$data[[lmdata$lm_col]]
-    exit = lmdata$data[[lmdata$outcome$time]]
-    status = lmdata$data[[lmdata$outcome$status]]
+  if (use_lmdata) {
+    entry <- lmdata$data[[lmdata$lm_col]]
+    exit <- lmdata$data[[lmdata$outcome$time]]
+    status <- lmdata$data[[lmdata$outcome$status]]
     y <- prodlim::Hist(exit, status, entry)
 
-    if (missing(xcols)) {
+    if (is.null(xcols)) {
       if (!is.null(lmdata$all_covs)) {
         xcols <- lmdata$all_covs
       } else {
-        all_cols = colnames(lmdata$data)
-        target_cols = c(lmdata$lm_col, lmdata$outcome$time,
+        all_cols <- colnames(lmdata$data)
+        target_cols <- c(lmdata$lm_col, lmdata$outcome$time,
                         lmdata$outcome$status, id_col)
-        idx = all_cols %in% target_cols
+        idx <- all_cols %in% target_cols
         xcols <- all_cols[!idx]
       }
     }
@@ -386,7 +373,7 @@ check_penLM_inputs <- function(x, y, lmdata, xcols, id_col = NULL, alpha = 1,
       stop("There is no left-truncated data, which is unusual for a landmark supermodel. Did you forget to include an entry time?")
     y <- list(y)
   } else if (inherits(y, "Hist")) {
-    censor_type = attr(y, "cens.type")
+    censor_type <- attr(y, "cens.type")
     if (censor_type != "rightCensored")
       stop(paste("Only right-censoring is currently supported, not type",
                  censor_type))
@@ -404,9 +391,9 @@ check_penLM_inputs <- function(x, y, lmdata, xcols, id_col = NULL, alpha = 1,
       y <- list(survival::Surv(y[, 1], y[, 2], y[, 3]))
     } else {
       y <- lapply(seq_along(states), function(i) {
-        entry = y[, 1]
-        exit = y[, 2]
-        status = y[, 4] == states[i]
+        entry <- y[, 1]
+        exit <- y[, 2]
+        status <- y[, 4] == states[i]
         return(survival::Surv(entry, exit, status))
       })
     }

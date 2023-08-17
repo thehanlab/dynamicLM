@@ -1,47 +1,52 @@
-#' Cross-validation for a  regular or cause-specific Cox landmark supermodel
-#' with lasso or elasticnet penalization.
+#' Cross-validation for a penalized Cox or cause-specific Cox landmark
+#' supermodel
 #'
 #' Fit by calling [cv.glmnet()]. As in `cv.glmnet`, k-fold cross validation is
-#' performed. This produces a plot and returns a value for lambda. Input can be
-#' as typically done for `cv.glmnet` in the form of `x` and `y` or with a
-#' landmark super dataset `lmdata` specifying dependent columns in `xcols`.
+#' performed. This produces a plot and returns optimal values for `lambda`, the
+#' penalization parameter. Input can be as typically done for
+#' `cv.glmnet` in the form of `x` and `y` which are a matrix and response object
+#'  or with a landmark super dataset specifying the dependent columns in `y`.
 #'
-#' @param x Input matrix with each row an observation.
-#' @param y Response variable: either a `Surv` or `Hist` object.
-#' @param lmdata An object of class "LMdataframe", this can be created by
-#'   running [stack_data()] and [add_interactions()]
-#' @param xcols A vector of column names of the data stored in `lmdata` that
-#'   are to be used as dependent variables. If not specified, it is assumed that
-#'   all non-response variables are the dependent variables.
+#' @param x Either an object of class "LMdataframe" or a matrix. An LMdataframe
+#'   can be created by running [stack_data()] and [add_interactions()]. A
+#'   matrix should have each row be an observation.
+#' @param y If `x` is an LMdataframe, `y` is optional and should be vector of
+#'   column names of the data stored in `lmdata` that are to be used as
+#'   dependent variables. If not specified, it is assumed that all non-response
+#'   variables are the dependent variables.
+#'
+#'   If `x` is a matrix, `y` should be the response variable: either a
+#'   [survival::Surv()] or [prodlim::Hist()] object.
+#'
 #' @param id_col Column name or index that identifies individuals in data.
-#'   Used to ensure the same individuals appear in the different cross
-#'   validation sets.
-#' @param alpha The elastic net mixing parameter: Lies betweent 0 and 1. At 1,
+#'   Used to ensure individuals appear in the same cross-validation sets.
+#' @param alpha The elastic net mixing parameter: Lies between 0 and 1. At 1,
 #'   the penalty is the LASSO penalty, and at 0, the penalty is the ridge
-#'   penalty.
+#'   penalty. The default is 1.
 #' @param nfolds Number of folds in k-fold cross validation. Default is 10.
 #' @param type.measure Loss for cross-validation. Currently the only option is
 #'   "deviance" which is the partial-likelihood for the Cox model. If using
 #'   cause-specific Cox models, this is evaluated on each model separately.
 #' @param seed Set a seed.
 #' @param foldid TODO
-#' @param ... Additional arguments to `cv.glmnet`.
+#' @param ... Additional arguments to `cv.glmnet()`.
 #'
-#' @return An object of class `cv.penLM`. This is a list of `cv.glmnet` objects
+#' @return An object of class cv.pen_lm. This is a list of cv.glmnet objects
 #'   (one for each cause-specific Cox model or a list of length one for a
 #'   regular Cox model). The object also has attributes `survival.type`
 #'   (`competing.risk` or `survival`) and `lmdata` and `xcols` which store the
 #'   inputs if given.
-#'   Functions `print` and `plot` exist for the object. To make predictions,
-#'   see [dynamic_lm.cv.penLM].
+#'   Functions `print()` and `plot()` exist for the object. To make predictions,
+#'   see [dynamic_lm.cv.pen_lm()].
+#' @seealso [print.cv.pen_lm()], [plot.cv.pen_lm()], [dynamic_lm.cv.pen_lm()]
 #' @import glmnet riskRegression
 #' @export
 #'
 #' @examples
 #' \dontrun{
 #' }
-cv.penLM <- function(x, y,
-                     lmdata, xcols,
+cv.pen_lm <- function(x, y,
+                     # lmdata, xcols,
                      id_col,
                      alpha = 1,
                      nfolds = 10,
@@ -53,18 +58,18 @@ cv.penLM <- function(x, y,
   # checked_input <- match.call()
   # m <- match(c("x", "y", "lmdata", "xcols", "id_col", "alpha"), names(checked_input), 0L)
   # checked_input <- as.list(checked_input[m]) #[m]
-  # checked_input$parent_func <- quote(cv.penLM)
+  # checked_input$parent_func <- quote(cv.pen_lm)
   # checked_input$CV <- TRUE
   # print(checked_input)
-  # checked_input <- do.call(check_penLM_inputs, checked_input)
+  # checked_input <- do.call(check_penlm_inputs, checked_input)
 
   checked_input <- match.call()
-  checked_input$parent_func <- quote(cv.penLM)
+  checked_input$parent_func <- quote(cv.pen_lm)
   checked_input$CV <- TRUE
-  checked_input[[1L]] <- quote(check_penLM_inputs)
+  checked_input[[1L]] <- quote(check_penlm_inputs)
   checked_input <- eval(checked_input, parent.frame())
 
-  if (inherits(checked_input, "cv.penLM")) return(checked_input)
+  if (inherits(checked_input, "cv.pen_lm")) return(checked_input)
 
   x = checked_input$x
   y = checked_input$y
@@ -103,6 +108,6 @@ cv.penLM <- function(x, y,
   }
   if (!is.null(xcols)) attr(models, "xcols") <- xcols
   attr(models, "alpha") <- alpha
-  class(models) <- "cv.penLM"
+  class(models) <- "cv.pen_lm"
   return(models)
 }

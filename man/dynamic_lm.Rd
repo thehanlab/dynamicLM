@@ -8,21 +8,31 @@ regularization.}
 dynamic_lm(...)
 }
 \arguments{
-\item{...}{Arguments to pass to dynamic_lm}
+\item{...}{Arguments to pass to \code{dynamic_lm()}}
 }
 \value{
-An object of class "LMcoxph", "LMCSC", "penLMcoxph" or "penLMCSC"
-with components:
+A fitted landmark supermodel object which has components:
 \itemize{
 \item model: fitted model
 \item type: as input
 \item w, func_covars, func_lms, lm_covs, all_covs, outcome: as in \code{lmdata}
 \item LHS: the survival outcome
-\item linear.predictors: the vector of linear predictors, one per subject. Note
-that this vector has not been centered.
-\item args: arguments used to call model fitting                                 ####
-\item id_col: the cluster argument, often specifies the column with patient ID   ####
-\item lm_col: column name that indicates the landmark time point for a row       ####
+\item linear.predictors: the vector of linear predictors, one per subject.
+Note that this vector has not been centered.
+}
+
+If the model is unpenalized (class "LMcoxph" or "LMCSC") it has additional
+components:
+\itemize{
+\item args: arguments used to call model fitting
+\item id_col: the cluster argument, often specifies the column with patient ID
+\item lm_col: column name that indicates the landmark time point for a row.
+}
+
+If the model is penalized (class "penLMcoxph" or "penLMCSC") it has
+additional components:
+\itemize{
+\item lambda: the values of lambda for which this model has been fit.
 }
 }
 \description{
@@ -31,15 +41,14 @@ To fit Cox or cause-specific Cox models without regularization see:
 \item \code{\link[=dynamic_lm.LMdataframe]{dynamic_lm.LMdataframe()}} for use on a stacked landmark dataset
 \item \code{\link[=dynamic_lm.data.frame]{dynamic_lm.data.frame()}} for use on a dataframe
 }
-}
-\details{
+
 To fit penalized Cox or cause-specific Cox models see:
 \itemize{
-\item \code{\link[=dynamic_lm.penLM]{dynamic_lm.penLM()}} without cross-validation
-\item \code{\link[=dynamic_lm.cv.penLM]{dynamic_lm.cv.penLM()}} with cross-validation
+\item \code{\link[=dynamic_lm.pen_lm]{dynamic_lm.pen_lm()}} without cross-validation
+\item \code{\link[=dynamic_lm.cv.pen_lm]{dynamic_lm.cv.pen_lm()}} with cross-validation
 }
 }
 \seealso{
 \code{\link[=dynamic_lm.LMdataframe]{dynamic_lm.LMdataframe()}}, \code{\link[=dynamic_lm.data.frame]{dynamic_lm.data.frame()}},
-\code{\link[=dynamic_lm.penLM]{dynamic_lm.penLM()}}, \code{\link[=dynamic_lm.cv.penLM]{dynamic_lm.cv.penLM()}}
+\code{\link[=dynamic_lm.pen_lm]{dynamic_lm.pen_lm()}}, \code{\link[=dynamic_lm.cv.pen_lm]{dynamic_lm.cv.pen_lm()}}
 }

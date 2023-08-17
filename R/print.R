@@ -308,10 +308,11 @@ print.LMcoxph <- function(x, verbose = FALSE, ...) {
 }
 
 
-#' Print the output from calling `LMpen`, similar to the output of printing a
-#' `glmnet` object
+#' Print the output from calling `pen_lm()`
 #'
-#' I.e., print a summary of the glmnet path at each step along the path.
+#' Similar to the output of printing a`glmnet` object, print a summary of the
+#' glmnet path at each step along the path.
+#'
 #' @details
 #' If the model is a survival model (i.e., no competing risks), then the output
 #' is the same as a call to glmnet would produce. For competing risks, the
@@ -324,16 +325,16 @@ print.LMcoxph <- function(x, verbose = FALSE, ...) {
 #' reasonable name only for lasso fits). `%Dev` is the percent deviance
 #' explained (relative to the null deviance)."
 #'
-#' @param x a penLM object
-#' @param all_causes if penLM fit a cause-specific Cox model, set TRUE to print
-#'   a summary of the glmnet path for each model.
+#' @param x a pen_lm object
+#' @param all_causes if `pen_lm()` fit a cause-specific Cox model, set TRUE to
+#'   print a summary of the glmnet path for each model.
 #' @param silent Set TRUE to hide messages.
 #' @param digits Number of significant digits to include
 #' @param \dots additional print arguments
 #' @references Friedman, J., Hastie, T. and Tibshirani, R. (2008).
 #'  Regularization Paths for Generalized Linear Models via Coordinate Descent
 #' @export
-print.penLM <- function(x, all_causes = FALSE, silent = FALSE,
+print.pen_lm <- function(x, all_causes = FALSE, silent = FALSE,
                          digits = 3, ...) {
     num_causes <- length(x)
 
@@ -354,26 +355,27 @@ print.penLM <- function(x, all_causes = FALSE, silent = FALSE,
 }
 
 
-#' Print the output from calling `cv.LMpen`, similar to the output of printing
-#' a `cv.glmnet` object
+#' Print the output from calling cv.pen_lm()`,
+
+#' Similar to printing the output of printing a `cv.glmnet` object, print a
+#' cross-validated penalized cause-specific Cox supermodel
 #'
-#' I.e., print a cross-validated LMpen object
 #' @details
 #' If the model is a survival model (i.e., no competing risks), then the output
 #' is the same as a call to glmnet would produce. For competing risks, the
 #' default is only to print the output for the cause of interest (first cause).
 #' Further events can be examined by setting `all_causes = TRUE`.
 #'
-#' @param x a penLM object
-#' @param all_causes if penLM fit a cause-specific Cox model, set TRUE to print
-#'   a summary of the glmnet path for each model.
+#' @param x a cv.pen_lm object
+#' @param all_causes if `cv.pen_lm` fit a cause-specific Cox model, set TRUE to
+#'   print a summary of the glmnet path for each model.
 #' @param silent Set TRUE to hide messages.
 #' @param digits Number of significant digits to include
 #' @param \dots additional print arguments
 #' @references Friedman, J., Hastie, T. and Tibshirani, R. (2008).
 #'   Regularization Paths for Generalized Linear Models via Coordinate Descent
 #' @export
-print.cv.penLM <- function(x, all_causes = FALSE, silent = FALSE,
+print.cv.pen_lm <- function(x, all_causes = FALSE, silent = FALSE,
                             digits = 3, ...) {
   num_causes <- length(x)
 

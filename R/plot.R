@@ -69,7 +69,7 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
   } else if (end_time > x$end_time && extend) {
     if (!silence)
       warning(paste0(
-        "NOTE: arg end_time (=", end_time, 
+        "NOTE: arg end_time (=", end_time,
         ") is later than the last LM used in model fitting (=", x$end_time, ")",
         "\nResults after time ", x$end_time, " may be unreliable."
       ))
@@ -251,7 +251,7 @@ plot.LMcalibrationPlot <- function(x, ...) {
 }
 
 
-#' Plot coefficients from an object created by calling [penLM()], analogous to
+#' Plot coefficients from an object created by calling [pen_lm()], analogous to
 #' plotting from [glmnet()]
 #'
 #' As in the glmnet package, produces a coefficient profile plot of the
@@ -264,17 +264,17 @@ plot.LMcalibrationPlot <- function(x, ...) {
 #' interest (first cause) Further events can be examined by setting
 #' `all_causes = TRUE`.
 #'
-#' @param x a fitted [penLM()] object
+#' @param x a fitted [pen_lm()] object
 #' @param xvar As in [glmnet()]: "What is on the X-axis. "`norm`" plots against
 #'   the L1-norm of the coefficients, "`lambda`" against the log-lambda
 #'   sequence, and "`dev`" against the percent deviance explained."
-#' @param all_causes if penLM fit a cause-specific Cox model, set TRUE to plot
+#' @param all_causes if pen_lm fit a cause-specific Cox model, set TRUE to plot
 #'   coefficient profile plots for each model.
 #' @param silent Set TRUE to hide messages.
 #' @param label Set TRUE to label the curves by variable index numbers.
 #' @param \dots additional graphical parameters
 #' @export
-plot.penLM <- function(x, xvar = "norm", all_causes = FALSE, silent = FALSE,
+plot.pen_lm <- function(x, xvar = "norm", all_causes = FALSE, silent = FALSE,
                        label = FALSE, ...) {
   if (all_causes) {
     for (i in seq_along(x)){
@@ -288,7 +288,7 @@ plot.penLM <- function(x, xvar = "norm", all_causes = FALSE, silent = FALSE,
 }
 
 
-#' Plot cross-validation curve created by [cv.penLM()], analogous to plotting
+#' Plot cross-validation curve created by [cv.pen_lm()], analogous to plotting
 #' from [cv.glmnet()]
 #'
 #' The cross-validation curve is plotted as a function of the lambda values
@@ -301,9 +301,9 @@ plot.penLM <- function(x, xvar = "norm", all_causes = FALSE, silent = FALSE,
 #' interest (first cause) Further events can be examined by setting
 #' `all_causes = TRUE`.
 #'
-#' @param x a fitted [cv.penLM()] object
-#' @param all_causes if penLM fit a cause-specific Cox model, set TRUE to plot
-#'   coefficient profile plots for each model.
+#' @param x a fitted [cv.pen_lm()] object
+#' @param all_causes if `pen_lm()` fit a cause-specific Cox model, set TRUE to
+#'   plot coefficient profile plots for each model.
 #' @param silent Set TRUE to hide messages.
 #' @param label Set TRUE to label the curves by variable index numbers.
 #' @param sign.lambda Plot against `log(lambda)` (default) or its negative
@@ -312,7 +312,7 @@ plot.penLM <- function(x, xvar = "norm", all_causes = FALSE, silent = FALSE,
 #'   bands. Defaults to TRUE.
 #' @param \dots additional graphical parameters
 #' @export
-plot.cv.penLM <- function(x, all_causes = FALSE, silent = FALSE, label = FALSE,
+plot.cv.pen_lm <- function(x, all_causes = FALSE, silent = FALSE, label = FALSE,
                           sign.lambda = 1, se.bands = TRUE, ...) {
   num_causes <- length(x)
   if (all_causes) {
@@ -396,8 +396,8 @@ plot.coefs <- function(x, single_plot = TRUE, max_coefs = NULL,
 #' Can plot positive and negative coefficients in two separate plots or the
 #' same. X-axes are the same if separate plots are used.
 #'
-#' @param x a penalized Cox supermodel - created by calling `fitLM` on an
-#'   object created from `penLM`/`cv.pen`
+#' @param x a penalized Cox supermodel - created by calling [dynamic_lm()] on an
+#'   object created from [pen_lm()] or [cv.pen_lm()].
 #' @param single_plot Logical, defaults to TRUE. A single plot for both
 #'   positive and negative coefficients, or two separate plots.
 #' @param max_coefs Default is to plot all coefficients. If specified, gives the
@@ -418,7 +418,7 @@ plot.penLMcoxph <- function(x, single_plot = TRUE, max_coefs = NULL,
 #' same. X-axes are the same if separate plots are used.
 #'
 #' @param x a penalized cause-specific Cox supermodel - created by calling
-#'   [dynamic_lm()] on an object created from [penLM()]/[cv.penLM()].
+#'   [dynamic_lm()] on an object created from [penlm()] or [cv.pen_lm()].
 #' @param single_plot Logical, defaults to TRUE. A single plot for both
 #'   positive and negative coefficients, or two separate plots.
 #' @param max_coefs Default is to plot all coefficients. If specified, gives the
