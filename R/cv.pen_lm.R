@@ -68,12 +68,10 @@ cv.pen_lm <- function(x, y,
   # checked_input <- do.call("check_penlm_inputs", as.list(checked_input), envir = parent.frame()) #eval(checked_input, parent.frame())
 
   checked_input <- match.call()
-  m <- match(c("x", "y", "id_col", "alpha", "nfolds", "type.measure", "seed",
-               "foldid"), names(checked_input), 0L)
+  m <- match(c("x", "y", "id_col", "alpha"), names(checked_input), 0L)
   checked_input <- as.list(checked_input[m])
   checked_input$CV <- TRUE
-  checked_input <- do.call(check_penlm_inputs, checked_input,
-                           envir = parent.frame())
+  checked_input <- do.call(check_penlm_inputs, checked_input) #envir = parent.frame()
 
   if (inherits(checked_input, "cv.pen_lm")) return(checked_input)
 
