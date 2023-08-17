@@ -39,7 +39,7 @@ covariates, respectively.}
 wide (default) or in long format.}
 
 \item{id}{Character string specifying the column name in data containing the
-subject id; only needed if format = "long".}
+subject id.}
 
 \item{rtime}{Character string specifying the column name in data containing
 the (running) time variable associated with the time-varying variables;
@@ -67,18 +67,11 @@ supermodel for dynamic prediction. Calling \code{\link[=add_interactions]{add_in
 before fitting the supermodel allows for landmark time interactions to be
 included.
 }
-\details{
-This function calls \code{\link[dynpred:cutLM]{dynpred::cutLM()}} from the library dynpred, more
-documentation can be found there. Furthermore, note that for every landmark
-time given in \code{lms}, there must be at least one patient alive after that
-time.
-}
 \examples{
 \dontrun{
-head(lmdata$data)
 data(relapse)
 outcome <- list(time = "Time", status = "event")
-covars <- list(fixed = c("ID","age.at.time.0","male","stage","bmi"),
+covars <- list(fixed = c("age.at.time.0", "male", "stage", "bmi"),
                varying = c("treatment"))
 w <- 60; lms <- c(0, 6, 12, 18)
 # Stack landmark datasets

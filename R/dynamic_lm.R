@@ -36,10 +36,12 @@ dynamic_lm <- function(...) {
 #' landmark dataset
 #'
 #' @param lmdata  An object of class "LMdataframe", this can be created by
-#'   running [stack_data()] and [add_interactions()]
+#'   running [dynamicLM::stack_data()] and [dynamicLM::add_interactions()]
 #' @param formula The formula to be used, remember to include "+cluster(ID)" for
 #'  the column that indicates the ID of the individual for robust error
 #'  estimates.
+#'  Note that transformations (e.g., `x1*x2`) cannot be used in the formula and
+#'  factors/categorical variables must first be made into dummy variables.
 #' @param type "coxph" or "CSC"/"CauseSpecificCox"
 #' @param method A character string specifying the method for tie handling.
 #'   Default is "breslow". More information can be found in [survival::coxph()].
@@ -65,24 +67,22 @@ dynamic_lm <- function(...) {
 #' \dontrun{
 #' data(relapse)
 #' outcome <- list(time = "Time", status = "event")
-#' covars <- list(fixed = c("ID","age.at.time.0","male","stage","bmi"),
+#' covars <- list(fixed = c("age.at.time.0", "male", "stage", "bmi"),
 #'                varying = c("treatment"))
 #' w <- 60; lms <- c(0, 6, 12, 18)
-#' LMs = seq(0,36,by=6)
-#' # Covariate-landmark time interactions
-#' func_covars <- list(function(t) t, function(t) t^2)
-#' # let hazard depend on landmark time
-#' func_lms <- list(function(t) t, function(t) t^2)
 #' # Choose covariates that will have time interaction
-#' pred_covars <- c("age","male","stage","bmi","treatment")
+#' pred_covars <- c("age", "male", "stage", "bmi", "treatment")
 #' # Stack landmark datasets
 #' lmdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
 #'                      id = "ID", rtime = "T_txgiven")
-#' # Update complex LM-varying covariates, note age is in years and LM is in months
+#'
+#' # Update complex landmark-varying covariates
+#' # note age is in years and LM is in months
 #' lmdata$data$age <- lmdata$data$age.at.time.0 + lmdata$data$LM/12
 #' # Add LM-time interactions
-#' lmdata <- add_interactions(lmdata, pred_covars, func_covars, func_lms)
-#' head(lmdata$data)
+#' lmdata <- add_interactions(lmdata, pred_covars,
+#'                            func_covars = c("linear", "quadratic"),
+#'                            func_lms = c("linear", "quadratic"))
 #'
 #' formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment +
 #'            age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 +
@@ -287,8 +287,9 @@ dynamic_lm.penLM <- function(object, lambda, ...) {
     status = lmdata$outcome$status
     LHS_surv <- paste0("Surv(", entry, ",", exit, ",", status, ")")
     formula <- paste0(LHS_surv, "~", paste0(xcols, collapse="+"))
-    superfm <- survival::coxph(stats::as.formula(formula), data, method = "breslow",
-                               iter.max = 0, init = glmnet_coefs, ...)
+    superfm <- survival::coxph(stats::as.formula(formula), data,
+                               method = "breslow", iter.max = 0,
+                               init = glmnet_coefs, ...)
 
     LHS <- paste0("Hist(", exit, ",", status, ",", entry, ") ~ 1")
     models <- list(superfm)
@@ -367,7 +368,7 @@ dynamic_lm.penLM <- function(object, lambda, ...) {
 #'
 #' @param object  A fitted object of class "cv.LMpen". This can be created by
 #'   calling `cv.penLM` using arguments `lmdata` and `xcols`.
-#' @param lambda Value of the penalty parameter `lambda` at which to fit a model.
+#' @param lambda Value of the penalty parameter `lambda` to fit a model.
 #'   Default is "lambda.min"; "lambda.1se" can also be used or a specific value
 #'   can be input.For cause-specific Cox super models,
 #'   this must be a list or vector of values: one for each cause.

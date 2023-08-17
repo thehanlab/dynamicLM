@@ -1,17 +1,47 @@
-# TODO: add refs
-# TODO: add roxygen
-get_lm_data <- function (data, outcome, LM, horizon, covs,
-                         format = c("wide", "long"), id, rtime, right = TRUE) {
+#' Build a landmark dataset
+#'
+#' @param data Data frame from which to construct landmark super dataset
+#' @param outcome A list with items time and status, containing character
+#'   strings identifying the names of time and status variables, respectively,
+#'   of the survival outcome
+#' @param lm The value of the landmark time point at which to construct the
+#'   landmark dataset.
+#' @param horizon Scalar, the value of the prediction window (ie predict risk
+#'   within time w landmark points)
+#' @param covs A list with items fixed and varying, containing character strings
+#'   specifying column names in the data containing time-fixed and time-varying
+#'   covariates, respectively.
+#' @param format Character string specifying whether the original data are in
+#'   wide (default) or in long format.
+#' @param id Character string specifying the column name in data containing the
+#'   subject id.
+#' @param rtime Character string specifying the column name in data containing
+#'   the (running) time variable associated with the time-varying variables;
+#'   only needed if format = "long".
+#' @param right Boolean (default = FALSE), indicating if the intervals for the
+#'   time-varying covariates are closed on the right (and open on the left) or
+#'   vice-versa.
+#'
+#' @details This function is based from [dynpred::cutLM()] with minor changes.
+#'   The original function was authored by Hein Putter.
+#' @references van Houwelingen HC, Putter H (2012). Dynamic Prediction in
+#'   Clinical Survival Analysis. Chapman & Hall.
+#' @return A landmark dataset.
+#' @export
+#'
+# TODO: add examples
+# TODO: add references
+get_lm_data <- function(data, outcome, lm, horizon, covs,
+                        format = c("wide", "long"), id, rtime, right = TRUE) {
   format <- match.arg(format)
   if (format == "wide") {
-    LMdata <- data
-    if (!is.null(covs$varying)){
-      for (col in covs$covarying)
-        LMdata[[col]] <- 1 - as.numeric(LMdata[[col]] > LM)
+    lmdata <- data
+    if (!is.null(covs$varying)) {
+      for (col in covs$varying)
+        lmdata[[col]] <- 1 - as.numeric(lmdata[[col]] > lm)
     }
 
-  }
-  else {
+  } else {
     if (missing(id))
       stop("argument 'id' should be specified for long format data")
     if (missing(rtime))
@@ -20,31 +50,34 @@ get_lm_data <- function (data, outcome, LM, horizon, covs,
     data <- data[ord, ]
     ids <- unique(data[[id]])
     n <- length(ids)
-    LMdata <- data[which(!duplicated(data[[id]])), ]
+    lmdata <- data[which(!duplicated(data[[id]])), ]
     for (i in 1:n) {
       wh <- which(data[[id]] == ids[i])
       di <- data[wh, ]
-      idx <- cut(LM, c(di[[rtime]], Inf), right = right, labels = FALSE)
+      idx <- cut(lm, c(di[[rtime]], Inf), right = right, labels = FALSE)
       if (!is.na(idx)) {
-        LMdata[i, ] <- di[idx, ]
+        lmdata[i, ] <- di[idx, ]
       } else {
-        LMdata[i, ] <- di[1, ]
-        LMdata[i, covs$varying] <- NA
-        LMdata[i, rtime] <- NA
+        lmdata[i, ] <- di[1, ]
+        if (!is.null(covs$varying)) {
+          lmdata[i, covs$varying] <- NA
+          lmdata[i, rtime] <- NA
+        }
       }
     }
   }
-  LMdata <- LMdata[LMdata[[outcome$time]] > LM, ]
+
+  lmdata <- lmdata[lmdata[[outcome$time]] > lm, ]
   if (format == "long")
-    LMdata <- LMdata[!is.na(LMdata[[id]]), ]
-  LMdata[outcome$status] <- LMdata[[outcome$status]] *
-                              as.numeric(LMdata[[outcome$time]] <= horizon)
-  LMdata[outcome$time] <- pmin(as.vector(LMdata[[outcome$time]]), horizon)
-  LMdata$LM <- LM
+    lmdata <- lmdata[!is.na(lmdata[[id]]), ]
+  lmdata[outcome$status] <- lmdata[[outcome$status]] *
+    as.numeric(lmdata[[outcome$time]] <= horizon)
+  lmdata[outcome$time] <- pmin(as.vector(lmdata[[outcome$time]]), horizon)
+  lmdata$LM <- lm
   if (format == "long")
     cols <- match(c(id, outcome$time, outcome$status, covs$fixed,
-                    covs$varying, rtime, "LM"), names(LMdata))
+                    covs$varying, rtime, "LM"), names(lmdata))
   else cols <- match(c(outcome$time, outcome$status, covs$fixed,
-                       covs$varying, "LM"), names(LMdata))
-  return(LMdata[, cols])
+                       covs$varying, "LM"), names(lmdata))
+  return(lmdata[, cols])
 }

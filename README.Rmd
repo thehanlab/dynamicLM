@@ -72,10 +72,10 @@ You can install the development version of `dynamicLM` from
 
 ```{r}
 # install.packages("devtools")
-devtools::install_github("thehanlab/dynamicLM", ref = "proposed-updates")
+devtools::install_github("thehanlab/dynamicLM")
 ```
 
-Requirements for the package can be found in the description file.
+Package documentation can be found in [this pdf](https://github.com/thehanlab/dynamicLM/blob/main/man/dynamicLM_0.3.0.pdf).
 
 # Basic Example
 
@@ -132,20 +132,13 @@ time points (`lms`) are set as every year between 0 and 3 years to train
 the model. This means we are only interested in prediction between 0 and
 3 years.
 
-We will consider linear and quadratic landmark interactions with the
-covariates (given in `func_covars`) and the landmarks (`func_lms`). The
-covariates that should have these landmark interactions are given in
-`pred_covars`.
+We will consider linear and quadratic landmark interactions with the covariates (given by `func_covars = c("linear", "quadratic")`) and the landmarks (`func_lms = c("linear", "quadratic")`). The covariates that should have these landmark interactions are given in `pred_covars`.
 
 
 ```{r}
 w <- 60                    # risk prediction window (risk within time w)
 lms <- seq(0,36,by=6)      # landmarks on which to build the model
 
-# Covariate-landmark time interactions
-func_covars <- list(function(t) t, function(t) t^2)
-# let hazard depend on landmark time
-func_lms <- list(function(t) t, function(t) t^2)
 # Choose variables that will have time interaction
 pred_covars <- c("age", "male", "stage", "bmi", "treatment") 
 ```
@@ -203,7 +196,8 @@ interaction in `func_covars`, `_2` refers to the second interaction in
 covariates that will have landmark time interactions.
 
 ```{r}
-lmdata <- add_interactions(lmdata, pred_covars, func_covars, func_lms) 
+lmdata <- add_interactions(lmdata, pred_covars, func_covars = c("linear", "quadratic"), 
+                           func_lms = c("linear", "quadratic")) 
 data <- lmdata$data
 print(data[data$ID == "ID1029",])
 ```
@@ -239,7 +233,7 @@ the landmark interaction terms must be named.
 
 ```{r}
 formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment + age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 + bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
-supermodel <- dynamic_lm(as.formula(formula), lmdata, "CSC") 
+supermodel <- dynamic_lm(lmdata, as.formula(formula), "CSC") 
 print(supermodel)
 ```
 

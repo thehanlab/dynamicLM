@@ -9,7 +9,7 @@
 \arguments{
 \item{object}{Fitted supermodel}
 
-\item{...}{Additional arguments to \code{coef}}
+\item{...}{Other arguments to pass to \code{stats::coef()}}
 }
 \value{
 Vector of coefficients for a Cox landmark supermodel or list of

@@ -31,7 +31,7 @@
 plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
                            logHR = TRUE, extend = FALSE, silence = FALSE,
                            xlab = "LM time", ylab, ylim, main, ...) {
-  fm = x$model
+  fm <- x$model
 
   if (conf_int) {
     if (!requireNamespace("msm", quietly = TRUE))
@@ -57,16 +57,20 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
   } else if (end_time > x$end_time && !extend) {
     if (!silence)
       message(paste0(
-        "NOTE: arg end_time (=", end_time, ") is later than the last LM used in model fitting (=", x$end_time, ")",
-        "\nand has been set back to the last LM used in model fitting. (=", x$end_time, ")",
-        "\nIf you wish to still plot until ", end_time, ", set arg extend=T but note that results after time ", x$end_time, " may be unreliable."
+        "NOTE: arg end_time (=", end_time,
+        ") is later than the last LM used in model fitting (=", x$end_time, ")",
+        "\nand has been set back to the last LM used in model fitting. (=",
+        x$end_time, ")", "\nIf you wish to still plot until ", end_time,
+        ", set arg extend = TRUE but note that results after time ",
+        x$end_time, " may be unreliable."
       ))
     end_time <- x$end_time
 
   } else if (end_time > x$end_time && extend) {
     if (!silence)
       warning(paste0(
-        "NOTE: arg end_time (=",end_time,") is later than the last LM used in model fitting (=",x$end_time,")",
+        "NOTE: arg end_time (=", end_time, 
+        ") is later than the last LM used in model fitting (=", x$end_time, ")",
         "\nResults after time ", x$end_time, " may be unreliable."
       ))
   }
@@ -92,11 +96,11 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
 
   t <- seq(0, end_time, by = 0.1)
 
-  for (i in 1:length(covars)){
+  for (i in seq_along(covars)){
     idx <- startsWith(names(bet), covars[i])
     bet_var <- bet[idx]
     HR <- sapply(t, function(x) { # eval HR over times x in t
-      sum(sapply(1:length(bet_var), function(j){
+      sum(sapply(seq_along(bet_var), function(j) {
         var = bet_var[j]
         name = names(bet_var)[j]
         if (name == covars[i]) {
@@ -174,30 +178,32 @@ plot.LMScore <- function(x, metrics, se = TRUE, loc, xlab, ylab, pch, ylim,
   set_x <- FALSE
   if (missing(loc))
     set_x <- TRUE
+  else
+    x <- legend
 
   plot.metric <- function(df, metric, loc, ylim, xlim) {
     if (set_ylab) ylab <- paste0(metric, "(t, t + ", x$w, ")")
 
-    num_models = length(unique(df$model))
-    model_names = df$model[1:num_models]
-    tLM = df$tLM
-    metric = df[[metric]]
-    upper = df[["upper"]]
-    lower = df[["lower"]]
-    models = df$model
+    num_models <- length(unique(df$model))
+    model_names <- df$model[1:num_models]
+    tLM <- df$tLM
+    metric <- df[[metric]]
+    upper <- df[["upper"]]
+    lower <- df[["lower"]]
+    models <- df$model
 
     if (missing(ylim)) {
-      ylim = c(min(lower), max(upper))
+      ylim <- c(min(lower), max(upper))
     }
     if (missing(xlim)) {
-      xlim = c(min(tLM), max(tLM))
+      xlim <- c(min(tLM), max(tLM))
     }
 
     plot(tLM, metric, col = models, pch = pch, xlab = xlab, ylab = ylab,
          ylim = ylim, xlim = xlim, ...)
 
     for (i in 1:num_models){
-      idx = models == model_names[i]
+      idx <- models == model_names[i]
       graphics::lines(tLM[idx], metric[idx], col = models[idx], pch = pch)
       if (se) {
         graphics::lines(tLM[idx], upper[idx], col = models[idx],
@@ -216,7 +222,7 @@ plot.LMScore <- function(x, metrics, se = TRUE, loc, xlab, ylab, pch, ylim,
     if (is.null(x$auct)) {
       warning("AUC was not set as a metric when calling score() No results to plot. Either call score() again with auc as a metric or do not include it as a metric here.")
     } else {
-      if(set_x) loc <- "topright"
+      if (set_x) loc <- "topright"
       plot.metric(x$auct, "AUC", loc, ylim, xlim)
     }
   }
@@ -239,7 +245,7 @@ plot.LMScore <- function(x, metrics, se = TRUE, loc, xlab, ylab, pch, ylim,
 #' @export
 #'
 plot.LMcalibrationPlot <- function(x, ...) {
-  for (i in 1:length(x)) {
+  for (i in seq_along(x)) {
     plot(x[[i]], ...)
   }
 }
@@ -270,9 +276,8 @@ plot.LMcalibrationPlot <- function(x, ...) {
 #' @export
 plot.penLM <- function(x, xvar = "norm", all_causes = FALSE, silent = FALSE,
                        label = FALSE, ...) {
-  num_causes <- length(x)
   if (all_causes) {
-    for (i in 1:num_causes){
+    for (i in seq_along(x)){
       plot(x[[i]], xvar, label, ...)
     }
   } else {
@@ -431,8 +436,10 @@ plot.penLMCSC <- function(x, single_plot = TRUE, max_coefs = NULL,
     coefs <- x$model$models[[1]]$coefficients
     plot.coefs(coefs, single_plot, max_coefs, col, xlab, ...)
   } else {
-    lapply(1:length(x$model$models),
-           function(i) plot.coefs(x$model$models[[i]]$coefficients,
-                                  single_plot, max_coefs, col, xlab, ...))
+    lapply(seq_along(x$model$models),
+           function(i) {
+            plot.coefs(x$model$models[[i]]$coefficients,
+                       single_plot, max_coefs, col, xlab, ...)
+           })
   }
 }

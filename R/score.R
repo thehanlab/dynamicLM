@@ -5,21 +5,22 @@
 #' apparent/internal, bootstrapped, and external. Accordingly, the named list of
 #' prediction models must be as follows:
 #' * For both apparent/internal evaluation, objects output from
-#'   [predict.dynamicLM()] or supermodels fit with [dynamic_lm()] may be used as input.
-#' * In order to bootstrap, supermodels fit with [dynamic_lm()] may be used as input
-#'   (note that the argument `x=TRUE` must be specified when fitting the model
-#'   in [dynamic_lm()]).
-#' * For external calibration, supermodels fit with [dynamic_lm()] are input along
-#'   with new data in the `data` argument. This data can be a LMdataframe or a
-#'   dataframe (in which case `lms` must be specified).
+#'   [predict.dynamicLM()] or supermodels fit with [dynamic_lm()] may be used as
+#'   input.
+#' * In order to bootstrap, supermodels fit with [dynamic_lm()] may be used as
+#'   input (note that the argument `x=TRUE` must be specified when fitting the
+#'   model in [dynamic_lm()]).
+#' * For external calibration, supermodels fit with [dynamic_lm()] are input
+#'   along with new data in the `data` argument. This data can be a LMdataframe
+#'   or a dataframe (in which case `lms` must be specified).
 #'
 #' For both internal evaluation and bootstrapping, it is assumed that all
 #' models in `object` are fit on the same data.
 #'
 #'
 #' @param object A named list of prediction models, where allowed entries are
-#'   outputs from [predict.dynamicLM()] or supermodels from [dynamic_lm()] depending on the
-#'   type of calibration.
+#'   outputs from [predict.dynamicLM()] or supermodels from [dynamic_lm()]
+#'   depending on the type of calibration.
 #' @param times Landmark times for which calibration must be plot. These must be
 #'   a subset of landmark times used during the prediction
 #' @param metrics  Character vector specifying which metrics to apply. Choices
@@ -74,7 +75,7 @@
 #'     included as a metric
 #'   - `briert`: dataframe containing time-dependent Brier score if "brier" was
 #'     included as a metric
-#' @details If data at late evaluation times is sparse, certain bootstrap samples may
+#' @details If data at late landmark times is sparse, some bootstrap samples may
 #'   not have patients that live long enough to perform evaluation leading to
 #'   the message "Upper limit of followup in bootstrap samples, was too low.
 #'   Results at evaluation time(s) beyond these points could not be computed
@@ -105,7 +106,7 @@
 #' \dontrun{
 #' # Internal validation
 #' scores <- score(list("Model1" = supermodel),
-#'                 times = c(0, 6)) # landmarks at which to provide calibration plots
+#'                 times = c(0, 6)) # lms at which to provide calibration plots
 #' scores
 #'
 #' # Bootstrapping
@@ -136,7 +137,7 @@ score <-
            metrics = c("auc", "brier"),
            formula,
            data,
-           lms,
+           lms = "LM",
            id_col = "ID",
            se.fit = TRUE,
            conf.int = 0.95,
@@ -164,6 +165,9 @@ score <-
     get.bs <- FALSE
     if ("auc" %in% tolower(metrics)) get.auc <- TRUE
     if ("brier" %in% tolower(metrics)) get.bs <- TRUE
+    if (!get.auc && !get.bs)
+      stop("At least one of the following metrics must be specified: \"auc\", \"brier\".")
+
     get.a.iid <- FALSE
     get.b.iid <- FALSE
     if ("auc" %in% tolower(metrics) && summary) get.a.iid <- TRUE
@@ -190,7 +194,7 @@ score <-
     formula <- checked_input$formula
     cause <- checked_input$cause
 
-    if(!all("b" %in% colnames(data))) data$b = 1
+    if (!all("b" %in% colnames(data))) data$b <- 1
 
     num_B <- length(unique(data$b))
     se.fit.b <- se.fit
@@ -206,7 +210,7 @@ score <-
         risks_to_test <- lapply(1:NF, function(i) {
           preds[idx, i]
         })
-        names(risks_to_test) = names(object)
+        names(risks_to_test) <- names(object)
 
         if (nrow(data_to_test) != length(risks_to_test[[1]])) {
           stop("nrow(data_to_test)!=length(risks_to_test)")
@@ -227,10 +231,9 @@ score <-
           ), silent = TRUE
         ))
 
-
-        errored <- FALSE
+        # errored <- FALSE
         if (inherits(score_t, "try-error")) {
-          errored <- TRUE
+          # errored <- TRUE
           auct_b <- data.frame(model = names(object), times = NA, AUC = NA,
                                se = NA, lower = NA, upper = NA)
           briert_b <- data.frame(model = names(object), times = NA, Brier = NA,

@@ -11,7 +11,7 @@ score(
   metrics = c("auc", "brier"),
   formula,
   data,
-  lms,
+  lms = "LM",
   id_col = "ID",
   se.fit = TRUE,
   conf.int = 0.95,
@@ -30,8 +30,8 @@ score(
 }
 \arguments{
 \item{object}{A named list of prediction models, where allowed entries are
-outputs from \code{\link[=predict.dynamicLM]{predict.dynamicLM()}} or supermodels from \code{\link[=dynamic_lm]{dynamic_lm()}} depending on the
-type of calibration.}
+outputs from \code{\link[=predict.dynamicLM]{predict.dynamicLM()}} or supermodels from \code{\link[=dynamic_lm]{dynamic_lm()}}
+depending on the type of calibration.}
 
 \item{times}{Landmark times for which calibration must be plot. These must be
 a subset of landmark times used during the prediction}
@@ -113,20 +113,21 @@ apparent/internal, bootstrapped, and external. Accordingly, the named list of
 prediction models must be as follows:
 \itemize{
 \item For both apparent/internal evaluation, objects output from
-\code{\link[=predict.dynamicLM]{predict.dynamicLM()}} or supermodels fit with \code{\link[=dynamic_lm]{dynamic_lm()}} may be used as input.
-\item In order to bootstrap, supermodels fit with \code{\link[=dynamic_lm]{dynamic_lm()}} may be used as input
-(note that the argument \code{x=TRUE} must be specified when fitting the model
-in \code{\link[=dynamic_lm]{dynamic_lm()}}).
-\item For external calibration, supermodels fit with \code{\link[=dynamic_lm]{dynamic_lm()}} are input along
-with new data in the \code{data} argument. This data can be a LMdataframe or a
-dataframe (in which case \code{lms} must be specified).
+\code{\link[=predict.dynamicLM]{predict.dynamicLM()}} or supermodels fit with \code{\link[=dynamic_lm]{dynamic_lm()}} may be used as
+input.
+\item In order to bootstrap, supermodels fit with \code{\link[=dynamic_lm]{dynamic_lm()}} may be used as
+input (note that the argument \code{x=TRUE} must be specified when fitting the
+model in \code{\link[=dynamic_lm]{dynamic_lm()}}).
+\item For external calibration, supermodels fit with \code{\link[=dynamic_lm]{dynamic_lm()}} are input
+along with new data in the \code{data} argument. This data can be a LMdataframe
+or a dataframe (in which case \code{lms} must be specified).
 }
 }
 \details{
 For both internal evaluation and bootstrapping, it is assumed that all
 models in \code{object} are fit on the same data.
 
-If data at late evaluation times is sparse, certain bootstrap samples may
+If data at late landmark times is sparse, some bootstrap samples may
 not have patients that live long enough to perform evaluation leading to
 the message "Upper limit of followup in bootstrap samples, was too low.
 Results at evaluation time(s) beyond these points could not be computed
@@ -147,7 +148,7 @@ unintentionally.
 \dontrun{
 # Internal validation
 scores <- score(list("Model1" = supermodel),
-                times = c(0, 6)) # landmarks at which to provide calibration plots
+                times = c(0, 6)) # lms at which to provide calibration plots
 scores
 
 # Bootstrapping

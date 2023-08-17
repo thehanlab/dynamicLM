@@ -62,8 +62,8 @@ print.LMdataframe <- function(x, verbose = FALSE, ...) {
     cat("\n")
     cat("\n")
     cat("$outcome\n")
-    names.outcome = names(x$outcome)
-    for (i in 1:length(x$outcome)) {
+    names.outcome <- names(x$outcome)
+    for (i in seq_along(x$outcome)) {
       if (is.null(names.outcome[i])) label <- paste0("[[", i, "]]")
       else label <- paste0("$", names.outcome[i])
       cat(paste0("$outcome", label, "\n"))
@@ -84,7 +84,7 @@ print.LMdataframe <- function(x, verbose = FALSE, ...) {
     if ("func_covars" %in% names.LMdata) {
       cat("$func_covars\n")
       names.fc <- names(x$func_covars)
-      for (i in 1:length(x$func_covars)) {
+      for (i in seq_along(x$func_covars)) {
         if (is.null(names.fc[i])) label <- paste0("[[", i, "]]")
         else paste0("$", names.fc[i])
         cat(paste0("$func_covars$", label, "\n"))
@@ -95,7 +95,7 @@ print.LMdataframe <- function(x, verbose = FALSE, ...) {
     if ("func_lms" %in% names.LMdata) {
       cat("$func_lms\n")
       names.fc <- names(x$func_lms)
-      for (i in 1:length(x$func_lms)) {
+      for (i in seq_along(x$func_lms)) {
         if (is.null(names.fc[i])) label <- paste0("[[", i, "]]")
         else paste0("$", names.fc[i])
         cat(paste0("$func_lms$", label, "\n"))
@@ -135,7 +135,7 @@ print.LMdataframe <- function(x, verbose = FALSE, ...) {
 #'
 print.LMScore <- function(x, digits = 3, ...) {
 
-  if (nrow(x$auct) > 0) {
+  if (!is.null(x$auct)) {
     cat(paste0("\nMetric: Time-dependent AUC (window ", x$w, ")\n"))
     cat("\nResults by model:\n")
 
@@ -158,7 +158,7 @@ print.LMScore <- function(x, digits = 3, ...) {
     message("NOTE: The higher AUC the better.")
     message(paste("NOTE: Predictions are made at time tLM for risk windows of length", x$w))
   }
-  if (nrow(x$briert) > 0) {
+  if (!is.null(x$briert)) {
     cat(paste0("\nMetric: Time-dependent Brier Score (window ", x$w, ")\n"))
     cat("\nResults by model:\n")
 
