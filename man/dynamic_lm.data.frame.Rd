@@ -26,7 +26,9 @@ times.}
 
 \item{formula}{The formula to be used, remember to include "+cluster(ID)" for
 the column that indicates the ID of the individual for robust error
-estimates.}
+estimates.
+Note that transformations (e.g., \code{x1*x2}) cannot be used in the formula and
+factors/categorical variables must first be made into dummy variables.}
 
 \item{type}{"coxph" or "CSC"/"CauseSpecificCox"}
 
@@ -78,7 +80,7 @@ Note that this vector has not been centered.
 \description{
 Note that it is recommended to rather use \code{\link[=stack_data]{stack_data()}} and
 \code{\link[=add_interactions]{add_interactions()}} to create an object of class LMdataframe rather than
-directly calling \code{dynamic_lm} on a dataframe to ensure the data has the
+directly calling \code{dynamic_lm()} on a dataframe to ensure the data has the
 correct form.
 }
 \examples{

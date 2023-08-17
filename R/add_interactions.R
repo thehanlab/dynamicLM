@@ -12,17 +12,18 @@
 #'
 #' @param lm_covs Vector of strings indicating the columns (covariates) that are
 #'   to have an interaction with the landmark times.
-#' @param func_covars Either a string (or vector of strings) specifying which
-#'   covariate(`x`)-landmark(`t`) interactions to include. One or
-#'   multiple of "linear" (`x, x*t`), "quadratic" (`x, x*t^2`),
-#'   "log" (`x, log(1 + x)`), or or "exp" (`x, exp(x)`).
+#' @param func_covars Either a string/vector of strings or list of
+#'   functions specifying which covariate-landmark interactions to include.
+#'   If `x` are covariates and `t` are landmarks then "linear" (`x, x*t`),
+#'   "quadratic" (`x, x*t^2`), "log" (`x, log(1 + x)`), or or "exp"
+#'   (`x, exp(x)`) can be specified.
 #'
-#'   Otherwise, a custom list of functions can be specified. For example,
-#'   `list( function(t) t, function(t) exp(20*t))` will, for each covariate `x`,
+#'   A custom list of functions can be specified. For example,
+#'   `list(function(t) t, function(t) exp(20*t))` will, for each covariate,
 #'   create `x, x*t, exp(20*t)`.
-#' @param func_lms Similar to `func_covars`: A list of functions to use for
-#'   transformations of the landmark times. Either a string or vector of
-#'   strings or a custom list of functions.
+#' @param func_lms A list of functions to use for transformations of the
+#'   landmark times input similarly to `func_covars`, either as a string/
+#'   vector of strings or a custom list of functions.
 #' @param lm_col Character string specifying the column name that indicates the
 #'   landmark time point for a row. Obtained from `lmdata` if not input.
 #' @param keep Boolean value to indicate whether or not to keep the columns
