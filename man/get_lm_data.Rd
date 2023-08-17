@@ -20,7 +20,8 @@ get_lm_data(
 \item{data}{Data frame from which to construct landmark super dataset}
 
 \item{outcome}{A list with items time and status, containing character
-strings identifying the names of time and status variables, respectively, of the survival outcome}
+strings identifying the names of time and status variables, respectively,
+of the survival outcome}
 
 \item{lm}{The value of the landmark time point at which to construct the
 landmark dataset.}

@@ -19,7 +19,7 @@ stack_data(
 \arguments{
 \item{data}{Data frame from which to construct landmark super dataset}
 
-\item{outcome}{A list with items time and status, containing character strings
+\item{outcome}{A list with items time and status, containing strings
 identifying the names of time and status variables, respectively, of the
 survival outcome}
 
@@ -62,10 +62,10 @@ points. The value of the landmark time point is stored in column LM.
 }
 }
 \description{
-This stacked dataset output is used as input to \code{\link[=dynamic_lm]{dynamic_lm()}} to fit a landmark
-supermodel for dynamic prediction. Calling \code{\link[=add_interactions]{add_interactions()}} on the output
-before fitting the supermodel allows for landmark time interactions to be
-included.
+This stacked dataset output is used as input to \code{\link[=dynamic_lm]{dynamic_lm()}} to fit a
+landmark supermodel for dynamic prediction. Calling \code{\link[=add_interactions]{add_interactions()}} on
+the output before fitting the supermodel allows for landmark time
+interactions to be included.
 }
 \examples{
 \dontrun{

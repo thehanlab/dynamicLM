@@ -10,7 +10,7 @@
 \item{object}{A fitted object of class "cv.LMpen". This can be created by
 calling \code{cv.penLM} using arguments \code{lmdata} and \code{xcols}.}
 
-\item{lambda}{Value of the penalty parameter \code{lambda} at which to fit a model.
+\item{lambda}{Value of the penalty parameter \code{lambda} to fit a model.
 Default is "lambda.min"; "lambda.1se" can also be used or a specific value
 can be input.For cause-specific Cox super models,
 this must be a list or vector of values: one for each cause.}
