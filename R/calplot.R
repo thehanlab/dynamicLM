@@ -180,7 +180,7 @@ calplot <-
     # Calibration
     outlist = list()
     if (regression_values) reg_values_list = list()
-    for (t in 1:length(times)) {
+    for (t in seq_along(times)) {
       tLM = times[t]
 
       idx = pred_LMs == tLM

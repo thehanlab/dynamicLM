@@ -108,8 +108,8 @@ add_interactions <- function(lmdata, lm_covs, func_covars, func_lms, lm_col,
   all_covs <- c(lm_covs)
   data_LM <- data[[lm_col]]
   # Add func_covarss: covariate LM interactions
-  for(i in 1:length(lm_covs)){
-    for (j in 1:length(func_covars)){
+  for(i in seq_along(lm_covs)){
+    for (j in seq_along(func_covars)){
       f <- func_covars[[j]]
       name <- paste0(lm_covs[i],"_",j)
       data[[name]]  <- data[[lm_covs[i]]]*f(data_LM)
@@ -117,7 +117,7 @@ add_interactions <- function(lmdata, lm_covs, func_covars, func_lms, lm_col,
     }
   }
   # Add func_lms: LM interactions
-  for (k in 1:length(func_lms)){
+  for (k in seq_along(func_lms)){
     g <- func_lms[[k]]
     name <- paste0("LM_",k)
     data[[name]]  <- g(data_LM)

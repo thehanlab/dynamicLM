@@ -221,7 +221,7 @@ print.LMCSC <- function(x, verbose = FALSE, cause, ...) {
   if (verbose) {
     cat("$func_covars\n")
     names.fc <- names(x$func_covars)
-    for (i in 1:length(x$func_covars)) {
+    for (i in seq_along(x$func_covars)) {
       if (is.null(names.fc[i])) label <- paste0("[[", i, "]]")
       else paste0("$", names.fc[i])
       cat(paste0("$func_covars$", label, "\n"))
@@ -230,7 +230,7 @@ print.LMCSC <- function(x, verbose = FALSE, cause, ...) {
     }
     cat("$func_lms\n")
     names.fc <- names(x$func_lms)
-    for (i in 1:length(x$func_lms)) {
+    for (i in seq_along(x$func_lms)) {
       if (is.null(names.fc[i])) label <- paste0("[[", i, "]]")
       else paste0("$", names.fc[i])
       cat(paste0("$func_lms$", label, "\n"))
@@ -276,7 +276,7 @@ print.LMcoxph <- function(x, verbose = FALSE, ...) {
     cat("\n\n")
     cat("$func_covars\n")
     names.fc <- names(x$func_covars)
-    for (i in 1:length(x$func_covars)){
+    for (i in seq_along(x$func_covars)){
       if (is.null(names.fc[i])) label <- paste0("[[", i, "]]")
       else paste0("$", names.fc[i])
       cat(paste0("$func_covars$", label, "\n"))
@@ -285,7 +285,7 @@ print.LMcoxph <- function(x, verbose = FALSE, ...) {
     }
     cat("$func_lms\n")
     names.fc <- names(x$func_lms)
-    for (i in 1:length(x$func_lms)){
+    for (i in seq_along(x$func_lms)){
       if (is.null(names.fc[i])) label <- paste0("[[", i, "]]")
       else paste0("$", names.fc[i])
       cat(paste0("$func_lms$", label, "\n"))
@@ -425,7 +425,7 @@ print.penLMCSC <- function(x, verbose = FALSE, ...) {
   if (verbose) {
     cat("$func_covars\n")
     names.fc = names(x$func_covars)
-    for (i in 1:length(x$func_covars)){
+    for (i in seq_along(x$func_covars)){
       if (is.null(names.fc[i])) label <- paste0("[[", i, "]]")
       else paste0("$", names.fc[i])
       cat(paste0("$func_covars$", label, "\n"))
@@ -434,7 +434,7 @@ print.penLMCSC <- function(x, verbose = FALSE, ...) {
     }
     cat("$func_lms\n")
     names.fc = names(x$func_lms)
-    for (i in 1:length(x$func_lms)) {
+    for (i in seq_along(x$func_lms)) {
       if (is.null(names.fc[i])) label <- paste0("[[", i, "]]")
       else paste0("$", names.fc[i])
       cat(paste0("$func_lms$", label, "\n"))
@@ -482,7 +482,7 @@ print.penLMcoxph <- function(x, verbose = FALSE, ...) {
   if (verbose) {
     cat("$func_covars\n")
     names.fc = names(x$func_covars)
-    for (i in 1:length(x$func_covars)){
+    for (i in seq_along(x$func_covars)){
       if (is.null(names.fc[i])) label <- paste0("[[", i, "]]")
       else paste0("$", names.fc[i])
       cat(paste0("$func_covars$", label, "\n"))
@@ -491,7 +491,7 @@ print.penLMcoxph <- function(x, verbose = FALSE, ...) {
     }
     cat("$func_lms\n")
     names.fc = names(x$func_lms)
-    for (i in 1:length(x$func_lms)) {
+    for (i in seq_along(x$func_lms)) {
       if (is.null(names.fc[i])) label <- paste0("[[", i, "]]")
       else paste0("$", names.fc[i])
       cat(paste0("$func_lms$", label, "\n"))

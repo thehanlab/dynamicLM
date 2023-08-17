@@ -59,7 +59,7 @@ sim_lm_data <- function(supermodel, data, N, hazard.fun = NULL, replace = TRUE,
 
     # function to return hazard function for a given cause and landmark
     hazard.fun <- lapply(1:num_causes, function(cause) {
-      lapply(1:length(lms), function(s) {
+      lapply(seq_along(lms), function(s) {
         iH <- instHaz[[cause]][[s]]
         func <- function(t) {
           sapply(t, function(ti) {

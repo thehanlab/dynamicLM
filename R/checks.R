@@ -122,7 +122,7 @@ check_evaluation_inputs <- function(
   outcome <- object[[1]]$outcome
   if (NF > 1) {
     for (i in 2:NF) {
-      for (j in 1:length(outcome)){
+      for (j in seq_along(outcome)){
         if (object[[i]]$outcome[[j]] != outcome[[j]])
           stop("outcome is not the same for all prediction models.")
       }
@@ -403,7 +403,7 @@ check_penLM_inputs <- function(x, y, lmdata, xcols, id_col = NULL, alpha = 1,
     if (attr(y, "model") == "survival") {
       y <- list(survival::Surv(y[, 1], y[, 2], y[, 3]))
     } else {
-      y <- lapply(1:length(states), function(i) {
+      y <- lapply(seq_along(states), function(i) {
         entry = y[, 1]
         exit = y[, 2]
         status = y[, 4] == states[i]

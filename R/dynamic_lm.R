@@ -212,8 +212,8 @@ dynamic_lm.data.frame <- function(lmdata,
     stop("For input data that is a dataframe, argument lm_covs must be specified.")
 
   all_covs <- c(
-    sapply(1:length(func_covars), function(i) paste0(lm_covs, "_", i)),
-    sapply(1:length(func_lms), function(i) paste0("LM_", i))
+    sapply(seq_along(func_covars), function(i) paste0(lm_covs, "_", i)),
+    sapply(seq_along(func_lms), function(i) paste0("LM_", i))
   )
   if (!all(all_covs %in% colnames(lmdata))) {
     stop(paste0("The data should have all of the following column names: ",
