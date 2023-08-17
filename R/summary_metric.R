@@ -33,9 +33,9 @@
 #'   estimates by the probability of survival P(T > s).
 #' @param object Either fitted supermodel or risk predictions.
 #'
-#' @return
+#' @return TODO
 #'
-#' @examples
+#' @examples TODO
 summary_metric <- function(metric,
                            df_t,
                            df_iid,
