@@ -4,13 +4,15 @@
 ## TODO: remove Tmax arg and set it ourselves
 ## TODO: roxygen
 ## TODO: imports (dplyr, tidyr, coxed...)
+## TODO: importantly!!!!!! handle longitudinal covariates
+## TODO: remove multipier arg
 
 sim_lm_data <- function(supermodel, data, N, hazard.fun = NULL, replace = TRUE,
-                        ...){
+                        censor = FALSE, multiplier = 1, ...){
   # {{{ Get some variables from the supermodel & check for missing variables
   if (inherits(supermodel, "LMCSC")) {
     models <- supermodel$model$models
-  } else if  (inherits(supermodel, "LMCox")) { # TODO: check
+  } else if  (inherits(supermodel, "LMcoxph")) { # TODO: check
     models <- list(supermodel$model)
   } else {
     stop("The only models supported are Cox and CSC landmark supermodels.")
@@ -27,7 +29,6 @@ sim_lm_data <- function(supermodel, data, N, hazard.fun = NULL, replace = TRUE,
 
   if (missing(data)) stop("Argument data must be specified.")
   if (missing(N)) N <- nrow(data)
-  if (missing(Tmax)) Tmax <- max(data[[time_col]])
   # }}}
 
   # {{{ Create a function to get the hazard function if using the hazard function
@@ -63,7 +64,7 @@ sim_lm_data <- function(supermodel, data, N, hazard.fun = NULL, replace = TRUE,
         func <- function(t) {
           sapply(t, function(ti) {
             idx <- (lms[s] + ti - 1 <= iH$time) & (iH$time <= lms[s] + ti) # add all in one unit before
-            sum(iH$iH[idx])
+            sum(iH$iH[idx]) * multiplier
           })
         }
         return (func)
@@ -91,7 +92,7 @@ sim_lm_data <- function(supermodel, data, N, hazard.fun = NULL, replace = TRUE,
           riskScore(models[[c]], t, curr_data[row, ], func_covars, func_lms)
         })
         risk_scores_c <- data.frame(risk_scores_c)
-        coxed::sim.survdata(X = risk_scores_c, censor = 0, T = Tmax,
+        coxed::sim.survdata(X = risk_scores_c, T = Tmax, beta = 1, censor = 0,
                             hazard.fun = hazard.fun[[c]][[i]], ...)$data$y
       }),
       ncol = num_causes
@@ -116,14 +117,27 @@ sim_lm_data <- function(supermodel, data, N, hazard.fun = NULL, replace = TRUE,
   }
 
   # censor anyone left
+  cutoff <- max(lms) + w
   idx_na <- is.na(newdata[[time_col]]) | is.na(newdata[[event_col]])
-  newdata[idx_na, time_col] <- max(lms) + w
+  newdata[idx_na, time_col] <- cutoff
   newdata[idx_na, event_col] <- 0
   # }}}
 
   # {{{ Censoring
-  # TODO: copy sim.survdata to have uniform censoring and censoring
-  #       conditional on covariates
+  # TODO: copy sim.survdata to have censoring conditional on covariates
+
+  if (censor == TRUE) {
+    censor_rate <- mean(data[[event_col]][data[[time_col]] < cutoff] == 0)
+  } else if (is.numeric(censor)) {
+    censor_rate <- censor
+  } else {
+    censor_rate <- 0
+  }
+  print(censor_rate)
+  # censor those in [0, cutoff) with rate censor_rate
+  if (censor_rate > 0)
+    newdata[!idx_na, event_col] <- ifelse(runif(sum(!idx_na)) < censor_rate,
+                                          0, newdata[!idx_na, event_col])
   # }}}
 
   return(newdata)
