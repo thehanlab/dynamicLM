@@ -53,36 +53,23 @@ cv.pen_lm <- function(x, y,
                      foldid = NULL,
                      ...
 ) {
-  # checked_input <- match.call()
-  # m <- match(c("x", "y", "lmdata", "xcols", "id_col", "alpha"), names(checked_input), 0L)
-  # checked_input <- as.list(checked_input[m]) #[m]
-  # checked_input$parent_func <- quote(cv.pen_lm)
-  # checked_input$CV <- TRUE
-  # print(checked_input)
-  # checked_input <- do.call(check_penlm_inputs, checked_input)
-
-  # checked_input <- match.call()
-  # checked_input$parent_func <- quote(cv.pen_lm)
-  # checked_input$CV <- TRUE
-  # checked_input[[1L]] <- NULL# quote(check_penlm_inputs)
-  # checked_input <- do.call("check_penlm_inputs", as.list(checked_input), envir = parent.frame()) #eval(checked_input, parent.frame())
-
   checked_input <- match.call()
   m <- match(c("x", "y", "id_col", "alpha"), names(checked_input), 0L)
   checked_input <- as.list(checked_input[m])
   checked_input$CV <- TRUE
-  checked_input <- do.call(check_penlm_inputs, checked_input, envir = parent.frame())
+  checked_input <- do.call(check_penlm_inputs, checked_input,
+                           envir = parent.frame())
 
   if (inherits(checked_input, "cv.pen_lm")) return(checked_input)
 
-  x = checked_input$x
-  y = checked_input$y
-  lmdata = checked_input$lmdata
-  xcols = checked_input$xcols
-  IDs = checked_input$IDs
-  alpha = checked_input$alpha
-  id_col = checked_input$id_col
-  unique.IDs = unique(IDs)
+  x <- checked_input$x
+  y <- checked_input$y
+  lmdata <- checked_input$lmdata
+  xcols <- checked_input$xcols
+  IDs <- checked_input$IDs
+  alpha <- checked_input$alpha
+  id_col <- checked_input$id_col
+  unique.IDs <- unique(IDs)
 
   # create foldids (as all instances of an individual must be in the same fold)
   if (missing(foldid)) {
