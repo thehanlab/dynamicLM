@@ -40,8 +40,8 @@ pen_lm <- function(x, y, alpha = 1, ...) {
   checked_input <- match.call()
   checked_input$parent_func <- quote(pen_lm)
   checked_input$CV <- FALSE
-  checked_input[[1L]] <- quote(check_penlm_inputs) #NULL
-  checked_input <- eval(checked_input, parent.frame()) #do.call("check_penlm_inputs", as.list(checked_input), envir = parent.frame())
+  checked_input[[1L]] <- NULL #quote(check_penlm_inputs) #
+  checked_input <- do.call("check_penlm_inputs", as.list(checked_input), envir = parent.frame()) #eval(checked_input, parent.frame()) #
 
   # can call pen_lm again depending on inputs
   if (inherits(checked_input, "pen_lm")) return(checked_input)

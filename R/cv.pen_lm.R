@@ -66,8 +66,8 @@ cv.pen_lm <- function(x, y,
   checked_input <- match.call()
   checked_input$parent_func <- quote(cv.pen_lm)
   checked_input$CV <- TRUE
-  checked_input[[1L]] <- quote(check_penlm_inputs)
-  checked_input <- eval(checked_input, parent.frame())
+  checked_input[[1L]] <- NULL# quote(check_penlm_inputs)
+  checked_input <- do.call("check_penlm_inputs", as.list(checked_input), envir = parent.frame()) #eval(checked_input, parent.frame())
 
   if (inherits(checked_input, "cv.pen_lm")) return(checked_input)
 
