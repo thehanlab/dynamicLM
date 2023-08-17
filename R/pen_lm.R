@@ -39,7 +39,7 @@ pen_lm <- function(x, y, alpha = 1, ...) {
   checked_input <- match.call()
   m <- match(c("x", "y", "alpha"), names(checked_input), 0L)
   checked_input <- as.list(checked_input[m])
-  checked_input <- do.call(check_penlm_inputs, checked_input)
+  checked_input <- do.call(check_penlm_inputs, checked_input, envir = parent.frame())
 
   x = checked_input$x
   y = checked_input$y
