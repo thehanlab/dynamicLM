@@ -18,10 +18,12 @@ score(
   split.method = "none",
   B = 1,
   M,
+  summary = FALSE,
+  weights = NULL,
   cores = 1,
   seed,
   cause,
-  silent = T,
+  silent = TRUE,
   na.rm = FALSE,
   ...
 )
