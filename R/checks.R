@@ -10,8 +10,7 @@ check_evaluation_inputs <- function(
     M,
     cores = 1,
     seed,
-    cause,
-    ...) {
+    cause) {
 
   ### Check inputs ###
 
@@ -294,12 +293,10 @@ check_evaluation_inputs <- function(
 }
 
 
-check_penlm_inputs <- function(x, y, id_col = NULL, alpha = 1, #lmdata, xcols,
-                               parent_func, CV = FALSE, ...) {
-  # print("check_penlm_inputs")
-  # print(y)
-  # check which data inputs are provided
-  # i.e., are all provided? & can we replace lmdata and xcols with x and y?
+check_penlm_inputs <- function(x, y, id_col = NULL, alpha = 1, CV = FALSE) {
+
+  ### check which data inputs are provided & setup lmdata, xcols ###
+
   use_lmdata <- FALSE
   lmdata <- NULL
   xcols <- NULL
@@ -325,7 +322,8 @@ check_penlm_inputs <- function(x, y, id_col = NULL, alpha = 1, #lmdata, xcols,
       stop("argument y should be a Surv or Hist object as x is a matrix.")
   }
 
-  # get IDs if performing cross-validation
+  ### get IDs if performing cross-validation ###
+
   if (CV) {
     # get id_col if parent function is cv.pen_lm
     if (is.null(id_col) && !use_lmdata) {
@@ -345,7 +343,8 @@ check_penlm_inputs <- function(x, y, id_col = NULL, alpha = 1, #lmdata, xcols,
     }
   }
 
-  # if using an LMdataframe, create x and y for glmnet
+  ### if using an LMdataframe, create x and y for glmnet ###
+
   if (use_lmdata) {
     entry <- lmdata$data[[lmdata$lm_col]]
     exit <- lmdata$data[[lmdata$outcome$time]]
@@ -366,6 +365,7 @@ check_penlm_inputs <- function(x, y, id_col = NULL, alpha = 1, #lmdata, xcols,
     x <- as.matrix(lmdata$data[xcols])
   }
 
+  ### handle competing risks ###
   # check if x is competing risks (CR) or not
   # if CR create the correct number of x's: one for each cause
   if (inherits(y, "Surv")) {
@@ -399,8 +399,7 @@ check_penlm_inputs <- function(x, y, id_col = NULL, alpha = 1, #lmdata, xcols,
     }
   }
 
-  if (missing(lmdata)) lmdata <- NULL
-  if (missing(xcols)) xcols <- NULL
+  ### output ###
 
   out <- list(
     x = x,

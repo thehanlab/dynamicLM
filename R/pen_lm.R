@@ -1,7 +1,7 @@
 #' Compute the regularization path of coefficients for a Cox or
 #' cause-specific Cox landmark supermodel with lasso or elasticnet penalization.
 #'
-#' Fit by calling `[glmnet()]`. As in `glmnet`, the model is fit via penalized
+#' Fit by calling `[glmnet::glmnet()]`. As in `glmnet`, the model is fit via penalized
 #' maximum likelihood to produce a regularization path at a grid of values for
 #' the regularization parameter lambda. Input can be as typically done for
 #' `glmnet` in the form of `x` and `y` which are a matrix and response object
@@ -20,14 +20,14 @@
 #' @param alpha The elastic net mixing parameter: Lies between 0 and 1. At 1,
 #'   the penalty is the LASSO penalty, and at 0, the penalty is the ridge
 #'   penalty. The default is 1.
-#' @param ... Additional arguments passed to [glmnet()].
+#' @param ... Additional arguments passed to `glmnet()`.
 #'
 #' @return An object of class `pen_lm`. This is a list of `glmnet` objects (one
 #'   for each cause-specific Cox model or a list of length one for a regular Cox
 #'   model). The object also has attributes `survival.type` (`competing.risk`
 #'   or `survival`) and `lmdata` and `xcols` which store the inputs if given.
 #'   Functions `print` and `plot` exist for the object. To make predictions,
-#'   see [dynamic_lm.pen_lm()] and [predict()].
+#'   see [dynamic_lm.pen_lm()] and [predict.dynamicLM()].
 #' @seealso [print.pen_lm()], [plot.pen_lm()], [dynamic_lm.pen_lm()]
 #' @examples
 #' \dontrun{
@@ -37,15 +37,11 @@
 pen_lm <- function(x, y, alpha = 1, ...) {
 
   checked_input <- match.call()
-  checked_input$parent_func <- quote(pen_lm)
-  checked_input$CV <- FALSE
-  checked_input[[1L]] <- NULL #quote(check_penlm_inputs) #
-  checked_input <- do.call("check_penlm_inputs", as.list(checked_input), envir = parent.frame()) #eval(checked_input, parent.frame()) #
+  m <- match(c("x", "y", "alpha"), names(checked_input), 0L)
+  checked_input <- as.list(checked_input[m])
+  checked_input <- do.call(check_penlm_inputs, checked_input,
+                           envir = parent.frame())
 
-  # can call pen_lm again depending on inputs
-  if (inherits(checked_input, "pen_lm")) return(checked_input)
-
-  # if not, use checked inputs
   x = checked_input$x
   y = checked_input$y
   lmdata = checked_input$lmdata

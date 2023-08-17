@@ -1,7 +1,7 @@
 #' Cross-validation for a penalized Cox or cause-specific Cox landmark
 #' supermodel
 #'
-#' Fit by calling [cv.glmnet()]. As in `cv.glmnet`, k-fold cross validation is
+#' Fit by calling [glmnet::cv.glmnet()]. As in `cv.glmnet`, k-fold cross validation is
 #' performed. This produces a plot and returns optimal values for `lambda`, the
 #' penalization parameter. Input can be as typically done for
 #' `cv.glmnet` in the form of `x` and `y` which are a matrix and response object
@@ -45,7 +45,6 @@
 #' @import glmnet riskRegression
 #' @export
 cv.pen_lm <- function(x, y,
-                     # lmdata, xcols,
                      id_col,
                      alpha = 1,
                      nfolds = 10,
@@ -62,11 +61,19 @@ cv.pen_lm <- function(x, y,
   # print(checked_input)
   # checked_input <- do.call(check_penlm_inputs, checked_input)
 
+  # checked_input <- match.call()
+  # checked_input$parent_func <- quote(cv.pen_lm)
+  # checked_input$CV <- TRUE
+  # checked_input[[1L]] <- NULL# quote(check_penlm_inputs)
+  # checked_input <- do.call("check_penlm_inputs", as.list(checked_input), envir = parent.frame()) #eval(checked_input, parent.frame())
+
   checked_input <- match.call()
-  checked_input$parent_func <- quote(cv.pen_lm)
+  m <- match(c("x", "y", "id_col", "alpha", "nfolds", "type.measure", "seed",
+               "foldid"), names(checked_input), 0L)
+  checked_input <- as.list(checked_input[m])
   checked_input$CV <- TRUE
-  checked_input[[1L]] <- NULL# quote(check_penlm_inputs)
-  checked_input <- do.call("check_penlm_inputs", as.list(checked_input), envir = parent.frame()) #eval(checked_input, parent.frame())
+  checked_input <- do.call(check_penlm_inputs, checked_input,
+                           envir = parent.frame())
 
   if (inherits(checked_input, "cv.pen_lm")) return(checked_input)
 
