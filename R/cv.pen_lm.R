@@ -39,12 +39,11 @@
 #'   Functions `print()` and `plot()` exist for the object. To make predictions,
 #'   see [dynamic_lm.cv.pen_lm()].
 #' @seealso [print.cv.pen_lm()], [plot.cv.pen_lm()], [dynamic_lm.cv.pen_lm()]
-#' @import glmnet riskRegression
-#' @export
-#'
 #' @examples
 #' \dontrun{
 #' }
+#' @import glmnet riskRegression
+#' @export
 cv.pen_lm <- function(x, y,
                      # lmdata, xcols,
                      id_col,

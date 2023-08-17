@@ -29,12 +29,11 @@
 #'   Functions `print` and `plot` exist for the object. To make predictions,
 #'   see [dynamic_lm.pen_lm()] and [predict()].
 #' @seealso [print.pen_lm()], [plot.pen_lm()], [dynamic_lm.pen_lm()]
-#' @import glmnet
-#' @export
-#'
 #' @examples
 #' \dontrun{
 #' }
+#' @import glmnet
+#' @export
 pen_lm <- function(x, y, alpha = 1, ...) {
 
   checked_input <- match.call()
