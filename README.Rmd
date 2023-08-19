@@ -72,7 +72,7 @@ You can install the development version of `dynamicLM` from
 
 ```{r}
 # install.packages("devtools")
-devtools::install_github("thehanlab/dynamicLM")
+devtools::install_github("thehanlab/dynamicLM", ref = "extension/regularisation")
 ```
 
 Package documentation can be found in [this pdf](https://github.com/thehanlab/dynamicLM/blob/main/man/dynamicLM_0.3.0.pdf).

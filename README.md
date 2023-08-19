@@ -75,12 +75,21 @@ You can install the development version of `dynamicLM` from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("thehanlab/dynamicLM")
-#> Skipping install of 'dynamicLM' from a github remote, the SHA1 (98dc3268) has not changed since last install.
-#>   Use `force = TRUE` to force installation
+devtools::install_github("thehanlab/dynamicLM", ref = "extension/regularisation")
+#> Downloading GitHub repo thehanlab/dynamicLM@extension/regularisation
+#> 
+#>      checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpqrVtKH/remotesdb38128aa642/thehanlab-dynamicLM-4e6f919/DESCRIPTION’ ...  ✔  checking for file ‘/private/var/folders/r0/ckqbvqg52r53ct7wxr5yz50h0000gn/T/RtmpqrVtKH/remotesdb38128aa642/thehanlab-dynamicLM-4e6f919/DESCRIPTION’
+#>   ─  preparing ‘dynamicLM’:
+#>    checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
+#>   ─  excluding invalid files
+#>      Subdirectory 'man' contains invalid file names:
+#>      ‘dynamicLM_0.3.0.pdf’
+#>   ─  checking for LF line-endings in source and make files and shell scripts
+#>   ─  checking for empty or unneeded directories
+#>   ─  building ‘dynamicLM_0.3.0.tar.gz’
+#>      
+#> 
 ```
-
-Requirements for the package can be found in the DESCRIPTION file.
 
 Package documentation can be found in [this
 pdf](https://github.com/thehanlab/dynamicLM/blob/main/man/dynamicLM_0.3.0.pdf).
@@ -116,7 +125,7 @@ library(dynamicLM)
 #> Loading required package: survival
 #> Loading required package: prodlim
 #> Loading required package: riskRegression
-#> riskRegression version 2023.06.30
+#> riskRegression version 2023.07.26
 ```
 
 ``` r
@@ -618,7 +627,7 @@ head(dat)
 plotrisk(supermodel, dat, format = "long", ylim = c(0, 0.7), x.legend = "topright")
 ```
 
-<img src="man/figures/README-plotRisk-1.png" width="100%" />
+<img src="man/figures/README-plotrisk-1.png" width="100%" />
 
 We can see that the male has a higher and increasing 5-year risk of
 recurrence that peaks around 1 year, and then rapidly decreases. This
