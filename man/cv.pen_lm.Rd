@@ -59,7 +59,7 @@ Functions \code{print()} and \code{plot()} exist for the object. To make predict
 see \code{\link[=dynamic_lm.cv.pen_lm]{dynamic_lm.cv.pen_lm()}}.
 }
 \description{
-Fit by calling \code{\link[=cv.glmnet]{cv.glmnet()}}. As in \code{cv.glmnet}, k-fold cross validation is
+Fit by calling \code{\link[glmnet:cv.glmnet]{glmnet::cv.glmnet()}}. As in \code{cv.glmnet}, k-fold cross validation is
 performed. This produces a plot and returns optimal values for \code{lambda}, the
 penalization parameter. Input can be as typically done for
 \code{cv.glmnet} in the form of \code{x} and \code{y} which are a matrix and response object

@@ -24,7 +24,7 @@ If \code{x} is a matrix, \code{y} should be the response variable: either a
 the penalty is the LASSO penalty, and at 0, the penalty is the ridge
 penalty. The default is 1.}
 
-\item{...}{Additional arguments passed to \code{\link[=glmnet]{glmnet()}}.}
+\item{...}{Additional arguments passed to \code{glmnet()}.}
 }
 \value{
 An object of class \code{pen_lm}. This is a list of \code{glmnet} objects (one
@@ -32,10 +32,10 @@ for each cause-specific Cox model or a list of length one for a regular Cox
 model). The object also has attributes \code{survival.type} (\code{competing.risk}
 or \code{survival}) and \code{lmdata} and \code{xcols} which store the inputs if given.
 Functions \code{print} and \code{plot} exist for the object. To make predictions,
-see \code{\link[=dynamic_lm.pen_lm]{dynamic_lm.pen_lm()}} and \code{\link[=predict]{predict()}}.
+see \code{\link[=dynamic_lm.pen_lm]{dynamic_lm.pen_lm()}} and \code{\link[=predict.dynamicLM]{predict.dynamicLM()}}.
 }
 \description{
-Fit by calling \verb{[glmnet()]}. As in \code{glmnet}, the model is fit via penalized
+Fit by calling \verb{[glmnet::glmnet()]}. As in \code{glmnet}, the model is fit via penalized
 maximum likelihood to produce a regularization path at a grid of values for
 the regularization parameter lambda. Input can be as typically done for
 \code{glmnet} in the form of \code{x} and \code{y} which are a matrix and response object

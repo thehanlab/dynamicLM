@@ -35,7 +35,7 @@
 #'
 #' @return TODO
 #'
-#' @examples TODO
+#' @examples #TODO
 summary_metric <- function(metric,
                            df_t,
                            df_iid,
