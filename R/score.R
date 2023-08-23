@@ -154,6 +154,11 @@ score <-
            cause,
            silent = TRUE,
            na.rm = FALSE,
+
+           # TODO...
+           time = "time",
+           status = "status",
+           cens.model = "cox",
            ...) {
 
     if (!requireNamespace("data.table", quietly = TRUE)) {
@@ -200,13 +205,106 @@ score <-
     se.fit.b <- se.fit
     if (num_B > 1) se.fit.b <- FALSE
 
+    # get S_tLM = P(T > lms) and G_tLM = P(C > lms)
+    switch(cens.model,
+           "km" = {
+             # #TODO
+             # # sFormula <- update_hist_formula(as.formula(formula), type = "surv")
+             # gFormula <- update_hist_formula(as.formula(formula), type = "censor")
+             # # sFit <- prodlim::prodlim(as.formula(sFormula),data=data,reverse=TRUE,bandwidth="smooth")
+             # gFit <- prodlim::prodlim(as.formula(gFormula),data=data,reverse=TRUE,bandwidth="smooth")
+             # # print(sfit)
+             # # print(lms)
+             # # s_tLM <- predict(sFit,newdata=data,times=times,level.chaos=1,mode="matrix",type="surv")
+             # g_tLM <- predict(gFit,newdata=data,times=times,level.chaos=1,mode="matrix",type="surv")
+             #
+             # # print(s_tLM)
+             # print(g_tLM)
+           },
+           "cox" = {
+             # stop("cox not yet implemented!")
+             # print(formula)
+             # gFormula <- update_hist_formula(stats::as.formula(formula), "censor")
+             # # sFormula <- update_hist_formula(stats::as.formula(formula), "surv")
+             #
+             # # outcome_col <- get_outcomes(stats::as.formula(formula))
+             # event_col <- deparse(stats::as.formula(formula)[[2]][[3]])
+             # time_col <- deparse(stats::as.formula(formula)[[2]][[2]])
+             #
+             # # wdata <- data.table::data.table(data)
+             # # print(head(wdata))
+             # # if (length(unique(wdata[[event_col]])) > 2){
+             # #   wdata[,event2 := as.numeric(wdata[[event_col]])]
+             # #   wdata[wdata[[event_col]] == 0,event2 := 0]
+             # #   wdata[,event2 := NULL]
+             # # }
+             # # print(head(wdata))
+             # # Y <- data[[time_col]]
+             # # status <- data[[event_col]]
+             #
+             # ## fit Cox model for censoring times
+             # args <- list(x=TRUE,y=TRUE, surv=TRUE)#,eps=1e-06)#,linear.predictors=TRUE)
+             # # args$surv <- TRUE
+             #
+             # # TODO: something is wrong here
+             # print("----")
+             # print(gFormula)
+             # print("----")
+             # # print(str(wdata))
+             # print("----")
+             # print(args)
+             # gfit <- do.call(rms::cph,
+             #                 c(list(formula=stats::as.formula(gFormula),
+             #                        data=data),args))
+             # return()
+             # # print(gfit)
+             #
+             # # sfit <- do.call(rms::cph,
+             # #                 c(list(formula=stats::as.formula(sFormula),
+             # #                        data=wdata),args))
+             # # TODO: get MC_tLM
+             # # IC.times <- predictCox(fit, iid = TRUE,
+             # #                        newdata = wdata,
+             # #                        times = times,
+             # #                        type = "cumhazard")$cumhazard.iid*NROW(data)
+             # # IC.weights <- list()
+             # # for (t.ind in 1:length(times)){
+             # #   N <- length(Y)
+             # #   ## (i,j)'th entry is f_j(tilde{T}_i-;X_i)/G(tilde{T}_i|X_i) when delta_i != 0 and time_i <= tau; otherwise it is f_j(tau-;X_i)/G(tau | X_i)
+             # #   # TODO: get an i with T > t.ind
+             # #   IC.weights[[t.ind]] <- IC.times[,t.ind,i]
+             # # }
+             #
+             # ## need G(Ti-|Xi) only for i where status=1 && Ti < max(times)
+             # if (length(times)==1) {
+             #   G_tLM <- matrix(rms::survest(gfit,newdata=wdata,times=times,se.fit=FALSE)$surv,ncol=1)
+             #   # S_tLM <- matrix(rms::survest(sfit,newdata=wdata,times=times,se.fit=FALSE)$surv,ncol=1)
+             # } else{
+             #   G_tLM <- rms::survest(gfit,newdata=wdata,times=times,se.fit=FALSE)$surv
+             #   # S_tLM <- rms::survest(sfit,newdata=wdata,times=times,se.fit=FALSE)$surv
+             # }
+             # print(G_tLM)
+
+           },
+           {
+             stop("Using other models (than Cox) for getting the censoring weights is under construction.")
+           })
+
     # TODO: parallelize?
     metrics <- lapply(unique(data$b), function(b) {
       m_b <- lapply(seq_along(times), function(t) {
         tLM <- times[t]
-
+        # print(paste("tLM =", tLM))
         idx <- (pred_LMs == tLM) & (data$b == b)
         data_to_test <- data[idx, ]
+        # TODO: decide how to handle the data
+        #       by only including those who live after s, our censoring times
+        #       etc align properly but we can also do it as below and set
+        #       times = w
+        # data_to_test[[time]] <- data_to_test[[time]] - tLM
+        # data_to_test[["LM"]] <- data_to_test[["LM"]] - tLM
+        # TODO: add the individuals who have already had an event
+
         risks_to_test <- lapply(1:NF, function(i) {
           preds[idx, i]
         })
@@ -223,10 +321,10 @@ score <-
             data = data_to_test,
             metrics = metrics,
             cause = cause,
-            times = c(tLM + w - 10e-5),
+            times = tLM + w - 10e-5,
             se.fit = se.fit.b,
             conf.int = conf.int,
-            keep = "iid",
+            keep = c("residuals", "iid"),
             ...
           ), silent = TRUE
         ))
@@ -247,24 +345,38 @@ score <-
         } else {
           auct_b <- score_t$AUC$score
           briert_b <- score_t$Brier$score
+
+          # # TODO: MC_tLM / MC
+          # MC <- 1 # TODO      # sum_everyone int_0^s
+          #
+          # # output Brier should have model, times, Brier, se, lower, upper
+          # score_t$Brier$iid.decomp$model <- score_t$Brier$residuals$model # convert to factor
+          # inds_b <- merge(score_t$Brier$residuals,
+          #                 score_t$Brier$iid.decomp) #%>%
+          # # inds_b$IF.Brier2 = g_tLM / s_tLM * (time > tLM) * (
+          # #   IF.Brier + mean(residuals) - residuals * MC
+          # #   )
+          # print(head(score_t$Brier$residuals))
+          # N <- nrow(data_to_test)
+          # print(N)
+          #
+          # briert_b <- inds_b %>%
+          #   dplyr::group_by(model, times) %>%
+          #   dplyr::summarize(
+          #     Brier = mean(residuals),# * g_tLM[t],
+          #     se = sd(IF.Brier) / sqrt(N)#,
+          #     # lower = TODO,
+          #     # upper = TODO
+          #   ) %>% data.frame() #data.table::data.table()
+
           ###{
-          if (get.a.iid) {
-            a_iid <- score_t$AUC$iid.decomp
-            a_iid$b <- b
-            a_iid <- cbind(tLM, a_iid)
-          }
-          if (get.b.iid) {
-            b_iid <- score_t$Brier$iid.decomp
-            b_iid$b <- b
-            b_iid <- cbind(tLM, b_iid)
-          }
+          if (get.a.iid) a_iid <- cbind(tLM, score_t$AUC$iid.decomp, b)
+          if (get.b.iid) b_iid <- cbind(tLM, score_t$Brier$iid.decomp, b)
           ###}
         }
-        auct_b$b <- b
-        briert_b$b <- b
         metrics_b_t <- list()
-        if (get.auc) metrics_b_t$AUC <- cbind(tLM, auct_b)
-        if (get.bs) metrics_b_t$Brier <- cbind(tLM, briert_b)
+        if (get.auc) metrics_b_t$AUC <- cbind(tLM, auct_b, b)
+        if (get.bs) metrics_b_t$Brier <- cbind(tLM, briert_b, b)
 
         ###{
         if (get.a.iid) metrics_b_t$a_iid <- a_iid
@@ -275,15 +387,11 @@ score <-
       })
 
       m_out <- list()
-      if (get.auc)
-        m_out$AUC <- do.call("rbind", lapply(m_b, function(m) m$AUC))
-      if (get.bs)
-        m_out$Brier <- do.call("rbind", lapply(m_b, function(m) m$Brier))
+      m_out$AUC <- do.call("rbind", lapply(m_b, function(m) m$AUC))
+      m_out$Brier <- do.call("rbind", lapply(m_b, function(m) m$Brier))
       ###{
-      if (get.a.iid)
-        m_out$a_iid <- do.call("rbind", lapply(m_b, function(m) m$a_iid))
-      if (get.b.iid)
-        m_out$b_iid <- do.call("rbind", lapply(m_b, function(m) m$b_iid))
+      m_out$a_iid <- do.call("rbind", lapply(m_b, function(m) m$a_iid))
+      m_out$b_iid <- do.call("rbind", lapply(m_b, function(m) m$b_iid))
       ###}
       m_out
     })

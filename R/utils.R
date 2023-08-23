@@ -49,8 +49,8 @@ replace_na_with_last <- function(x) {
 # the LHS, and converts it to a Hist object if it is a Surv object
 # ----------------------------------------------------------
 getLHS <- function(formula){
-  LHS = formula[[2]]
-  survival_object = LHS[[1]]
+  LHS <- formula[[2]]
+  survival_object <- LHS[[1]]
 
   if (length(LHS) == 3){
     exit <- LHS[[2]]
@@ -67,15 +67,49 @@ getLHS <- function(formula){
     stop("Invalid formula: LHS must be an object of type Hist or Surv")
   }
 
-  exit = deparse(exit)
-  status = deparse(status)
+  exit <- deparse(exit)
+  status <- deparse(status)
 
-  if (length(LHS) == 3) return(paste0("Hist(",exit," ,",status,") ~ 1"))
+  if (length(LHS) == 3) return(paste0("Hist(",exit,", ",status,") ~ 1"))
 
   enter = deparse(enter)
   return(paste0("Hist(",exit,", ",status,", ",enter,") ~ 1"))
 }
 
+# ----------------------------------------------------------
+# update_hist_formula: Function that adjusts a formula's LHS based on a
+# specified type ("censor" or "surv") to generate a corresponding Surv formula.
+# ----------------------------------------------------------
+update_hist_formula <- function(formula, type) {
+  LHS <- formula[[2]]
+  if (length(LHS) == 3){
+    exit <- LHS[[2]]
+    status <- LHS[[3]]
+  } else {
+    exit <- LHS[[2]]
+    status <- LHS[[3]]
+    enter <- LHS[[4]]
+  }
+
+  exit <- deparse(exit)
+  status <- deparse(status)
+
+  # if (type == "censor")  outcome <- " == 1"
+  if (type == "censor")  outcome <- " == 0"
+  else if (type == "surv") outcome <- " != 0"
+  else stop("updateHist can only handle censor and surv types.")
+
+  # if (length(LHS) == 3)
+  #   out <- paste0("Surv(", exit, ", ", status, outcome, ") ~ 1")
+  # else
+  #   out <- paste0("Surv(", enter, ", ", exit, ", ", status, outcome, ") ~ 1")
+  if (length(LHS) == 3)
+    out <- paste0("Hist(", exit, ", ", status, outcome, ") ~ 1")
+  else
+    out <- paste0("Hist(", exit, ", ", status, outcome,  ", ",enter,") ~ 1")
+
+  return(out)
+}
 
 
 # ----------------------------------------------------------

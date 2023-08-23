@@ -49,6 +49,7 @@ summary_metric <- function(metric,
 
   # TODO: if any entries in df_t (that we would use!) are NA then return
   #       NA immediately
+  # TODO: add these checks and all checks below to check_evaluation_inputs
 
   if_col <- paste0("IF.", metric)
   lms <- unique(df_t$tLM)
@@ -128,21 +129,18 @@ summary_metric <- function(metric,
 
   #{{{ 2. get the covariance of the iid decomposition by model across times
   cov_score <- lapply(unique(df_iid$model), function(m) {
-    df <- df_iid[df_iid$model == m,
-                 c("ID", "tLM", if_col),
-                 with = FALSE]
+    df <- df_iid[df_iid$model == m, c("ID", "tLM", if_col), with = FALSE]
+    subsample_sizes <- table(df$tLM)
+    if (subsample_sizes[1] != sample_size) stop("Something went wrong.") # TODO
+    adjustment <- subsample_sizes / sample_size
     df <- data.table::dcast(df, ID ~ tLM, value.var = if_col)
-    print(head(df))
     df[, "ID" := NULL]
-    print(sum(is.na(df[,1])))
-    print(sum(is.na(df[,2])))
     df[is.na(df),] <- 0
-    # df <- df[complete.cases(df), ]
-
+    df <- sweep(df, MARGIN = 2, STATS = adjustment, FUN = "/")
     cov(df)
   })
   #}}}
-  print(cov_score)
+  # print(cov_score)
 
   #{{{ 3. apply the delta method to get a confidence interval
   # TODO: check that this is correct
@@ -152,7 +150,7 @@ summary_metric <- function(metric,
     sqrt(var / sample_size)             # variance -> standard error
   })
   #}}}
-  print(se_score)
+  # print(se_score)
 
   #{{{ 4. Make a data.table with model, mean, se, lower, upper
   alpha <- 1 - conf_int
