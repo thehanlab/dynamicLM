@@ -126,18 +126,18 @@ sim_lm_data <- function(supermodel, data, N, hazard.fun = NULL, replace = TRUE,
   # {{{ Censoring
   # TODO: copy sim.survdata to have censoring conditional on covariates
 
-  if (censor == TRUE) {
-    censor_rate <- mean(data[[event_col]][data[[time_col]] < cutoff] == 0)
-  } else if (is.numeric(censor)) {
-    censor_rate <- censor
-  } else {
-    censor_rate <- 0
-  }
-  print(censor_rate)
-  # censor those in [0, cutoff) with rate censor_rate
-  if (censor_rate > 0)
-    newdata[!idx_na, event_col] <- ifelse(runif(sum(!idx_na)) < censor_rate,
-                                          0, newdata[!idx_na, event_col])
+  # if (censor == TRUE) {
+  #   censor_rate <- mean(data[[event_col]][data[[time_col]] < cutoff] == 0)
+  # } else if (is.numeric(censor)) {
+  #   censor_rate <- censor
+  # } else {
+  #   censor_rate <- 0
+  # }
+  # print(censor_rate)
+  # # censor those in [0, cutoff) with rate censor_rate
+  # if (censor_rate > 0)
+  #   newdata[!idx_na, event_col] <- ifelse(runif(sum(!idx_na)) < censor_rate,
+  #                                         0, newdata[!idx_na, event_col])
   # }}}
 
   return(newdata)
