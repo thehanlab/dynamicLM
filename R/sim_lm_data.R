@@ -1,10 +1,9 @@
-## TODO: sim.survdata outputs only whole units
-## So, the user must be aware of this
+## TODO: sim.survdata outputs only whole units: user must be aware of this
 ## TODO: add num.data.frames argument
-## TODO: remove Tmax arg and set it ourselves
 ## TODO: roxygen
-## TODO: imports (dplyr, tidyr, coxed...)
+## TODO: imports (dplyr?, tidyr?, coxed...)
 ## TODO: importantly!!!!!! handle longitudinal covariates
+##       -> we're not updating covariate values at any point here
 ## TODO: remove multipier arg
 
 sim_lm_data <- function(supermodel, data, N, hazard.fun = NULL, replace = TRUE,
@@ -124,20 +123,34 @@ sim_lm_data <- function(supermodel, data, N, hazard.fun = NULL, replace = TRUE,
   # }}}
 
   # {{{ Censoring
-  # TODO: copy sim.survdata to have censoring conditional on covariates
 
-  # if (censor == TRUE) {
-  #   censor_rate <- mean(data[[event_col]][data[[time_col]] < cutoff] == 0)
-  # } else if (is.numeric(censor)) {
-  #   censor_rate <- censor
-  # } else {
-  #   censor_rate <- 0
-  # }
-  # print(censor_rate)
-  # # censor those in [0, cutoff) with rate censor_rate
-  # if (censor_rate > 0)
-  #   newdata[!idx_na, event_col] <- ifelse(runif(sum(!idx_na)) < censor_rate,
-  #                                         0, newdata[!idx_na, event_col])
+  # TODO: adjust when we have longitudinal data
+  # TODO: add covariate dependent censoring (copy sim.survdata?)
+  # TODO: add uniform/exponential censoring too
+  # TODO: then censor = c("unif", "ind", "dep") ? Or maybe for dep
+  #       need to specify a formula
+
+  if (censor == TRUE) {
+      args <- list(formula = as.formula(paste0("Hist(", time_col, ", ",
+                                               event_col, ") ~ 1")),
+                   data = data, reverse = TRUE)
+      fit <- do.call(prodlim::prodlim, args)
+      print("model fit")
+      print(str(fit))
+      censoring_times <- sapply(1:N, function(i) {
+        # TODO: finding  closest proba could be better
+        idx_surv <- which.min(abs(fit$surv - runif(1)))
+        idx_time <- fit$surv == fit$surv[idx_surv]
+
+        if (length(idx_time) > 1)
+          sample(fit$time[idx_time], 1)
+        else
+          fit$time[idx_time]
+      })
+      print(censoring_times)
+      newdata[[time_col]] <- pmin(newdata[[time_col]], censoring_times)
+      newdata[newdata[[time_col]] == censoring_times, event_col] <- 0
+  }
   # }}}
 
   return(newdata)
