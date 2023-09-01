@@ -100,18 +100,9 @@ summary_metric <- function(metric,
                          c("time", "status"))
 
     # set weights
-    if (type == "CauseSpecificCox" || type == "CSC") {
-      # TODO: check what to do here!!!!
-      km_fit <- survival::survfit(Surv(time, status != 0) ~ 1, data = data)
-      weight_vector <- summary(km_fit, times = lms)$surv
-
-    } else if (type == "coxph") {
-      km_fit <- survival::survfit(Surv(time, status) ~ 1, data = data)
-      weight_vector <- summary(km_fit, times = lms)$surv
-
-    } else {
-      stop("Only objects of type coxph, CSC and CauseSpecificCox are accepted.")
-    }
+    args <- list(formula = as.formula("Hist(time, status) ~ 1"), data = data)
+    fit <- do.call(prodlim::prodlim, args)
+    weight_vector <- predict(fit, times = lms, type = "surv")
 
   } else {
     # TODO: (later) allow for a more flexible weighting scheme from the user?
@@ -145,7 +136,7 @@ summary_metric <- function(metric,
   #{{{ 3. apply the delta method to get a confidence interval
   # TODO: check that this is correct
   se_score <- sapply(cov_score, function(cov) {
-    nabla_g <- weight_vector / num_lms  # gradient
+    nabla_g <- weight_vector / sum(weight_vector) # gradient
     var <- nabla_g %*% cov %*% nabla_g  # delta method for variance
     sqrt(var / sample_size)             # variance -> standard error
   })
@@ -162,7 +153,7 @@ summary_metric <- function(metric,
     upper = summary_score[[metric]] + qnorm(1 - alpha / 2) * se_score
   )
   #}}}
-  print(out)
+  # print(out)
 
 
   return(out)
