@@ -149,22 +149,26 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
 #'
 #' @param x An object of class "LMScore" output from [score()]
 #' @param metrics One or both of "auc" and "brier"
+#' @param contrasts Plot the difference between metrics. Default is
+#'   FALSE and plots the metrics themselves.
 #' @param se Boolean, default TRUE. To include point wise confidence intervals.
 #' @param loc Location for legend.
 #' @param xlab,ylab,pch,ylim,xlim graphical parameters
+#' @param length The width of the ends of the error bars.
 #' @param legend Include a legend or not. Default is TRUE.
 #' @param auc Plot the AUC or not (if available). Default is TRUE.
 #' @param brier Plot the Brier Score or not (if available). Default is TRUE.
 #' @param ... Additional arguments to `plot()`
 #'
 #' @export
-#'
-plot.LMScore <- function(x, metrics, se = TRUE, loc, xlab, ylab, pch, ylim,
-                         xlim, legend = TRUE, auc = TRUE, brier = TRUE, ...) {
+# TODO add contrasts??
+plot.LMScore <- function(x, metrics, contrasts = FALSE, se = TRUE, loc, xlab, ylab, pch, ylim,
+                         xlim, length = 0.1, legend = TRUE, auc = TRUE,
+                         brier = TRUE, ...) {
   if (missing(metrics)) {
     metrics <- c()
-    if (!is.null(x$auct) && auc) metrics <- c("auc")
-    if (!is.null(x$briert) && brier) metrics <- c(metrics, "brier")
+    if (!is.null(x$AUC) && auc) metrics <- c("auc")
+    if (!is.null(x$Brier) && brier) metrics <- c(metrics, "brier")
   }
 
   if (missing(xlab))
@@ -178,14 +182,12 @@ plot.LMScore <- function(x, metrics, se = TRUE, loc, xlab, ylab, pch, ylim,
   set_x <- FALSE
   if (missing(loc))
     set_x <- TRUE
-  else
-    x <- legend
 
-  plot.metric <- function(df, metric, loc, ylim, xlim) {
+  plot.metric <- function(df, metric, loc, ylim, xlim, contrasts = FALSE) {
     if (set_ylab) ylab <- paste0(metric, "(t, t + ", x$w, ")")
 
-    num_models <- length(unique(df$model))
-    model_names <- df$model[1:num_models]
+    model_names <- unique(df$model)
+    num_models <- length(model_names)
     tLM <- df$tLM
     metric <- df[[metric]]
     upper <- df[["upper"]]
@@ -201,15 +203,15 @@ plot.LMScore <- function(x, metrics, se = TRUE, loc, xlab, ylab, pch, ylim,
 
     plot(tLM, metric, col = models, pch = pch, xlab = xlab, ylab = ylab,
          ylim = ylim, xlim = xlim, ...)
+    if (contrasts) graphics::abline(h = 0, col = "black", lwd = 1, lty = 2)
 
     for (i in 1:num_models){
       idx <- models == model_names[i]
       graphics::lines(tLM[idx], metric[idx], col = models[idx], pch = pch)
       if (se) {
-        graphics::lines(tLM[idx], upper[idx], col = models[idx],
-                        pch = pch, lty = 2)
-        graphics::lines(tLM[idx], lower[idx], col = models[idx],
-                        pch = pch, lty = 2)
+        graphics::arrows(tLM[idx], lower[idx], tLM[idx], upper[idx],
+                         col = models[idx], length = length,
+                         angle = 90, code = 3)
       }
     }
     if (legend) {
@@ -219,19 +221,31 @@ plot.LMScore <- function(x, metrics, se = TRUE, loc, xlab, ylab, pch, ylim,
   }
 
   if ("auc" %in% metrics) {
-    if (is.null(x$auct)) {
+    if (is.null(x$AUC)) {
       warning("AUC was not set as a metric when calling score() No results to plot. Either call score() again with auc as a metric or do not include it as a metric here.")
     } else {
       if (set_x) loc <- "topright"
-      plot.metric(x$auct, "AUC", loc, ylim, xlim)
+      if (!contrasts) {
+        plot.metric(x$AUC$score, "AUC", loc, ylim, xlim)
+      } else {
+        df <- x$AUC$contrasts
+        df$model <- factor(paste(df$model, "-", df$reference))
+        plot.metric(df, "delta.AUC", loc, ylim, xlim, TRUE)
+      }
     }
   }
   if ("brier" %in% metrics) {
-    if (is.null(x$briert)) {
+    if (is.null(x$Brier)) {
       warning("Brier was not set as a metric when calling score() No results to plot. Either call score() again with auc as a metric or do not include it as a metric here.")
     } else {
       if (set_x) loc <- "bottomright"
-      plot.metric(x$briert, "Brier", loc, ylim, xlim)
+      if (!contrasts) {
+        plot.metric(x$Brier$score, "Brier", loc, ylim, xlim)
+      } else {
+        df <- x$Brier$contrasts
+        df$model <- factor(paste(df$model, "-", df$reference))
+        plot.metric(df, "delta.Brier", loc, ylim, xlim, TRUE)
+      }
     }
   }
 }

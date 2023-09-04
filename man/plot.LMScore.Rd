@@ -8,6 +8,7 @@ Brier and/or AUC of dynamic landmark supermodels.}
 \method{plot}{LMScore}(
   x,
   metrics,
+  contrasts = FALSE,
   se = TRUE,
   loc,
   xlab,
@@ -15,6 +16,7 @@ Brier and/or AUC of dynamic landmark supermodels.}
   pch,
   ylim,
   xlim,
+  length = 0.1,
   legend = TRUE,
   auc = TRUE,
   brier = TRUE,
@@ -26,11 +28,16 @@ Brier and/or AUC of dynamic landmark supermodels.}
 
 \item{metrics}{One or both of "auc" and "brier"}
 
+\item{contrasts}{Plot the difference between metrics. Default is
+FALSE and plots the metrics themselves.}
+
 \item{se}{Boolean, default TRUE. To include point wise confidence intervals.}
 
 \item{loc}{Location for legend.}
 
 \item{xlab, ylab, pch, ylim, xlim}{graphical parameters}
+
+\item{length}{The width of the ends of the error bars.}
 
 \item{legend}{Include a legend or not. Default is TRUE.}
 

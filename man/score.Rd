@@ -15,16 +15,19 @@ score(
   id_col = "ID",
   se.fit = TRUE,
   conf.int = 0.95,
+  contrasts = TRUE,
   split.method = "none",
   B = 1,
   M,
   summary = FALSE,
-  weights = NULL,
+  weights = FALSE,
   cores = 1,
   seed,
   cause,
   silent = TRUE,
-  na.rm = FALSE,
+  time = "time",
+  status = "status",
+  cens.model = "cox",
   ...
 )
 }
@@ -62,6 +65,19 @@ bootstrapping, CIs are calculated from empirical quantiles. If not, for
 right censored data, they are calculated by the package \link{riskRegression} as
 in Blanche et al (references).}
 
+\item{contrasts}{TODO reword!!!!
+Either logical or a list of contrasts. A list of contrasts defines which
+risk prediction models (markers) should be contrasted with respect to their
+prediction performance. If TRUE do all possible comparisons. For example,
+when object is a list with two risk prediction models and null.model=TRUE
+setting TRUE is equivalent to list(c(0,1,2),c(1,2)) where c(0,1,2) codes
+for the two comparisons: 1 vs 0 and 2 vs 0 (positive integers refer to
+elements of object, 0 refers to the benchmark null model which ignores the
+covariates). This again is equivalent to explicitly setting
+list(c(0,1),c(0,2),c(1,2)). A more complex example: Suppose object has 7
+elements and you want to do the following 3 comparisons: 6 vs 3, 2 vs 5 and
+2 vs 3, you should set contrasts=c(6,3),c(2,5,3).}
+
 \item{split.method}{Defines the internal validation design. Options are
 currently "none" or "bootcv".
 
@@ -89,22 +105,17 @@ this is inferred from object.}
 \item{silent}{Show any error messages when computing \code{score} for each
 landmark time (and potentially bootstrap iteration)}
 
-\item{na.rm}{Ignore bootstraps where there are errors (for example not
-enough datasamples) and calculate metrics on remaining values. This is not
-recommended. For example, if only one bootstrap sampling has enough data
-that live to the prediction window, the standard error will be zero.}
-
 \item{...}{Additional arguments to pass to \code{\link[riskRegression:Score]{riskRegression::Score()}}.
 These arguments have been included for user flexibility but have not been
 tested and should be used with precaution.}
 }
 \value{
-An object of class "LMScore", which has components:
+An list with entries \code{AUC} and \code{Brier} if "auc" and "brier" were
+included as metrics respectively and \code{AUC_Summary} and/or \code{Brier_summary}
+if \code{summary} is not null. Each will have entries:
 \itemize{
-\item \code{auct}: dataframe containing time-dependent AUC if "auc" was
-included as a metric
-\item \code{briert}: dataframe containing time-dependent Brier score if "brier" was
-included as a metric
+\item \code{score}: data.table containing the metric
+\item \code{contrasts}: data.table containing model comparisons
 }
 }
 \description{
@@ -134,8 +145,8 @@ Results at evaluation time(s) beyond these points could not be computed
 and are left as NA". In this case, consider only evaluating for earlier
 landmarks or performing prediction with a smaller window as data points are
 slim. If you wish to see which model/bootstrap/landmark times failed, set
-SILENT=FALSE. Set na.rm = TRUE ignores these bootstraps and calculate
-metrics from the bootstrap samples that worked (not recommended).
+SILENT=FALSE. Currently ignores these bootstraps and calculates
+metrics from the bootstrap samples that worked.
 
 Another message may occur: "Dropping bootstrap b = {X} for model {name} due
 to unreliable predictions". As certain approximations are made, numerical
