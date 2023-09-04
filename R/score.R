@@ -42,6 +42,18 @@
 #'   bootstrapping, CIs are calculated from empirical quantiles. If not, for
 #'   right censored data, they are calculated by the package [riskRegression] as
 #'   in Blanche et al (references).
+#' @param contrasts TODO reword!!!!
+#'   Either logical or a list of contrasts. A list of contrasts defines which
+#'   risk prediction models (markers) should be contrasted with respect to their
+#'   prediction performance. If TRUE do all possible comparisons. For example,
+#'   when object is a list with two risk prediction models and null.model=TRUE
+#'   setting TRUE is equivalent to list(c(0,1,2),c(1,2)) where c(0,1,2) codes
+#'   for the two comparisons: 1 vs 0 and 2 vs 0 (positive integers refer to
+#'   elements of object, 0 refers to the benchmark null model which ignores the
+#'   covariates). This again is equivalent to explicitly setting
+#'   list(c(0,1),c(0,2),c(1,2)). A more complex example: Suppose object has 7
+#'   elements and you want to do the following 3 comparisons: 6 vs 3, 2 vs 5 and
+#'   2 vs 3, you should set contrasts=c(6,3),c(2,5,3).
 #' @param split.method Defines the internal validation design. Options are
 #'   currently "none" or "bootcv".
 #'
@@ -66,15 +78,11 @@
 #'   tested and should be used with precaution.
 #' @param silent Show any error messages when computing `score` for each
 #'   landmark time (and potentially bootstrap iteration)
-#' @param na.rm Ignore bootstraps where there are errors (for example not
-#'   enough datasamples) and calculate metrics on remaining values. This is not
-#'   recommended. For example, if only one bootstrap sampling has enough data
-#'   that live to the prediction window, the standard error will be zero.
-#' @return An object of class "LMScore", which has components:
-#'   - `auct`: dataframe containing time-dependent AUC if "auc" was
-#'     included as a metric
-#'   - `briert`: dataframe containing time-dependent Brier score if "brier" was
-#'     included as a metric
+#' @return An list with entries `AUC` and `Brier` if "auc" and "brier" were
+#'   included as metrics respectively and `AUC_Summary` and/or `Brier_summary`
+#'   if `summary` is not null. Each will have entries:
+#'   - `score`: data.table containing the metric
+#'   - `contrasts`: data.table containing model comparisons
 #' @details If data at late landmark times is sparse, some bootstrap samples may
 #'   not have patients that live long enough to perform evaluation leading to
 #'   the message "Upper limit of followup in bootstrap samples, was too low.
@@ -82,8 +90,8 @@
 #'   and are left as NA". In this case, consider only evaluating for earlier
 #'   landmarks or performing prediction with a smaller window as data points are
 #'   slim. If you wish to see which model/bootstrap/landmark times failed, set
-#'   SILENT=FALSE. Set na.rm = TRUE ignores these bootstraps and calculate
-#'   metrics from the bootstrap samples that worked (not recommended).
+#'   SILENT=FALSE. Currently ignores these bootstraps and calculates
+#'   metrics from the bootstrap samples that worked.
 #'
 #'   Another message may occur: "Dropping bootstrap b = {X} for model {name} due
 #'   to unreliable predictions". As certain approximations are made, numerical
@@ -131,6 +139,7 @@
 #' @import riskRegression
 #' @importFrom data.table .SD
 #' @export
+# TODO: add null.model argument
 score <-
   function(object,
            times,
@@ -141,19 +150,19 @@ score <-
            id_col = "ID",
            se.fit = TRUE,
            conf.int = 0.95,
+           contrasts = TRUE,
            split.method = "none",
            B = 1,
            M,
 
            #TODO: * maybe combine summary and weights, summary = TRUE, summary = "km"
            summary = FALSE, # TODO - description, checks
-           weights = NULL,  # TODO - description, checks
+           weights = FALSE,  # TODO - description, checks
 
            cores = 1,
            seed,
            cause,
            silent = TRUE,
-           na.rm = FALSE,
 
            # TODO...
            time = "time",
@@ -205,91 +214,6 @@ score <-
     se.fit.b <- se.fit
     if (num_B > 1) se.fit.b <- FALSE
 
-    # get S_tLM = P(T > lms) and G_tLM = P(C > lms)
-    switch(cens.model,
-           "km" = {
-             # #TODO
-             # # sFormula <- update_hist_formula(as.formula(formula), type = "surv")
-             # gFormula <- update_hist_formula(as.formula(formula), type = "censor")
-             # # sFit <- prodlim::prodlim(as.formula(sFormula),data=data,reverse=TRUE,bandwidth="smooth")
-             # gFit <- prodlim::prodlim(as.formula(gFormula),data=data,reverse=TRUE,bandwidth="smooth")
-             # # print(sfit)
-             # # print(lms)
-             # # s_tLM <- predict(sFit,newdata=data,times=times,level.chaos=1,mode="matrix",type="surv")
-             # g_tLM <- predict(gFit,newdata=data,times=times,level.chaos=1,mode="matrix",type="surv")
-             #
-             # # print(s_tLM)
-             # print(g_tLM)
-           },
-           "cox" = {
-             # stop("cox not yet implemented!")
-             # print(formula)
-             # gFormula <- update_hist_formula(stats::as.formula(formula), "censor")
-             # # sFormula <- update_hist_formula(stats::as.formula(formula), "surv")
-             #
-             # # outcome_col <- get_outcomes(stats::as.formula(formula))
-             # event_col <- deparse(stats::as.formula(formula)[[2]][[3]])
-             # time_col <- deparse(stats::as.formula(formula)[[2]][[2]])
-             #
-             # # wdata <- data.table::data.table(data)
-             # # print(head(wdata))
-             # # if (length(unique(wdata[[event_col]])) > 2){
-             # #   wdata[,event2 := as.numeric(wdata[[event_col]])]
-             # #   wdata[wdata[[event_col]] == 0,event2 := 0]
-             # #   wdata[,event2 := NULL]
-             # # }
-             # # print(head(wdata))
-             # # Y <- data[[time_col]]
-             # # status <- data[[event_col]]
-             #
-             # ## fit Cox model for censoring times
-             # args <- list(x=TRUE,y=TRUE, surv=TRUE)#,eps=1e-06)#,linear.predictors=TRUE)
-             # # args$surv <- TRUE
-             #
-             # # TODO: something is wrong here
-             # print("----")
-             # print(gFormula)
-             # print("----")
-             # # print(str(wdata))
-             # print("----")
-             # print(args)
-             # gfit <- do.call(rms::cph,
-             #                 c(list(formula=stats::as.formula(gFormula),
-             #                        data=data),args))
-             # return()
-             # # print(gfit)
-             #
-             # # sfit <- do.call(rms::cph,
-             # #                 c(list(formula=stats::as.formula(sFormula),
-             # #                        data=wdata),args))
-             # # TODO: get MC_tLM
-             # # IC.times <- predictCox(fit, iid = TRUE,
-             # #                        newdata = wdata,
-             # #                        times = times,
-             # #                        type = "cumhazard")$cumhazard.iid*NROW(data)
-             # # IC.weights <- list()
-             # # for (t.ind in 1:length(times)){
-             # #   N <- length(Y)
-             # #   ## (i,j)'th entry is f_j(tilde{T}_i-;X_i)/G(tilde{T}_i|X_i) when delta_i != 0 and time_i <= tau; otherwise it is f_j(tau-;X_i)/G(tau | X_i)
-             # #   # TODO: get an i with T > t.ind
-             # #   IC.weights[[t.ind]] <- IC.times[,t.ind,i]
-             # # }
-             #
-             # ## need G(Ti-|Xi) only for i where status=1 && Ti < max(times)
-             # if (length(times)==1) {
-             #   G_tLM <- matrix(rms::survest(gfit,newdata=wdata,times=times,se.fit=FALSE)$surv,ncol=1)
-             #   # S_tLM <- matrix(rms::survest(sfit,newdata=wdata,times=times,se.fit=FALSE)$surv,ncol=1)
-             # } else{
-             #   G_tLM <- rms::survest(gfit,newdata=wdata,times=times,se.fit=FALSE)$surv
-             #   # S_tLM <- rms::survest(sfit,newdata=wdata,times=times,se.fit=FALSE)$surv
-             # }
-             # print(G_tLM)
-
-           },
-           {
-             stop("Using other models (than Cox) for getting the censoring weights is under construction.")
-           })
-
     # TODO: parallelize?
     metrics <- lapply(unique(data$b), function(b) {
       m_b <- lapply(seq_along(times), function(t) {
@@ -328,46 +252,29 @@ score <-
             ...
           ), silent = TRUE
         ))
+        # print(score_t)
 
-        # errored <- FALSE
+        # TODO: handle the case where there are no contrasts
         if (inherits(score_t, "try-error")) {
-          # errored <- TRUE
           auct_b <- data.frame(model = names(object), times = NA, AUC = NA,
                                se = NA, lower = NA, upper = NA)
           briert_b <- data.frame(model = names(object), times = NA, Brier = NA,
                                  se = NA, lower = NA, upper = NA)
-          ###{
+          auc_contrasts_b <- data.frame(times = NA, model = NA,
+                                        reference = NA, delta.AUC = NA,
+                                        lower = NA, upper = NA, p = NA)
+          brier_contrasts_b <- data.frame(times = NA, model = NA,
+                                          reference = NA, delta.AUC = NA,
+                                          lower = NA, upper = NA, p = NA)
           # TODO: should be NAs as above so we can catch them
           if (get.a.iid) a_iid <- data.frame()
           if (get.b.iid) b_iid <- data.frame()
-          ###}
 
         } else {
           auct_b <- score_t$AUC$score
           briert_b <- score_t$Brier$score
-
-          # # TODO: MC_tLM / MC
-          # MC <- 1 # TODO      # sum_everyone int_0^s
-          #
-          # # output Brier should have model, times, Brier, se, lower, upper
-          # score_t$Brier$iid.decomp$model <- score_t$Brier$residuals$model # convert to factor
-          # inds_b <- merge(score_t$Brier$residuals,
-          #                 score_t$Brier$iid.decomp) #%>%
-          # # inds_b$IF.Brier2 = g_tLM / s_tLM * (time > tLM) * (
-          # #   IF.Brier + mean(residuals) - residuals * MC
-          # #   )
-          # print(head(score_t$Brier$residuals))
-          # N <- nrow(data_to_test)
-          # print(N)
-          #
-          # briert_b <- inds_b %>%
-          #   dplyr::group_by(model, times) %>%
-          #   dplyr::summarize(
-          #     Brier = mean(residuals),# * g_tLM[t],
-          #     se = sd(IF.Brier) / sqrt(N)#,
-          #     # lower = TODO,
-          #     # upper = TODO
-          #   ) %>% data.frame() #data.table::data.table()
+          auc_contrasts_b <- score_t$AUC$contrasts
+          brier_contrasts_b <- score_t$Brier$contrasts
 
           ###{
           if (get.a.iid) a_iid <- cbind(tLM, score_t$AUC$iid.decomp, b)
@@ -375,45 +282,49 @@ score <-
           ###}
         }
         metrics_b_t <- list()
-        if (get.auc) metrics_b_t$AUC <- cbind(tLM, auct_b, b)
-        if (get.bs) metrics_b_t$Brier <- cbind(tLM, briert_b, b)
-
-        ###{
-        if (get.a.iid) metrics_b_t$a_iid <- a_iid
-        if (get.b.iid) metrics_b_t$b_iid <- b_iid
-        ###}
-
+        if (get.auc) {
+          metrics_b_t$AUC <- cbind(tLM, auct_b, b)
+          metrics_b_t$a_contrasts <- cbind(tLM, auc_contrasts_b, b)
+          if (get.a.iid) metrics_b_t$a_iid <- a_iid
+        }
+        if (get.bs) {
+          metrics_b_t$Brier <- cbind(tLM, briert_b, b)
+          metrics_b_t$b_contrasts <- cbind(tLM, brier_contrasts_b, b)
+          if (get.b.iid) metrics_b_t$b_iid <- b_iid
+        }
         metrics_b_t
       })
 
-      m_out <- list()
-      m_out$AUC <- do.call("rbind", lapply(m_b, function(m) m$AUC))
-      m_out$Brier <- do.call("rbind", lapply(m_b, function(m) m$Brier))
-      ###{
-      m_out$a_iid <- do.call("rbind", lapply(m_b, function(m) m$a_iid))
-      m_out$b_iid <- do.call("rbind", lapply(m_b, function(m) m$b_iid))
-      ###}
-      m_out
+      list(
+        AUC = do.call("rbind", lapply(m_b, function(m) m$AUC)),
+        Brier = do.call("rbind", lapply(m_b, function(m) m$Brier)),
+        a_contrasts = do.call("rbind", lapply(m_b, function(m) m$a_contrasts)),
+        b_contrasts = do.call("rbind", lapply(m_b, function(m) m$b_contrasts)),
+        a_iid = do.call("rbind", lapply(m_b, function(m) m$a_iid)),
+        b_iid = do.call("rbind", lapply(m_b, function(m) m$b_iid))
+      )
     })
 
     auct <- do.call("rbind", lapply(metrics, function(m) m$AUC))
     briert <- do.call("rbind", lapply(metrics, function(m) m$Brier))
-    ###{
+    a_contrasts <- do.call("rbind", lapply(metrics, function(m) m$a_contrasts))
+    b_contrasts <- do.call("rbind", lapply(metrics, function(m) m$b_contrasts))
     a_iid <- do.call("rbind", lapply(metrics, function(m) m$a_iid))
     b_iid <- do.call("rbind", lapply(metrics, function(m) m$b_iid))
-    ###}
 
     if (B > 1) {
+      # TODO: handle contrasts --
+      # TODO: conceptualize this
       if (se.fit == TRUE) {
         alpha <- 1 - conf.int
         auct_out <- auct[, data.table::data.table(
-          mean(.SD[["AUC"]], na.rm = na.rm),
+          mean(.SD[["AUC"]], na.rm = TRUE),
           se = stats::sd(.SD[["AUC"]], na.rm = TRUE),
           lower = stats::quantile(.SD[["AUC"]], alpha / 2, na.rm = TRUE),
           upper = stats::quantile(.SD[["AUC"]], (1 - alpha / 2), na.rm = TRUE)
         ), by = c("model", "tLM"), .SDcols = "AUC"]
         briert_out <- briert[, data.table::data.table(
-          mean(.SD[["Brier"]], na.rm = na.rm),
+          mean(.SD[["Brier"]], na.rm = TRUE),
           se = stats::sd(.SD[["Brier"]], na.rm = TRUE),
           lower = stats::quantile(.SD[["Brier"]], alpha / 2, na.rm = TRUE),
           upper = stats::quantile(.SD[["Brier"]], (1 - alpha / 2), na.rm = TRUE)
@@ -434,35 +345,41 @@ score <-
                                   collapse = ", ")))
           }
         }
-        if (na.rm == FALSE) {
-          auct_out <- auct_out[is.na(auct_out[, 3]),
-                               `:=`("se" = NA, "lower" = NA, "upper" = NA)]
-          briert_out <- briert_out[is.na(briert_out[, 3]),
-                                   `:=`("se" = NA, "lower" = NA, "upper" = NA)]
-        }
+        # if (na.rm == FALSE) {
+        #   auct_out <- auct_out[is.na(auct_out[, 3]),
+        #                        `:=`("se" = NA, "lower" = NA, "upper" = NA)]
+        #   briert_out <- briert_out[is.na(briert_out[, 3]),
+        #                            `:=`("se" = NA, "lower" = NA, "upper" = NA)]
+        # }
 
       } else {
         auct_out <- auct[, data.table::data.table(
-          mean(.SD[["AUC"]], na.rm = na.rm)
+          mean(.SD[["AUC"]], na.rm = TRUE)
         ), by = c("model", "tLM"), .SDcols = "AUC"]
         briert_out <- briert[, data.table::data.table(
-          mean(.SD[["Brier"]], na.rm = na.rm)
+          mean(.SD[["Brier"]], na.rm = TRUE)
         ), by = c("model", "tLM"), .SDcols = "Brier"]
         data.table::setnames(auct_out, c("model", "tLM", "AUC"))
         data.table::setnames(briert_out, c("model", "tLM", "Brier"))
       }
-    } else {
+
+    } else { # B == 1
       auct_out <- auct
       briert_out <- briert
-      auct_out$b <- NULL
-      briert_out$b <- NULL
+      a_contrasts_out <- a_contrasts
+      b_contrasts_out <- b_contrasts
+      auct_out$b <- briert_out$b <- NULL
+      a_contrasts_out$b <- b_contrasts_out$b <- NULL
     }
 
-    outlist <- list(
-      auct = auct_out,
-      briert = briert_out,
-      w = w
-    )
+    outlist <- list()
+    if (get.auc) {
+      outlist$AUC <- list(score = auct_out, contrasts = a_contrasts_out)
+    }
+    if (get.bs) {
+      outlist$Brier <- list(score = briert_out, contrasts = b_contrasts_out)
+    }
+
     ###{
     # TODO: add as an argument
     # TODO: add checks for left-censoring
@@ -472,15 +389,17 @@ score <-
 
     if (summary) {
       if (get.a.iid) {
-        outlist$auc_summary <- summary_metric("AUC", auct, a_iid,
-                                              conf.int, weights, object)
+        outlist$AUC_summary <- summary_metric("AUC", auct, a_contrasts,
+                                              a_iid, conf.int, weights, object)
       }
       if (get.b.iid) {
-        outlist$brier_summary <- summary_metric("Brier", briert, b_iid,
-                                                conf.int, weights, object)
+        outlist$Brier_summary <- summary_metric("Brier", briert, b_contrasts,
+                                                b_iid, conf.int,weights, object)
       }
     }
     ###}
+
+    outlist$w <- w
     class(outlist) <- "LMScore"
     return(outlist)
   }

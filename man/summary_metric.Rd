@@ -4,7 +4,7 @@
 \alias{summary_metric}
 \title{Obtain the summary metric from landmark-specific estimates}
 \usage{
-summary_metric(metric, df_t, df_iid, conf_int, weights = NULL, object)
+summary_metric(metric, df_t, df_c, df_iid, conf_int, weights = NULL, object)
 }
 \arguments{
 \item{metric}{"AUC" or "Brier"}
@@ -21,6 +21,12 @@ tLM      model   times      Brier          se      lower      upper b
 4:   6  dynamicLM 65.9999 0.08126512 0.010849048 0.06000138 0.10252887 1
 5:  12 Null model 71.9999 0.11151696 0.013936209 0.08420249 0.13883143 1
 6:  12  dynamicLM 71.9999 0.10554550 0.013541907 0.07900385 0.13208715 1}
+
+\item{df_c}{table of contrast of scores.
+
+for example:
+tLM   times     model  reference  delta.Brier         se        lower        upper         p
+1:   0 59.9999 dynamicLM Null model -0.001616602 0.00119091 -0.003950743 0.0007175397 0.1746381}
 
 \item{df_iid}{df_iid contains the iid decomposition of the score, it is a
 larger table with entries for each individual, who appear multiple times for
