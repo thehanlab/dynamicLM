@@ -25,9 +25,9 @@
 #' @param rtime Character string specifying the column name in data containing
 #'   the (running) time variable associated with the time-varying variables;
 #'   only needed if format = "long".
-#' @param right Boolean (default = FALSE), indicating if the intervals for the
-#'   time-varying covariates are closed on the right (and open on the left) or
-#'   vice-versa.
+#' @param left.open Boolean (default = FALSE), indicating if the intervals for
+#'   the time-varying covariates are open on the left (and closed on the right)
+#'   or vice-versa.
 #'
 #' @return An object of class "LMdataframe". This the following components:
 #'   - data: containing the stacked data set, i.e., the outcome and the values
@@ -53,7 +53,7 @@
 #' @export
 #'
 stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"),
-                       id, rtime, right = FALSE) {
+                       id, rtime, left.open = FALSE) {
   if (!all(covs$fixed %in% colnames(data))) {
     stop(paste("Fixed column(s): ",
                paste(covs$fixed[!(covs$fixed %in% colnames(data))],
@@ -74,50 +74,32 @@ stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"),
     else
       stop("argument id must be specified.")
   }
-  if (!(id %in% colnames(data))) {
+  if (!(id %in% colnames(data)))
     stop(paste("ID column ", id, "is not in the data."))
-  }
 
   if (format == "wide"){
     if (!(id %in% covs$fixed)) covs$fixed <- c(id, covs$fixed)
 
-    lmdata <- get_lm_data(data = data,
-                          outcome = outcome,
-                          lm = lms[1],
-                          horizon = lms[1] + w,
-                          covs = covs,
-                          format = "wide",
-                          right = right)
-    if (length(lms) > 1) {
-      for (i in 2:length(lms))
-        lmdata <- rbind(lmdata, get_lm_data(data = data,
-                                            outcome = outcome,
-                                            lm = lms[i],
-                                            horizon = lms[i] + w,
-                                            covs = covs,
-                                            format = "wide",
-                                            right = right))
-    }
-    lmdata <- lmdata[, c(which(colnames(lmdata) == id),
-                        which(colnames(lmdata) != id))]
+    lmdata <- lapply(lms, function(lm) {
+      get_lm_data(data = data, outcome = outcome, lm = lm, horizon = lm + w,
+                  covs = covs, format = "wide", left.open = left.open)
+      })
+    lmdata <- do.call(rbind, lmdata)
 
   } else if (format == "long") {
-    # call cutLM
-    lmdata <- get_lm_data(data = data,
-                          outcome = outcome,
-                          lm = lms[1],
-                          horizon = lms[1] + w,
-                          covs = covs,
-                          format, id, rtime, right)
-    if (length(lms) > 1) {
-      for (i in 2:length(lms))
-        lmdata <- rbind(lmdata, get_lm_data(data = data,
-                                            outcome = outcome,
-                                            lm = lms[i],
-                                            horizon = lms[i] + w,
-                                            covs = covs,
-                                            format, id, rtime, right))
-    }
+    data <- data[order(data[[id]], data[[rtime]]), ]
+    split.data <- split(data, data[[id]])
+    # TODO: can still improve here
+    # For example use rle (faster) and then turn into a list
+    # run_lengths <- rle(data[[id]])$lengths
+
+    lmdata <- lapply(lms, function(lm) {
+      get_lm_data(data = data, outcome = outcome, lm = lm, horizon = lm + w,
+                  covs = covs, format = "long", id = id, rtime = rtime,
+                  left.open = left.open, split.data = split.data)
+    })
+    lmdata <- do.call(rbind, lmdata)
+
   }
   out <- list(
     data = lmdata,

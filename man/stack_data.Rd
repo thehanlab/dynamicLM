@@ -13,7 +13,7 @@ stack_data(
   format = c("wide", "long"),
   id,
   rtime,
-  right = FALSE
+  left.open = FALSE
 )
 }
 \arguments{
@@ -45,9 +45,9 @@ subject id.}
 the (running) time variable associated with the time-varying variables;
 only needed if format = "long".}
 
-\item{right}{Boolean (default = FALSE), indicating if the intervals for the
-time-varying covariates are closed on the right (and open on the left) or
-vice-versa.}
+\item{left.open}{Boolean (default = FALSE), indicating if the intervals for
+the time-varying covariates are open on the left (and closed on the right)
+or vice-versa.}
 }
 \value{
 An object of class "LMdataframe". This the following components:

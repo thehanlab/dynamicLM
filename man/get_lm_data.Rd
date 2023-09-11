@@ -13,7 +13,8 @@ get_lm_data(
   format = c("wide", "long"),
   id,
   rtime,
-  right = TRUE
+  left.open = TRUE,
+  split.data
 )
 }
 \arguments{
@@ -43,9 +44,12 @@ subject id.}
 the (running) time variable associated with the time-varying variables;
 only needed if format = "long".}
 
-\item{right}{Boolean (default = FALSE), indicating if the intervals for the
-time-varying covariates are closed on the right (and open on the left) or
+\item{left.open}{Boolean (default = FALSE), indicating if the intervals for the
+time-varying covariates are open on the left (and closed on the right) or
 vice-versa.}
+
+\item{split.data}{List of data split according to ID. Allows for faster
+computation.}
 }
 \value{
 A landmark dataset.
