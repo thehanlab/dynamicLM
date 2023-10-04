@@ -57,14 +57,14 @@ stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"),
   if (!all(covs$fixed %in% colnames(data))) {
     stop(paste("Fixed column(s): ",
                paste(covs$fixed[!(covs$fixed %in% colnames(data))],
-                     collapse = ","),
+                     collapse = ", "),
                "are not in the data."))
   }
   if (!is.null(covs$varying)){
     if (!all(covs$varying %in% colnames(data))) {
       stop(paste("Varying column(s): ",
                  paste(covs$varying[!(covs$varying %in% colnames(data))],
-                       collapse = ","),
+                       collapse = ", "),
                  "are not in the data."))
     }
   }

@@ -124,7 +124,7 @@ predict.dynamicLM <- function(object, newdata, lms, cause, w, extend = FALSE,
   }
 
   if (missing(newdata) & !missing(lms)) {
-    stop("newdata must be specified")
+    stop("Argument newdata must be specified if lms are specified.")
   }
 
   if (!missing(newdata)) {
@@ -134,7 +134,7 @@ predict.dynamicLM <- function(object, newdata, lms, cause, w, extend = FALSE,
     } else if (missing(lms)) {
       lms <- newdata$LM
       if (is.null(lms)) {
-        stop("lms must be specified")
+        stop("Argument lms must be specified")
       }
     }
 
@@ -167,14 +167,14 @@ predict.dynamicLM <- function(object, newdata, lms, cause, w, extend = FALSE,
         stop("Error in newdata or lms. Must have length(lms) == nrow(newdata) or lms be one landmarking point.")
     }
 
-    ## Get risk scoresß
-    risks <- matrix(sapply(1:num_preds, function(i) {
-      tLMi <- lms[i]
-      newdatai <- newdata[i, ]
-      sapply(1:num_causes, function(c) {
-        riskScore(models[[c]], tLMi, newdatai, func_covars, func_lms)
-      })
-    }), nrow = num_causes)
+    ## Get risk scores
+    all_combinations <- expand.grid(i = 1:num_preds, c = 1:num_causes)
+    risks_values <- apply(all_combinations, 1, function(row) {
+      i <- row['i']
+      c <- row['c']
+      riskScore(models[[c]], lms[i], newdata[i, ], func_covars, func_lms)
+    })
+    risks <- matrix(risks_values, nrow = num_causes, byrow = TRUE)
     data <- newdata
 
   } else {
@@ -203,6 +203,7 @@ predict.dynamicLM <- function(object, newdata, lms, cause, w, extend = FALSE,
 
   sf1 <- sf[[cause]]
   Fw <- rep(NA, num_preds)
+  # note: using sapply in any of these loops does not increase speed
   for (i in 1:num_preds) {
     if (is.na(risks[cause, i])) {
       Fw[i] <- NA
@@ -211,6 +212,7 @@ predict.dynamicLM <- function(object, newdata, lms, cause, w, extend = FALSE,
       pred_window <- (tLMi <= sf1$time & sf1$time <= tLMi + w)
       n_times <- sum(pred_window)
 
+      # cause-specific instant hazard
       haz <- sf1$Haz[pred_window] * exp(risks[cause, i])
       instHaz <- haz[2:n_times] - haz[1:(n_times - 1)]
       idx <- (instHaz != 0)
@@ -219,6 +221,7 @@ predict.dynamicLM <- function(object, newdata, lms, cause, w, extend = FALSE,
       times <- sf1$time[pred_window][2:n_times]
       times <- times[idx]
 
+      # overall survival
       w_adj <- times - tLMi
       surv <- c()
       for (j in seq_along(w_adj)) {
@@ -232,6 +235,8 @@ predict.dynamicLM <- function(object, newdata, lms, cause, w, extend = FALSE,
         }
         surv <- c(surv, exp(-s))
       }
+
+      # cumulative incidence from instant hazard and survival
       Fw[i] <- sum(instHaz * surv)
     }
   }
