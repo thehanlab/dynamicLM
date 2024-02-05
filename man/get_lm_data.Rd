@@ -13,7 +13,7 @@ get_lm_data(
   format = c("wide", "long"),
   id,
   rtime,
-  left.open = TRUE,
+  left.open = FALSE,
   split.data
 )
 }

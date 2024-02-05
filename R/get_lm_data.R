@@ -35,7 +35,7 @@
 # TODO: add references
 get_lm_data <- function(data, outcome, lm, horizon, covs,
                         format = c("wide", "long"), id, rtime,
-                        left.open = TRUE, split.data) {
+                        left.open = FALSE, split.data) {
   format <- match.arg(format)
   if (format == "wide") {
     lmdata <- data
@@ -87,6 +87,11 @@ get_lm_data <- function(data, outcome, lm, horizon, covs,
   }
 
   lmdata <- lmdata[lmdata[[outcome$time]] > lm, ]
+  if (nrow(lmdata) == 0) {
+    warning("Landmark dataset for lm = ", lm, " could not be constructed as no individuals are alive after this point.")
+    return(NULL)
+  }
+
   lmdata[outcome$status] <- lmdata[[outcome$status]] *
     as.numeric(lmdata[[outcome$time]] <= horizon)
   lmdata[outcome$time] <- pmin(as.vector(lmdata[[outcome$time]]), horizon)
