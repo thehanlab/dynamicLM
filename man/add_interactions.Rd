@@ -7,7 +7,7 @@
 add_interactions(lmdata, lm_covs, func_covars, func_lms, lm_col, keep = T)
 }
 \arguments{
-\item{lmdata}{An object of class "LMdataframe".
+\item{lmdata}{An object of class "LMdataframe"
 
 This can be created by running \code{\link[=stack_data]{stack_data()}}, or creating a
 stacked data set and storing it in a list with attributes outcome, w and

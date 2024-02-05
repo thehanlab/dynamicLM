@@ -29,9 +29,8 @@ information and/or as time passes.
 
 <figure>
 <img src="man/figures/README-descrip.png"
-alt="illustration of dynamic w-yearpredictions" />
-<figcaption aria-hidden="true">illustration of dynamic
-w-yearpredictions</figcaption>
+alt="" />
+<figcaption aria-hidden="true"></figcaption>
 </figure>
 
 An example is cancer treatment: we may want to predict a 5-year risk of
@@ -79,8 +78,6 @@ devtools::install_github("thehanlab/dynamicLM")
 #> Skipping install of 'dynamicLM' from a github remote, the SHA1 (98dc3268) has not changed since last install.
 #>   Use `force = TRUE` to force installation
 ```
-
-Requirements for the package can be found in the DESCRIPTION file.
 
 Package documentation can be found in [this
 pdf](https://github.com/thehanlab/dynamicLM/blob/main/man/dynamicLM_0.3.0.pdf).
