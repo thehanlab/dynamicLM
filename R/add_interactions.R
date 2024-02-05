@@ -24,8 +24,6 @@
 #' @param func_lms A list of functions to use for transformations of the
 #'   landmark times input similarly to `func_covars`, either as a string/
 #'   vector of strings or a custom list of functions.
-#' @param lm_col Character string specifying the column name that indicates the
-#'   landmark time point for a row. Obtained from `lmdata` if not input.
 #' @param keep Boolean value to indicate whether or not to keep the columns
 #'   given by `lm_covs` without the time interactions. Default is TRUE.
 #'
@@ -70,16 +68,11 @@
 #' head(lmdata$data)
 #' }
 #'
+#' @seealso [dynamicLM::stack_data()], [dynamicLM::dynamic_lm()]
 #' @export
-add_interactions <- function(lmdata, lm_covs, func_covars, func_lms, lm_col,
+add_interactions <- function(lmdata, lm_covs, func_covars, func_lms,
                              keep = TRUE) {
-  if (missing(lm_col)) {
-    lm_col <- lmdata$lm_col
-  }
-  if (lm_col %in% func_covars) {
-    stop(paste0("arg lm_col (given as/inferred as ", lm_col,
-                ") should not be in arg func_covars."))
-  }
+  lm_col <- "LM"
   data <- lmdata$data
 
   f1 <- function(t) t
@@ -106,7 +99,9 @@ add_interactions <- function(lmdata, lm_covs, func_covars, func_lms, lm_col,
     func_lms <- funcs
   }
 
-  all_covs <- c(lm_covs)
+  if (missing(lm_covs)) lm_covs <- lmdata$all_covs
+
+  all_covs <- lm_covs
   data_lm <- data[[lm_col]]
   # Add func_covarss: covariate LM interactions
   for (i in seq_along(lm_covs)) {

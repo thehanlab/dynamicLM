@@ -4,7 +4,7 @@
 \alias{add_interactions}
 \title{Add landmarking time interactions to a super dataset}
 \usage{
-add_interactions(lmdata, lm_covs, func_covars, func_lms, lm_col, keep = TRUE)
+add_interactions(lmdata, lm_covs, func_covars, func_lms, keep = TRUE)
 }
 \arguments{
 \item{lmdata}{An object of class "LMdataframe"
@@ -30,9 +30,6 @@ create \verb{x, x*t, exp(20*t)}.}
 \item{func_lms}{A list of functions to use for transformations of the
 landmark times input similarly to \code{func_covars}, either as a string/
 vector of strings or a custom list of functions.}
-
-\item{lm_col}{Character string specifying the column name that indicates the
-landmark time point for a row. Obtained from \code{lmdata} if not input.}
 
 \item{keep}{Boolean value to indicate whether or not to keep the columns
 given by \code{lm_covs} without the time interactions. Default is TRUE.}
@@ -86,4 +83,7 @@ lmdata <- add_interactions(lmdata, pred_covars,
 head(lmdata$data)
 }
 
+}
+\seealso{
+\code{\link[=stack_data]{stack_data()}}, \code{\link[=dynamic_lm]{dynamic_lm()}}
 }

@@ -50,6 +50,8 @@
 #'                      id = "ID", rtime = "T_txgiven")
 #' head(lmdata$data)
 #' }
+#'
+#' @seealso [dynamicLM::add_interactions()], [dynamicLM::dynamic_lm()]
 #' @export
 #'
 stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"),
@@ -87,6 +89,7 @@ stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"),
     lmdata <- do.call(rbind, lmdata)
 
   } else if (format == "long") {
+
     data <- data[order(data[[id]], data[[rtime]]), ]
     split.data <- split(data, data[[id]])
     # TODO: can still improve here
@@ -107,7 +110,8 @@ stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"),
     w = w,
     end_time = lms[length(lms)],
     lm_col = "LM",
-    id_col = id
+    id_col = id,
+    all_covs = c(covs$fixed, covs$varying)
   )
   class(out) <- "LMdataframe"
   return(out)

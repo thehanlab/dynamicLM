@@ -79,4 +79,8 @@ lmdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
                      id = "ID", rtime = "T_txgiven")
 head(lmdata$data)
 }
+
+}
+\seealso{
+\code{\link[=add_interactions]{add_interactions()}}, \code{\link[=dynamic_lm]{dynamic_lm()}}
 }
