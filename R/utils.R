@@ -1,4 +1,13 @@
 # ----------------------------------------------------------
+# tidymess: Helper function to make a string more readable by
+# wrapping it
+# Reference: https://stackoverflow.com/questions/45693010/how-do-you-format-multiline-r-package-messages
+# ----------------------------------------------------------
+tidymess <- function(..., prefix = "\n", initial = "") {
+  strwrap(..., prefix = prefix, initial = initial)
+}
+
+# ----------------------------------------------------------
 # find_se_log: Helper function to calculate SE for time varying log HR
 # of the form coef[1] + t*coef[2] + t^2*coef[2] + ..
 # ----------------------------------------------------------

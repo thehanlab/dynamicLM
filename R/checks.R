@@ -199,13 +199,25 @@ check_evaluation_inputs <- function(
 
   else if (!perform.boot) {
     # TODO: consider including w, extend, silence, complete as args to predict
-    if (!missing(data))
-      preds = lapply(object, function(o) predict.dynamicLM(o, data, lms, cause))
-    else preds = lapply(object, function(o) predict.dynamicLM(o, cause=cause))
-    args = match.call()
-    args$data = NULL
-    args$lms = NULL
-    args$object = preds
+    if (supermodel$type == "coxph") {
+      if (!missing(data))
+        preds <- lapply(object, function(o) predict.dynamicLM(o, data, lms))
+      else
+        preds <- lapply(object, function(o) predict.dynamicLM(o))
+
+    } else {
+      if (!missing(data)) {
+        preds <- lapply(object, function(o)
+          predict.dynamicLM(o, data, lms, cause))
+      } else {
+        preds <- lapply(object, function(o) predict.dynamicLM(o, cause = cause))
+      }
+    }
+
+    args <- match.call()
+    args$data <- NULL
+    args$lms <- NULL
+    args$object <- preds
     return(eval(args))
   }
 

@@ -3,7 +3,7 @@
 #' The stacked dataset output is used as input to [dynamic_lm()] to fit a landmark
 #' supermodel for dynamic prediction.
 #'
-#' @param lmdata An object of class "LMdataframe".
+#' @param lmdata An object of class "LMdataframe"
 #'
 #'   This can be created by running [dynamicLM::stack_data()], or creating a
 #'   stacked data set and storing it in a list with attributes outcome, w and

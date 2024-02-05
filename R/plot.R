@@ -75,7 +75,8 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
   } else if (object$type == "CauseSpecificCox" | object$type == "CSC") {
     if (missing(cause)) cause <- as.numeric(fm$theCause)
     if (length(cause) > 1)
-      stop(paste0("Can only predict one cause. Provided are: ", paste(cause, collapse = ", "), sep = ""))
+      stop(paste0("Can only predict one cause. Provided are: ",
+                  paste(cause, collapse = ", "), sep = ""))
 
     bet <- fm$models[[cause]]$coefficients
     func_covars <- object$func_covars
@@ -173,30 +174,32 @@ plot.LMScore <- function(x, metrics, se = TRUE, xlab, ylab, legend, pch, ylim,
   plot.metric <- function(df, metric, loc, ylim, xlim) {
     if (set_ylab) ylab <- paste0(metric, "(t, t + ", object$w, ")")
 
-    num_models = length(unique(df$model))
-    model_names = df$model[1:num_models]
-    tLM = df$tLM
-    metric = df[[metric]]
-    upper = df[["upper"]]
-    lower = df[["lower"]]
-    models = df$model
+    num_models <- length(unique(df$model))
+    model_names <- df$model[1:num_models]
+    tLM <- df$tLM
+    metric <- df[[metric]]
+    upper <- df[["upper"]]
+    lower <- df[["lower"]]
+    models <- df$model
 
     if (missing(ylim)) {
-      ylim = c(min(lower), max(upper))
+      ylim <- c(min(lower), max(upper))
+      diff <- 0.2 *  (ylim[2] - ylim[1])
+      ylim <- c(ylim[1] - diff, ylim[2] + diff)
     }
     if (missing(xlim)) {
-      xlim = c(min(tLM), max(tLM))
+      xlim <- c(min(tLM), max(tLM))
     }
 
     plot(tLM, metric, col = models, pch = pch, xlab = xlab, ylab = ylab,
          ylim = ylim, xlim = xlim, ...)
 
     for (i in 1:num_models){
-      idx = models == model_names[i]
+      idx <- models == model_names[i]
       graphics::lines(tLM[idx], metric[idx], col = models[idx], pch = pch)
       if (se) {
-        graphics::lines(tLM[idx], upper[idx], col = models[idx], pch = pch, lty = 2)
-        graphics::lines(tLM[idx], lower[idx], col = models[idx], pch = pch, lty = 2)
+        graphics::arrows(x0 = tLM[idx], y0 = lower[idx], x1 = tLM[idx], y1 = upper[idx],
+                         col = models[idx], angle = 90, code = 3, length = 0.05)
       }
     }
     graphics::legend(loc, legend = model_names, col = models, pch = pch, bty = "n")
@@ -224,12 +227,23 @@ plot.LMScore <- function(x, metrics, se = TRUE, xlab, ylab, legend, pch, ylim,
 #' Plot an object output from [calplot()]: plot the calibration plots.
 #'
 #' @param x An object of class "LMcalibrationPlot" output from [calplot()]
+#' @param main Optional title to override default.
 #' @param ... Other arguments to pass to pass to plot
 #'
 #' @export
 #'
-plot.LMcalibrationPlot <- function(x, ...) {
-  for (i in 1:length(object)) {
+plot.LMcalibrationPlot <- function(x, main, ...) {
+  x$regression_values <- NULL
+  add_title <- FALSE
+  if (missing(main)) add_title <- TRUE
+  for (i in 1:length(x)) {
     plot(x[[i]], ...)
+
+    if (add_title) {
+      title <- paste0("Risk calibration")
+      graphics::title(main = title)
+    } else {
+      graphics::title(main = main)
+    }
   }
 }

@@ -72,10 +72,8 @@ You can install the development version of `dynamicLM` from
 
 ```{r}
 # install.packages("devtools")
-devtools::install_github("thehanlab/dynamicLM")
+devtools::install_github("thehanlab/dynamicLM", ref="updates/bug-fixes")
 ```
-
-Requirements for the package can be found in the DESCRIPTION file.
 
 Package documentation can be found in [this pdf](https://github.com/thehanlab/dynamicLM/blob/main/man/dynamicLM_0.3.0.pdf).
 
@@ -160,7 +158,7 @@ There are three steps:
 component `data` which contains the dataset itself.* 
 
 We illustrate the process in detail by printing the entries at each step 
-for one individual, ID1029.
+for one individual, ID1029. 
 
 ```{r}
 relapse[relapse$ID == "ID1029",]  
@@ -427,7 +425,8 @@ head(dat)
 ```
 
 ```{r plotrisk}
-plotrisk(supermodel, dat, format = "long", ylim = c(0, 0.7), x.legend = "topright")
+plotrisk(supermodel, dat, format = "long", ylim = c(0, 0.7), 
+         x.legend = "topright")
 ```
 
 We can see that the male has a higher and increasing 5-year risk of
