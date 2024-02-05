@@ -227,12 +227,23 @@ plot.LMScore <- function(x, metrics, se = TRUE, xlab, ylab, legend, pch, ylim,
 #' Plot an object output from [calplot()]: plot the calibration plots.
 #'
 #' @param x An object of class "LMcalibrationPlot" output from [calplot()]
+#' @param main Optional title to override default.
 #' @param ... Other arguments to pass to pass to plot
 #'
 #' @export
 #'
-plot.LMcalibrationPlot <- function(x, ...) {
-  for (i in 1:length(object)) {
+plot.LMcalibrationPlot <- function(x, main, ...) {
+  x$regression_values <- NULL
+  add_title <- FALSE
+  if (missing(main)) add_title <- TRUE
+  for (i in 1:length(x)) {
     plot(x[[i]], ...)
+
+    if (add_title) {
+      title <- paste0("Risk calibration")
+      graphics::title(main = title)
+    } else {
+      graphics::title(main = main)
+    }
   }
 }
