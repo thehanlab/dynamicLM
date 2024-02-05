@@ -126,68 +126,55 @@ print.LMdataframe <- function(x, verbose = FALSE, ...) {
 #'
 #' @param x Object of class LMScore
 #' @param digits Number of significant digits to include
+#' @param print_lms TODO
+#' @param print_summary = TODO
 #' @param ... Arguments passed to print.
 #'
 #' @importFrom data.table :=
 #'
 #' @return Printed output.
 #' @export
-# TODO: add contrasts
-print.LMScore <- function(x, digits = 3, ...) {
-
-  if (!is.null(x$AUC)) {
-    cat(paste0("\nMetric: Time-dependent AUC (w = ", x$w, ")\n"))
-    obj <- x$AUC
-    # class(obj) <- "scoreAUC"
-    print(obj)
-    # cat("\nResults by model:\n")
-    #
-    # AUC = se = times = lower = upper = NULL
-    # fmt <- paste0("%1.", digits[[1]], "f")
-    # X <- data.table::copy(x$AUC$score)
-    # X[, AUC := sprintf(fmt = fmt, 100 * AUC)]
-    # if (match("se", colnames(X), nomatch = 0)) X[, se := NULL]
-    # if (match("times", colnames(X), nomatch = 0)) X[, times := NULL]
-    # if (match("lower", colnames(X), nomatch = 0))
-    #   X[, lower := sprintf(fmt = fmt, 100 * lower)]
-    # if (match("upper", colnames(X), nomatch = 0))
-    #   X[, upper := sprintf(fmt = fmt, 100 * upper)]
-    #
-    # print(X, digits = digits)
-
-    # cat("\nResults by comparison: \nTODO\n")
-
-    # message("NOTE: Values are multiplied by 100 and given in %.")
-    # message("NOTE: The higher AUC the better.")
-    message(paste("NOTE: Predictions are made at time tLM for time tLM +", x$w))
+print.LMScore <- function(x, digits = 3, print_lms = TRUE, print_summary = TRUE, ...) {
+  if (print_lms) {
+    if (!is.null(x$AUC)) {
+      cat(paste0("\nMetric: Time-dependent AUC (w = ", x$w, ")\n"))
+      obj <- x$AUC
+      obj$score$times <- obj$contrasts$times <- NULL
+      class(obj) <- "scoreAUC"
+      print(obj)
+      message(paste("NOTE: Predictions are made at time tLM for time tLM +", x$w))
+    }
+    if (!is.null(x$Brier)) {
+      cat(paste0("\nMetric: Time-dependent Brier Score (w = ", x$w, ")\n"))
+      obj <- x$Brier
+      obj$score$times <- obj$contrasts$times <- NULL
+      class(obj) <- "scoreBrier"
+      print(obj, digits = digits)
+      message(paste("NOTE: Predictions are made at time tLM for time tLM +", x$w))
+    }
   }
-  if (!is.null(x$Brier)) {
-    cat(paste0("\nMetric: Time-dependent Brier Score (w = ", x$w, ")\n"))
-    obj <- x$Brier
-    obj$score$times <- obj$contrasts$times <- NULL
-    class(obj) <- "scoreBrier"
-    print(obj, digits = digits)
-    message(paste("NOTE: Predictions are made at time tLM for time tLM +", x$w))
-  }
-  if (!is.null(x$AUC_summary)) {
-    if (x$AUC_summary$weighted == FALSE)
-      cat(paste0("\nMetric: Averaged time-dependent AUC (w = ", x$w, ")\n"))
-    else
-      cat(paste0("\nMetric: Weighted average time-dependent AUC (w = ", x$w, ")\n"))
-    obj <- x$AUC_summary
-    class(obj) <- "scoreAUC"
-    print(obj, digits = digits)
-  }
-  if (!is.null(x$Brier_summary)) {
-    if (x$Brier_summary$weighted == FALSE)
-      cat(paste0("\nMetric: Averaged time-dependent Brier Score (w = ", x$w, ")\n"))
-    else
-      cat(paste0("\nMetric: Weighted average time-dependent Brier Score (w = ", x$w, ")\n"))
-    obj <- x$Brier_summary
-    class(obj) <- "scoreBrier"
-    print(obj, digits = digits)
+  if (print_summary) {
+    if (!is.null(x$AUC_summary)) {
+      if (x$AUC_summary$weighted == FALSE)
+        cat(paste0("\nMetric: Averaged time-dependent AUC (w = ", x$w, ")\n"))
+      else
+        cat(paste0("\nMetric: Weighted average time-dependent AUC (w = ", x$w, ")\n"))
+      obj <- x$AUC_summary
+      class(obj) <- "scoreAUC"
+      print(obj, digits = digits)
+    }
+    if (!is.null(x$Brier_summary)) {
+      if (x$Brier_summary$weighted == FALSE)
+        cat(paste0("\nMetric: Averaged time-dependent Brier Score (w = ", x$w, ")\n"))
+      else
+        cat(paste0("\nMetric: Weighted average time-dependent Brier Score (w = ", x$w, ")\n"))
+      obj <- x$Brier_summary
+      class(obj) <- "scoreBrier"
+      print(obj, digits = digits)
+    }
   }
 }
+
 
 #' Print function for object of class LMCSC
 #'
