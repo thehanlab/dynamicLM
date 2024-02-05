@@ -131,7 +131,7 @@ calplot <-
            formula,
            data,
            lms,
-           id_col="ID",
+           id_col = "ID",
            split.method = "none",
            B = 1,
            M,
@@ -139,18 +139,18 @@ calplot <-
            seed,
            regression_values = FALSE,
            cause,
-           plot = T,
+           plot = TRUE,
            main,
-           sub = F,
+           sub = FALSE,
            ...) {
 
     ### Check input and set up some initial variables ###
 
-    if (!requireNamespace("pec", quietly = T)) {
+    if (!requireNamespace("pec", quietly = TRUE)) {
       stop("Package \"pec\" must be installed to use function calplot",
-           call. = F)
+           call. = FALSE)
     }
-    if (!(inherits(object,"list"))) stop("object must be a named list.")
+    if (!(inherits(object, "list"))) stop("object must be a named list.")
 
 
     checked_input <- match.call()
@@ -160,43 +160,43 @@ calplot <-
     checked_input <- as.list(checked_input[m])
     checked_input <- do.call(check_evaluation_inputs, checked_input)
 
-    object = checked_input$object
-    times = checked_input$times
-    preds = checked_input$preds
-    pred_LMs = checked_input$pred_LMs
-    data = checked_input$data
-    NF = checked_input$NF
-    w = checked_input$w
-    formula = checked_input$formula
-    cause = checked_input$cause
-    indicator = checked_input$indicator
+    object <- checked_input$object
+    times <- checked_input$times
+    preds <- checked_input$preds
+    pred_LMs <- checked_input$pred_LMs
+    data <- checked_input$data
+    NF <- checked_input$NF
+    w <- checked_input$w
+    formula <- checked_input$formula
+    cause <- checked_input$cause
+    indicator <- checked_input$indicator
 
     # Plotting parameters
-    add_title = T
+    add_title <- TRUE
     if (!missing(main)) {
-      add_title = F
+      add_title <- FALSE
     }
 
     # Calibration
-    outlist = list()
-    if (regression_values) reg_values_list = list()
+    outlist <- list()
+    if (regression_values) reg_values_list <- list()
     for (t in seq_along(times)) {
-      tLM = times[t]
+      tLM <- times[t]
 
-      idx = pred_LMs == tLM
-      data_to_test = data[idx,]
-      risks_to_test = lapply(1:NF, function(i) {
+      idx <- pred_LMs == tLM
+      data_to_test <- data[idx, ]
+      risks_to_test <- lapply(1:NF, function(i) {
         preds[idx, i]
       })
-      names(risks_to_test) = names(object)
+      names(risks_to_test) <- names(object)
       if (object[[1]]$type == "coxph") {
-        risks_to_test = lapply(risks_to_test, function(r) 1-r)
+        risks_to_test <- lapply(risks_to_test, function(r) 1-r)
       }
 
       if (nrow(data_to_test) != length(risks_to_test[[1]])) {
         stop("nrow(data_to_test)!=length(risks_to_test)")
       }
-      x = NULL
+      x <- NULL
       x <- pec::calPlot(
         risks_to_test,
         time = tLM + w,
@@ -209,28 +209,27 @@ calplot <-
 
       if (regression_values){
         for (i in 1:NF) {
-          name = names(object)[i]
-          coefs = stats::lm(Obs ~ Pred, x$plotFrames[[name]])$coefficients
-          coefs = c(tLM, coefs)
-          names(coefs)[1] = "LM"
-          reg_values_list[[name]] = rbind(reg_values_list[[name]], coefs)
+          name <- names(object)[i]
+          coefs <- stats::lm(Obs ~ Pred, x$plotFrames[[name]])$coefficients
+          coefs <- c(tLM, coefs)
+          names(coefs)[1] <- "LM"
+          reg_values_list[[name]] <- rbind(reg_values_list[[name]], coefs)
         }
       }
 
       if (plot) {
         if (add_title) {
-          title = paste0("Risk calibration at LM time ",tLM)
+          title <- paste0("Risk calibration at LM time ",tLM)
           graphics::title(main = title)
-        }
-        else {
+        } else {
           graphics::title(main = main)
         }
 
         if (sub) {
-          num_patients = length(risks_to_test[[1]])
-          status = object[[1]]$outcome$status
-          num_events = sum(data_to_test[[status]] == indicator)
-          subtitle = paste0("#at risk=", num_patients,
+          num_patients <- length(risks_to_test[[1]])
+          status <- object[[1]]$outcome$status
+          num_events <- sum(data_to_test[[status]] == indicator)
+          subtitle <- paste0("#at risk=", num_patients,
                             ",#that undergo event=", num_events)
           graphics::title(sub = substitute(paste(italic(subtitle))))
         }
@@ -241,8 +240,8 @@ calplot <-
 
     }
     if (regression_values) {
-      for (i in 1:NF){
-        name = names(object)[i]
+      for (i in 1:NF) {
+        name <- names(object)[i]
         rownames(reg_values_list[[name]]) <- NULL
         colnames(reg_values_list[[name]]) <- c("LM", "Intercept", "Slope")
       }

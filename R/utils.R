@@ -1,4 +1,14 @@
 # ----------------------------------------------------------
+# tidymess: Helper function to make a string more readable by
+# wrapping it
+# Reference: https://stackoverflow.com/questions/45693010/how-do-you-format-multiline-r-package-messages
+# ----------------------------------------------------------
+tidymess <- function(..., prefix = "\n", initial = "") {
+  strwrap(..., prefix = prefix, initial = initial)
+}
+
+
+# ----------------------------------------------------------
 # find_se_log: Helper function to calculate SE for time varying log HR
 # of the form coef[1] + t*coef[2] + t^2*coef[2] + ..
 # ----------------------------------------------------------
@@ -119,7 +129,7 @@ update_hist_formula <- function(formula, type) {
 # TODO: licensing / referencing
 # ----------------------------------------------------------
 CSC.fixed.coefs <- function(formula, data, cause,
-                            cause.specific.coefs, ...){
+                            cause.specific.coefs, ...) {
   fitter <- "coxph"
   surv.type <- "hazard"
 
@@ -139,13 +149,14 @@ CSC.fixed.coefs <- function(formula, data, cause,
   else{
     entry <- NULL
   }
-  if (any(entry>time)) stop("entry > time detected. Entry time into the study must be strictly greater than outcome time.")
+  if (any(entry > time)) stop(tidymess("entry > time detected. Entry time into 
+      the study must be strictly greater than outcome time."))
   ## remove event history variables from data
-  if(any((this <- match(all.vars(Rform),names(data),nomatch=0))>0)){
+  if(any((this <- match(all.vars(Rform), names(data), nomatch = 0)) > 0)) {
     if (data.table::is.data.table(data))
-      data <- data[,-this,with=FALSE]
+      data <- data[, - this, with = FALSE]
     else
-      data <- data[,-this]
+      data <- data[, -this]
   }
   # }}}
   # {{{ sorted unique event times

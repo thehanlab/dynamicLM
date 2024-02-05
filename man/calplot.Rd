@@ -18,9 +18,9 @@ calplot(
   seed,
   regression_values = FALSE,
   cause,
-  plot = T,
+  plot = TRUE,
   main,
-  sub = F,
+  sub = FALSE,
   ...
 )
 }

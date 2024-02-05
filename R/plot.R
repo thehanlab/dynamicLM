@@ -42,7 +42,7 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
   if (missing(covars)) {
     covars <- x$lm_covs
   } else {
-    # TODO: check if the covars given are in the model and are the main effects...
+    # TODO: check if the covars given are in the model and are the main effects
   }
 
   if (missing(main)) {
@@ -199,7 +199,8 @@ plot.LMScore <- function(x, metrics, contrasts = FALSE, landmarks = TRUE,
     if (missing(loc))
       set_x <- TRUE
 
-    plot.metric <- function(df, metric, col, loc, ylim, xlim, contrasts = FALSE) {
+    plot.metric <- function(df, metric, col, loc, ylim, xlim,
+                            contrasts = FALSE) {
       if (set_ylab) ylab <- paste0(metric, "(t, t + ", x$w, ")")
 
       model_names <- unique(df$model)
@@ -213,8 +214,14 @@ plot.LMScore <- function(x, metrics, contrasts = FALSE, landmarks = TRUE,
       if (is.null(col)) cols <- models
       else cols <- col[as.numeric(as.factor(df$model))]
 
-      if (missing(ylim)) ylim <- c(min(lower), max(upper))
-      if (missing(xlim)) xlim <- c(min(tLM), max(tLM))
+      if (missing(ylim)) {
+        ylim <- c(min(lower), max(upper))
+        diff <- 0.2 *  (ylim[2] - ylim[1])
+        ylim <- c(ylim[1] - diff, ylim[2] + diff)
+      }
+      if (missing(xlim)) {
+        xlim <- c(min(tLM), max(tLM))
+      }
 
       plot(tLM, metrics, col = cols, pch = pch, xlab = xlab, ylab = ylab,
            ylim = ylim, xlim = xlim, ...)
@@ -237,9 +244,10 @@ plot.LMScore <- function(x, metrics, contrasts = FALSE, landmarks = TRUE,
 
     for (metric in metrics) {
       if (is.null(x[[metric]])) {
-        warning(paste(metric, "was not set as a metric when calling score().",
-                      "No results to plot. Either call score() again with", metric,
-                      "as a metric or do not include it as a metric here."))
+        warning(tidymess(paste(
+          metric, "was not set as a metric when calling score(). No results to
+          plot. Either call score() again with", metric, "as a metric or do not
+          include it as a metric here.")))
       } else {
         if (set_x && (metric == "AUC")) loc <- "topright"
         else if (set_x && (metric == "Brier"))  loc <- "bottomright"
@@ -261,10 +269,12 @@ plot.LMScore <- function(x, metrics, contrasts = FALSE, landmarks = TRUE,
     for (metric in metrics) {
       metric_summary <- paste0(metric, "_summary")
       if (is.null(x[[metric_summary]])) {
-        warning(paste("Either", metric, "was not set as a metric when calling score()",
-                      "or the summary metric was not computed (summary = TRUE when calling score()).",
-                      "No results to plot. Either call score() again with", metric,
-                      "as a metric and summary = TRUE or do not include it as a metric here."))
+        warning(paste(tidymess(
+          "Either", metric, "was not set as a metric when calling score() or
+          the summary metric was not computed (summary = TRUE when calling
+          score()). No results to plot. Either call score() again with", metric,
+          "as a metric and summary = TRUE or do not include it as a metric
+          here.")))
       } else {
         if (!contrasts) {
           df <- x[[metric_summary]]$score
@@ -275,7 +285,7 @@ plot.LMScore <- function(x, metrics, contrasts = FALSE, landmarks = TRUE,
           col_name <- paste0("delta.", metric)
         }
 
-        if (is.null(col)) cols <- models
+        if (is.null(col)) cols <- models # TODO: binding for models??
         else cols <- col[as.numeric(as.factor(df$model))]
 
         if (missing(ylim)) ylim <- c(0, max(df[["upper"]]))
@@ -283,11 +293,11 @@ plot.LMScore <- function(x, metrics, contrasts = FALSE, landmarks = TRUE,
         mid <- barplot(df[[col_name]], plot = FALSE)
         if (ylim[1] != 0) {
           graphics::barplot(df[[col_name]], col = cols, names.arg = df$model,
-                            ylim=ylim, xpd = FALSE, xlab = xlab, ylab = ylab,
-                            axis.lty=1, ...)
+                            ylim = ylim, xpd = FALSE, xlab = xlab, ylab = ylab,
+                            axis.lty = 1, ...)
         } else {
           graphics::barplot(df[[col_name]], col = cols, names.arg = df$model,
-                            ylim=ylim, xlab = xlab, ylab = ylab, axis.lty=1,
+                            ylim = ylim, xlab = xlab, ylab = ylab, axis.lty = 1,
                             ...)
         }
 
@@ -309,18 +319,25 @@ plot.LMScore <- function(x, metrics, contrasts = FALSE, landmarks = TRUE,
           col_name <- paste0("delta.", metric)
 
           num_done <- 0
-          for (i in 1:nrow(df)) {
+          for (i in seq_len(nrow(df))) {
             row <- df[i, ]
             p_val <- row$p
             if (p_val < sig_level) {
-              num_done <- num_done+1
+              num_done <- num_done + 1
               x0 <- x_axis[as.character(row$reference)]
               x1 <- x_axis[as.character(row$model)]
-              segments(x0=x0, x1=x0, y0=pairwise_heights[num_done]-width, y1=pairwise_heights[num_done])
-              segments(x0=x1, x1=x1, y0=pairwise_heights[num_done]-width, y1=pairwise_heights[num_done])
-              segments(x0=x0, x1=x1, y0=pairwise_heights[num_done], y1=pairwise_heights[num_done])
-              text(x=(x0+x1)/2, y=pairwise_heights[num_done]+width,
-                   labels=paste(format.pval(p_val, digits=2, eps=1e-5)), cex=.9)
+              segments(x0 = x0, x1 = x0,
+                       y0 = pairwise_heights[num_done] - width,
+                       y1 = pairwise_heights[num_done])
+              segments(x0 = x1, x1 = x1,
+                       y0 = pairwise_heights[num_done] - width,
+                       y1 = pairwise_heights[num_done])
+              segments(x0 = x0, x1 = x1,
+                       y0 = pairwise_heights[num_done],
+                       y1 = pairwise_heights[num_done])
+              text(x = (x0 + x1) / 2, y = pairwise_heights[num_done] + width,
+                   labels = paste(format.pval(p_val, digits = 2, eps = 1e-5)),
+                   cex = .9)
             }
           }
         }
@@ -333,13 +350,24 @@ plot.LMScore <- function(x, metrics, contrasts = FALSE, landmarks = TRUE,
 #' Plot an object output from [calplot()]: plot the calibration plots.
 #'
 #' @param x An object of class "LMcalibrationPlot" output from [calplot()]
-#' @param ...  Additional arguments to `plot()`
+#' @param main Optional title to override default.
+#' @param ... Other arguments to pass to pass to plot
 #'
 #' @export
 #'
-plot.LMcalibrationPlot <- function(x, ...) {
-  for (i in seq_along(x)) {
+plot.LMcalibrationPlot <- function(x, main, ...) {
+  x$regression_values <- NULL
+  add_title <- FALSE
+  if (missing(main)) add_title <- TRUE
+  for (i in 1:length(x)) {
     plot(x[[i]], ...)
+
+    if (add_title) {
+      title <- paste0("Risk calibration")
+      graphics::title(main = title)
+    } else {
+      graphics::title(main = main)
+    }
   }
 }
 
@@ -376,7 +404,8 @@ plot.pen_lm <- function(x, xvar = "norm", all_causes = FALSE, silent = FALSE,
   } else {
     plot(x[[1]], xvar, label, ...)
     if (length(x) > 1 && !silent)
-      message("\n (To print plot paths for remaining cause-specific models, call plot with argument all_causes = TRUE)\n")
+      message(tidymess("\n (To print plot paths for remaining cause-specific 
+          models, call plot with argument all_causes = TRUE)\n"))
   }
 }
 
@@ -415,7 +444,8 @@ plot.cv.pen_lm <- function(x, all_causes = FALSE, silent = FALSE, label = FALSE,
   } else {
     plot(x[[1]], sign.lambda, se.bands, ...)
     if (length(x) > 1 && !silent)
-      message("\n (To print plot paths for remaining cause-specific models, call plot with argument all_causes = TRUE)\n")
+      message(tidymess("\n (To print plot paths for remaining cause-specific 
+          models, call plot with argument all_causes = TRUE)\n"))
   }
 }
 

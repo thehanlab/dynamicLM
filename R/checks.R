@@ -19,7 +19,8 @@ check_evaluation_inputs <- function(
   if (split.method == "none") B <- 1
 
   if (!missing(cores))
-    message("Argument cores is unused. Parallel implementation is not yet implemented.")
+    message(tidymess("Argument cores is unused. Parallel implementation is not 
+        yet implemented."))
 
   # check naming of objects
   NF <- length(object)
@@ -64,7 +65,7 @@ check_evaluation_inputs <- function(
       if (split.method == "bootcv") {
         lmdata <- object[[i]]$data
         if (is.null(lmdata)) {
-          model.class = class(object[[i]])
+          model.class <- class(object[[i]])
           stop(paste("Prediction object", name, "does not have data stored.",
                      "In order to bootstrap, objects of class", model.class,
                      "must be fit with argument x=TRUE."))
@@ -75,7 +76,7 @@ check_evaluation_inputs <- function(
 
   # external validation: only need a dataframe
   if (!missing(data)) {
-    if (split.method == "bootcv"){
+    if (split.method == "bootcv") {
       if (!missing(lms)) {
         warning("LMdataframe objects have LM columns, argument lms is ignored.")
       }
@@ -133,7 +134,7 @@ check_evaluation_inputs <- function(
     else
       cause <- as.numeric(object[[1]]$model$theCause)
   }
-  if (is.null(cause)){
+  if (is.null(cause)) {
     cause <- 1
     indicator <- 1
   }
@@ -183,19 +184,31 @@ check_evaluation_inputs <- function(
     if (NF > 1) {
       for (i in 2:NF) {
         if (nrow(object[[i]]$preds) != num_preds)
-          stop("Number of predictions is not the same for all prediction models.")
+          stop(tidymess("Number of predictions is not the same for all
+              prediction models."))
         if (!isTRUE(all.equal(object[[i]]$preds$LM, pred_LMs)))
-          stop("LM points for individuals across prediction models are not the name.")
+          stop(tidymess("LM points for individuals across prediction models are
+          not the name."))
       }
     }
 
   } else if (!perform.boot) {
     # TODO: consider including w, extend, silence, complete as args to predict
-    if (!missing(data))
-      preds <- lapply(object,
-                      function(o) predict.dynamicLM(o, data, lms, cause))
-    else
-      preds <- lapply(object, function(o) predict.dynamicLM(o, cause = cause))
+    if (type == "coxph") {
+      if (!missing(data))
+        preds <- lapply(object, function(o) predict.dynamicLM(o, data, lms))
+      else
+        preds <- lapply(object, function(o) predict.dynamicLM(o))
+
+    } else {
+      if (!missing(data)) {
+        preds <- lapply(object, function(o) {
+          predict.dynamicLM(o, data, lms, cause)})
+      } else {
+        preds <- lapply(object, function(o) predict.dynamicLM(o, cause = cause))
+      }
+    }
+
     args <- match.call()
     args$data <- NULL
     args$lms <- NULL
@@ -222,7 +235,6 @@ check_evaluation_inputs <- function(
         args$lmdata <- NULL
         args$lmdata <- data_train_b
         model.b <- eval(args, envir = globalenv())
-        base_data <- 0 * model.b$model$coefficients
 
         pred.b <- try(
           # TODO: consider including w, extend, silence, complete
@@ -311,7 +323,9 @@ check_penlm_inputs <- function(x, y, id_col = NULL, alpha = 1, CV = FALSE) {
     lmdata <- x
     if (!missing(y)) {
       if (!inherits(y, "character"))
-        stop("Inputs are mismatched. Arguments (x, y) should be of type (matrix, Surv object) or (LMdataframe, vector of column names)")
+        stop(tidymess("Inputs are mismatched. Arguments (x, y) should be of 
+            type (matrix, Surv object) or (LMdataframe, vector of column 
+            names)"))
       else
         xcols <- y
     }
@@ -333,7 +347,8 @@ check_penlm_inputs <- function(x, y, id_col = NULL, alpha = 1, CV = FALSE) {
     } else if (is.null(id_col) && use_lmdata) {
       id_col <- lmdata$id_col
       if (length(lmdata$data[[id_col]]) == 0)
-        stop("The extraction of an ID column from lmdata was unsuccessful, provide argument id_col")
+        stop(tidymess("The extraction of an ID column from lmdata was 
+            unsuccessful, provide argument id_col"))
     }
     # use id_col to extract IDs
     if (use_lmdata) {
@@ -372,7 +387,8 @@ check_penlm_inputs <- function(x, y, id_col = NULL, alpha = 1, CV = FALSE) {
   # if CR create the correct number of x's: one for each cause
   if (inherits(y, "Surv")) {
     if (!("start" %in% attr(y, "dimnames")[[2]]))
-      stop("There is no left-truncated data, which is unusual for a landmark supermodel. Did you forget to include an entry time?")
+      stop(tidymess("There is no left-truncated data, which is unusual for a 
+          landmark supermodel. Did you forget to include an entry time?"))
     y <- list(y)
   } else if (inherits(y, "Hist")) {
     censor_type <- attr(y, "cens.type")
@@ -384,9 +400,11 @@ check_penlm_inputs <- function(x, y, id_col = NULL, alpha = 1, CV = FALSE) {
     if (sum(c("L", "R") %in% matrix_cols) > 0)
       stop("Hist object has interval censored times which is not supported.")
     if (sum(c("from", "to") %in% matrix_cols) > 0)
-      stop("Hist object has transition states and multi state models are not supported.")
+      stop(tidymess("Hist object has transition states and multi state models 
+          are not supported."))
     if (!("entry" %in% attr(y, "dimnames")[[2]]))
-      stop("There is no left-truncated data, which is unusual for a landmark supermodel. Did you forget to include an entry time?")
+      stop(tidymess("There is no left-truncated data, which is unusual for a 
+          landmark supermodel. Did you forget to include an entry time?"))
 
     states <- attr(y, "states")
     if (attr(y, "model") == "survival") {

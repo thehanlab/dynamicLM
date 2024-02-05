@@ -4,12 +4,14 @@
 \alias{plot.LMcalibrationPlot}
 \title{Plot an object output from \code{\link[=calplot]{calplot()}}: plot the calibration plots.}
 \usage{
-\method{plot}{LMcalibrationPlot}(x, ...)
+\method{plot}{LMcalibrationPlot}(x, main, ...)
 }
 \arguments{
 \item{x}{An object of class "LMcalibrationPlot" output from \code{\link[=calplot]{calplot()}}}
 
-\item{...}{Additional arguments to \code{plot()}}
+\item{main}{Optional title to override default.}
+
+\item{...}{Other arguments to pass to pass to plot}
 }
 \description{
 Plot an object output from \code{\link[=calplot]{calplot()}}: plot the calibration plots.
