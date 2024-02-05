@@ -619,7 +619,7 @@ plotrisk(supermodel, dat, format = "long", ylim = c(0, 0.7),
          x.legend = "topright")
 ```
 
-<img src="man/figures/README-plotrisk-1.png" width="100%" />
+<img src="man/figures/README-plotRisk-1.png" width="100%" />
 
 We can see that the male has a higher and increasing 5-year risk of
 recurrence that peaks around 1 year, and then rapidly decreases. This
