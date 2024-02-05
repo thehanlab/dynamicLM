@@ -239,6 +239,13 @@ score <-
           stop("nrow(data_to_test)!=length(risks_to_test)")
         }
 
+        if (nrow(data_to_test) == 0) {
+          warning(tidymess(paste0(
+            "Skipping calplot for landmark time ", tLM, " as no data was provided
+          for this landmark.")))
+          return(NULL)
+        }
+
         score_t <- suppressMessages(try(
           riskRegression::Score(
             risks_to_test,
