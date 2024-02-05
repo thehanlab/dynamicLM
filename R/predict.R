@@ -69,6 +69,8 @@
 #' head(p1$preds)
 #' }
 #' @import survival
+#' @seealso [stack_data()], [add_interactions()], [dynamic_lm()], [score()],
+#'   [calplot()]
 #' @export
 #'
 predict.dynamicLM <- function(object, newdata, lms, cause, w, extend = FALSE,
@@ -80,17 +82,15 @@ predict.dynamicLM <- function(object, newdata, lms, cause, w, extend = FALSE,
     w <- model_w
   } else {
     if (w > model_w && !extend) {
-      stop(paste0(
-        "Prediction window w (=", w, ") is larger than the window used in model fitting (=", model_w, ").",
-        "\nIf you wish to still make predictions at these times, set arg extend=T but note that results may be unreliable."
-      ))
+      stop(tidymess(paste0(
+        "Prediction window w (=", w, ") is larger than the window used in model
+        fitting (=", model_w, "). If you wish to still make predictions at these
+        times, set arg extend=T but note that results may be unreliable.")))
     } else if (w > model_w & extend) {
       if (!silence)
-        message(paste0(
-          "NOTE: Prediction window w (=", w,
-          ") is larger than the window used in model fitting (=", model_w,
-          "). ", "\nPredictions may be unreliable."
-        ))
+        message(tidymess(paste0(
+          "NOTE: Prediction window w (=", w, ") is larger than the window used
+          in model fitting (=", model_w, "). Predictions may be unreliable.")))
     }
   }
   fm <- object$model
@@ -146,17 +146,19 @@ predict.dynamicLM <- function(object, newdata, lms, cause, w, extend = FALSE,
 
     ## Check prediction times match with LMs used in training
     if (max(lms) > object$end_time && !extend) {
-      stop(paste0("Landmark/prediction time points lms contains values later than the last LM used in model fitting
-                (last LM used in model fitting=", object$end_time,
-                " and max lms value=", max(lms), ").
-                If you wish to still make predictions at these times, set arg extend=T but note that results may be unreliable."))
+      stop(tidymess(paste0(
+        "Landmark/prediction time points lms contains values later than the last
+        LM used in model fitting (last LM used in model fitting=",
+        object$end_time, " and max lms value=", max(lms), "). If you wish to
+        still make predictions at these times, set arg extend=T but note that
+        results may be unreliable.")))
     } else if (max(lms) > object$end_time & extend) {
       if (!silence)
-        message(paste0(
-          "NOTE:landmark/prediction time points lms contains values later (max value=",
-          max(lms), ") than the last LM used in model fitting (=",
-          object$end_time, ").", "\nPredictions at times after ",
-          object$end_time, " may be unreliable."))
+        message(tidymess(paste0(
+          "NOTE:landmark/prediction time points lms contains values later (max
+          value=", max(lms), ") than the last LM used in model fitting (=",
+          object$end_time, "). Predictions at times after ", object$end_time,
+          " may be unreliable.")))
     }
     ## Check prediction times & newdata given are coherent with each other
     num_preds <- nrow(newdata)
@@ -164,7 +166,8 @@ predict.dynamicLM <- function(object, newdata, lms, cause, w, extend = FALSE,
       if (length(lms) == 1)
         lms <- rep(lms, num_preds)
       else
-        stop("Error in newdata or lms. Must have length(lms) == nrow(newdata) or lms be one landmarking point.")
+        stop(tidymess("Error in newdata or lms. Must have length(lms) ==
+                      nrow(newdata) or lms be one landmarking point."))
     }
 
     ## Get risk scores
@@ -186,7 +189,8 @@ predict.dynamicLM <- function(object, newdata, lms, cause, w, extend = FALSE,
     # sanity check
     if (num_preds == 0) stop("Newdata must be specified.")
     if (length(lms) != num_preds)
-      stop("Error in newdata or lms. Must have length(lms) == nrow(newdata) or lms be one landmarking point.")
+      stop(tidymess("Error in newdata or lms. Must have length(lms) ==
+                    nrow(newdata) or lms be one landmarking point."))
     data <- fm$call$data
   }
 

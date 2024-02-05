@@ -101,3 +101,7 @@ head(p1$preds)
 van Houwelingen HC, Putter H (2012). Dynamic Prediction in
 Clinical Survival Analysis. Chapman & Hall.
 }
+\seealso{
+\code{\link[=stack_data]{stack_data()}}, \code{\link[=add_interactions]{add_interactions()}}, \code{\link[=dynamic_lm]{dynamic_lm()}}, \code{\link[=score]{score()}},
+\code{\link[=calplot]{calplot()}}
+}

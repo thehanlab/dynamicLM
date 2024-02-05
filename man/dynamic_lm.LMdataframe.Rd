@@ -19,9 +19,9 @@ landmark dataset}
 \item{lmdata}{An object of class "LMdataframe", this can be created by
 running \code{\link[=stack_data]{stack_data()}} and \code{\link[=add_interactions]{add_interactions()}}}
 
-\item{formula}{The formula to be used, remember to include "+cluster(ID)" for
+\item{formula}{The formula to be used, remember to include \code{+cluster(ID)} for
 the column that indicates the ID of the individual for robust error
-estimates.
+estimates. See details for further information.
 Note that transformations (e.g., \code{x1*x2}) cannot be used in the formula and
 factors/categorical variables must first be made into dummy variables.}
 
@@ -56,6 +56,13 @@ Note that this vector has not been centered.
 \description{
 Fit a dynamic Cox or cause-specific Cox landmark supermodel to a stacked
 landmark dataset
+}
+\details{
+For standard survival data (one event and possible censoring), use
+\code{type = "coxph"} and a a formula with left-hand side (LHS) of the form
+\code{Surv(LM, Time, event)}. For competing risks (multiple events and possible
+censoring), use \code{type = "CSC"} and a LHS of the form
+\code{Hist(Time, event, LM)}
 }
 \examples{
 \dontrun{

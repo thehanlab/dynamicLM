@@ -10,7 +10,7 @@ dynamic_lm_helper <- function(formula, type, data, lmdata, method, cluster,
       (type == "CSC" && formula[[2]][[1]] != "Hist")) {
       stop(tidymess("Mismatch between formula's left-hand side (LHS) and type
           of supermodel. For standard survival data (one event and possible
-          censoring, use type = \"coxph\" and a LHS of the form Surv(LM, Time,
+          censoring), use type = \"coxph\" and a LHS of the form Surv(LM, Time,
           event). For competing risks (multiple events and possible censoring),
           use type = \"CSC\" and a LHS of the form Hist(Time, event, LM)"))
   }
@@ -19,9 +19,9 @@ dynamic_lm_helper <- function(formula, type, data, lmdata, method, cluster,
   # TODO: do this more rigorously, this assumes censoring is coded with a 0
   if ((type == "coxph" && length(setdiff(unique(data[[outcome$status]]), 0)) > 1) ||
       (type == "CSC" && length(setdiff(unique(data[[outcome$status]]), 0)) < 2)) {
-    stop(tidymess("Mismatch between the number of events and the type of model fit. For
-          standard survival data (one event and possible
-          censoring, use type = \"coxph\" and a LHS of the form Surv(LM, Time,
+    stop(tidymess("Mismatch between the number of events and the type of model
+          fit. For standard survival data (one event and possible
+          censoring), use type = \"coxph\" and a LHS of the form Surv(LM, Time,
           event). For competing risks (multiple events and possible censoring),
           use type = \"CSC\" and a LHS of the form Hist(Time, event, LM)"))
   }

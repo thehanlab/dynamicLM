@@ -34,7 +34,6 @@
 #'   [dynamic_lm.pen_lm()], [dynamic_lm.cv.pen_lm()]
 #' @export
 #'
-# TODO: regularized additions in return vs non-regularized
 dynamic_lm <- function(...) {
   UseMethod("dynamic_lm")
 }
@@ -44,9 +43,9 @@ dynamic_lm <- function(...) {
 #'
 #' @param lmdata  An object of class "LMdataframe", this can be created by
 #'   running [dynamicLM::stack_data()] and [dynamicLM::add_interactions()]
-#' @param formula The formula to be used, remember to include "+cluster(ID)" for
+#' @param formula The formula to be used, remember to include `+cluster(ID)` for
 #'  the column that indicates the ID of the individual for robust error
-#'  estimates.
+#'  estimates. See details for further information.
 #'  Note that transformations (e.g., `x1*x2`) cannot be used in the formula and
 #'  factors/categorical variables must first be made into dummy variables.
 #' @param type "coxph" or "CSC"/"CauseSpecificCox"
@@ -58,6 +57,12 @@ dynamic_lm <- function(...) {
 #' @param x Logical value. If set to true, `lmdata` is stored in the returned
 #'   object. This is required for internal validation.
 #' @param ... Arguments given to coxph or CSC.
+#'
+#' @details  For standard survival data (one event and possible censoring), use
+#'   `type = "coxph"` and a a formula with left-hand side (LHS) of the form
+#'   `Surv(LM, Time, event)`. For competing risks (multiple events and possible
+#'   censoring), use `type = "CSC"` and a LHS of the form
+#'   `Hist(Time, event, LM)`
 #'
 #' @return An object of class "LMcoxph" or "LMCSC" with components:
 #'   - model: fitted model
@@ -111,8 +116,8 @@ dynamic_lm.LMdataframe <-  function(lmdata,
                                     x = FALSE,
                                     ...) {
   # store arguments but not the data (heavy)
-  args = match.call()
-  args$lmdata = NULL
+  args <- match.call()
+  args$lmdata <- NULL
 
   # Obtain other inputs
   data <- lmdata$data
@@ -143,9 +148,9 @@ dynamic_lm.LMdataframe <-  function(lmdata,
 #'
 #' @param lmdata A dataframe that should be a stacked dataset across landmark
 #'   times.
-#' @param formula The formula to be used, remember to include "+cluster(ID)" for
+#' @param formula The formula to be used, remember to include `+cluster(ID)` for
 #'  the column that indicates the ID of the individual for robust error
-#'  estimates.
+#'  estimates. See details for further information.
 #'  Note that transformations (e.g., `x1*x2`) cannot be used in the formula and
 #'  factors/categorical variables must first be made into dummy variables.
 #' @param type "coxph" or "CSC"/"CauseSpecificCox"
@@ -170,6 +175,12 @@ dynamic_lm.LMdataframe <-  function(lmdata,
 #' @param x Logical value. If set to true, `lmdata` is stored in the returned
 #'   object. This is required for internal validation.
 #' @param ... Arguments given to coxph or CSC.
+#'
+#' @details  For standard survival data (one event and possible censoring), use
+#'   `type = "coxph"` and a a formula with left-hand side (LHS) of the form
+#'   `Surv(LM, Time, event)`. For competing risks (multiple events and possible
+#'   censoring), use `type = "CSC"` and a LHS of the form
+#'   `Hist(Time, event, LM)`
 #'
 #' @return An object of class "LMcoxph" or "LMCSC" with components:
 #'   - model: fitted model
@@ -203,22 +214,27 @@ dynamic_lm.data.frame <- function(lmdata,
                                   ...) {
 
   # store arguments but not the data (heavy)
-  args = match.call()
-  args$lmdata = NULL
+  args <- match.call()
+  args$lmdata <- NULL
 
   # Check arguments are given
   if (missing(func_covars))
-    stop("For input data that is a dataframe, argument func_covars must be specified.")
+    stop(tidymess("For input data that is a dataframe, argument func_covars must
+                  be specified."))
   if (missing(func_lms))
-    stop("For input data that is a dataframe, argument func_lms must be specified.")
+    stop(tidymess("For input data that is a dataframe, argument func_lms must be
+                  specified."))
   if (missing(lm_col))
-    stop("For input data that is a dataframe, argument lm_col must be specified.")
+    stop(tidymess("For input data that is a dataframe, argument lm_col must be
+                  specified."))
   if (missing(outcome))
-    stop("For input data that is a dataframe, argument outcome must be specified.")
+    stop(tidymess("For input data that is a dataframe, argument outcome must be
+                  specified."))
   if (missing(w))
     stop("For input data that is a dataframe, argument w must be specified.")
   if (missing(lm_covs))
-    stop("For input data that is a dataframe, argument lm_covs must be specified.")
+    stop(tidymess("For input data that is a dataframe, argument lm_covs must be
+                  specified."))
 
   all_covs <- c(
     sapply(seq_along(func_covars), function(i) paste0(lm_covs, "_", i)),
@@ -267,19 +283,25 @@ dynamic_lm.data.frame <- function(lmdata,
 #' }
 #' @import survival glmnet
 #' @export
+# TODO: allow for the pen_lm object to have been fit with
+# (x,y) = (matrix, response)
 dynamic_lm.pen_lm <- function(object, lambda, ...) {
   survival.type <- attr(object, "survival.type")
   lmdata <- attr(object, "lmdata")
+
   if(is.null(lmdata))
-    stop("To fit a penalized model, pen_lm() or cv.pen_lm() must be called with arguments (x,y) as a LMdataframe and colnames. Matrices and responses are not yet implemented")
+    stop(tidymess("To fit a penalized model, pen_lm() or cv.pen_lm() must be
+      called with arguments (x,y) as a LMdataframe and colnames. Matrices and
+      responses are not yet implemented"))
   xcols <- attr(object, "xcols")
   data <- lmdata$data
   NC <- length(object)
 
-  # TOOD: check inputs -
-  # * is lmdata an LMdataframe etc?
-  # * is s the correct length?
-  # * allow for (x,y)
+  if (NC != length(lambda)) stop(tidymess(paste0(
+    "One lambda should be specified for each cause. ", length(lambda),
+    " lambda(s) were given for ", NC, " cause(s). Please provide ", NC,
+    " lambda(s) as a vector or list.")))
+
   func_covars <- lmdata$func_covars
   func_lms <- lmdata$func_lms
   original.landmarks <- data[[lmdata$lm_col]]
@@ -293,11 +315,11 @@ dynamic_lm.pen_lm <- function(object, lambda, ...) {
     if (inherits(lambda, "list")) lambda <- lambda[[1]]
     glmnet_coefs <- as.vector(coef(object[[1]], s = lambda))
 
-    entry = lmdata$lm_col
-    exit = lmdata$outcome$time
-    status = lmdata$outcome$status
+    entry <- lmdata$lm_col
+    exit <- lmdata$outcome$time
+    status <- lmdata$outcome$status
     LHS_surv <- paste0("Surv(", entry, ",", exit, ",", status, ")")
-    formula <- paste0(LHS_surv, "~", paste0(xcols, collapse="+"))
+    formula <- paste0(LHS_surv, "~", paste0(xcols, collapse = "+"))
     superfm <- survival::coxph(stats::as.formula(formula), data,
                                method = "breslow", iter.max = 0,
                                init = glmnet_coefs, ...)
@@ -308,9 +330,8 @@ dynamic_lm.pen_lm <- function(object, lambda, ...) {
     superfm$call$data <- data
     type <- "coxph"
     cl <- "penLMcoxph"
-  }
 
-  else if (survival.type == "competing.risk") {
+  } else if (survival.type == "competing.risk") {
     if (!requireNamespace("riskRegression", quietly = TRUE)) {
       stop("Package \"riskRegression\" must be installed to use this function.",
            call. = FALSE)}
@@ -319,11 +340,11 @@ dynamic_lm.pen_lm <- function(object, lambda, ...) {
       as.vector(coef(object[[i]], s = lambda[[i]]))
     })
 
-    entry = lmdata$lm_col
-    exit = lmdata$outcome$time
-    status = lmdata$outcome$status
+    entry <- lmdata$lm_col
+    exit <- lmdata$outcome$time
+    status <- lmdata$outcome$status
     LHS <- paste0("Hist(", exit, ",", status, ",", entry, ")")
-    formula <- paste0(LHS, "~", paste0(xcols, collapse="+"))
+    formula <- paste0(LHS, "~", paste0(xcols, collapse = "+"))
 
     superfm <- CSC.fixed.coefs(stats::as.formula(formula), data,
                                method = "breslow",
@@ -360,12 +381,12 @@ dynamic_lm.pen_lm <- function(object, lambda, ...) {
               all_covs = all_covs,
               outcome = outcome,
               LHS = LHS,
-              # id_col = id_col,
-              # lm_col = lm_col,
+              id_col = id_col,
+              lm_col = lm_col,
               linear.predictors = linear.predictors,
               original.landmarks = original.landmarks,
               # args = args
-              lambda=lambda
+              lambda = lambda
   )
   class(out) <- c(cl, "dynamicLM")
   return(out)

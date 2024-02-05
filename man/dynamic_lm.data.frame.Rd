@@ -24,9 +24,9 @@
 \item{lmdata}{A dataframe that should be a stacked dataset across landmark
 times.}
 
-\item{formula}{The formula to be used, remember to include "+cluster(ID)" for
+\item{formula}{The formula to be used, remember to include \code{+cluster(ID)} for
 the column that indicates the ID of the individual for robust error
-estimates.
+estimates. See details for further information.
 Note that transformations (e.g., \code{x1*x2}) cannot be used in the formula and
 factors/categorical variables must first be made into dummy variables.}
 
@@ -82,6 +82,13 @@ Note that it is recommended to rather use \code{\link[=stack_data]{stack_data()}
 \code{\link[=add_interactions]{add_interactions()}} to create an object of class LMdataframe rather than
 directly calling \code{dynamic_lm()} on a dataframe to ensure the data has the
 correct form.
+}
+\details{
+For standard survival data (one event and possible censoring), use
+\code{type = "coxph"} and a a formula with left-hand side (LHS) of the form
+\code{Surv(LM, Time, event)}. For competing risks (multiple events and possible
+censoring), use \code{type = "CSC"} and a LHS of the form
+\code{Hist(Time, event, LM)}
 }
 \examples{
 \dontrun{

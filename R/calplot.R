@@ -4,20 +4,21 @@
 #' and external. Accordingly, the named list of prediction models must be as
 #' follows:
 #' * For both apparent/internal calbration, objects output from
-#'   [predict.dynamicLM()] for supermodels fit with [dynamic_lm()] may be used as input.
-#' * In order to bootstrap, supermodels fit with [dynamic_lm()] may be used as input
-#'   (note that the argument `x=TRUE` must be specified when fitting the model
-#'   in [dynamic_lm()]).
-#' * For external calibration, supermodels fit with [dynamic_lm()] are input along with
-#'   new data in the `data` argument. This data can be a LMdataframe or a
-#'   dataframe (in which case `lms` must be specified).
+#'   [predict.dynamicLM()] for supermodels fit with [dynamic_lm()] may be used
+#'   as input.
+#' * In order to bootstrap, supermodels fit with [dynamic_lm()] may be used as
+#'   input (note that the argument `x=TRUE` must be specified when fitting the
+#'   model in [dynamic_lm()]).
+#' * For external calibration, supermodels fit with [dynamic_lm()] are input
+#'   along with new data in the `data` argument. This data can be a LMdataframe
+#'   or a dataframe (in which case `lms` must be specified).
 #'
 #' For both internal calibration and bootstrapping, it is assumed that all
 #' models in `object` are fit on the same data.
 #'
 #' @param object A named list of prediction models, where allowed entries are
-#'   outputs from [predict.dynamicLM()] or supermodels from [dynamic_lm()] depending
-#'   on the type of calibration.
+#'   outputs from [predict.dynamicLM()] or supermodels from [dynamic_lm()]
+#'   depending on the type of calibration.
 #' @param times Landmark times for which calibration must be plot. These must be
 #'   a subset of landmark times used during the prediction
 #' @param formula A survival or event history formula (`Hist(...)`). The left
@@ -190,12 +191,20 @@ calplot <-
       })
       names(risks_to_test) <- names(object)
       if (object[[1]]$type == "coxph") {
-        risks_to_test <- lapply(risks_to_test, function(r) 1-r)
+        risks_to_test <- lapply(risks_to_test, function(r) 1 - r)
       }
 
       if (nrow(data_to_test) != length(risks_to_test[[1]])) {
         stop("nrow(data_to_test)!=length(risks_to_test)")
       }
+
+      if (nrow(data_to_test) == 0) {
+        warning(tidymess(paste0(
+          "Skipping calplot for landmark time ", tLM, " as no data was provided
+          for this landmark.")))
+        next
+      }
+
       x <- NULL
       x <- pec::calPlot(
         risks_to_test,
@@ -219,7 +228,7 @@ calplot <-
 
       if (plot) {
         if (add_title) {
-          title <- paste0("Risk calibration at LM time ",tLM)
+          title <- paste0("Risk calibration at LM time ", tLM)
           graphics::title(main = title)
         } else {
           graphics::title(main = main)

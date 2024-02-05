@@ -19,6 +19,7 @@ riskScore <- function(object, tLM, data, func_covars, func_lms) {
   pred_covars <- names(coefs)
   idx_lm_covars <- grep("LM", pred_covars, fixed=TRUE)
 
+  # 1. risk from landmark
   if (sum(idx_lm_covars) > 0) {
     lm_covars <- pred_covars[idx_lm_covars]
     bet_covars <- pred_covars[-idx_lm_covars]
@@ -34,6 +35,7 @@ riskScore <- function(object, tLM, data, func_covars, func_lms) {
     risk1 <- 0
   }
 
+  # 2. Risk from covariates
   # X1*coef + X1*t*coef + X1*t^2*coef + ..
   risk <- sum(risk1) + sum(
     sapply(bet_covars, function(coef_name) {
