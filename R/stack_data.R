@@ -79,6 +79,10 @@ stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"),
   if (!(id %in% colnames(data)))
     stop(paste("ID column ", id, "is not in the data."))
 
+  # Make sure to not duplicate
+  fixed <- setdiff(covs$fixed, c(outcome$time, outcome$status))
+  varying <- setdiff(covs$varying, c(outcome$time, outcome$status))
+
   if (format == "wide"){
     if (!(id %in% covs$fixed)) covs$fixed <- c(id, covs$fixed)
 
@@ -89,6 +93,7 @@ stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"),
     lmdata <- do.call(rbind, lmdata)
 
   } else if (format == "long") {
+    if (id %in% covs$fixed) covs$fixed <- setdiff(covs$fixed, id)
 
     data <- data[order(data[[id]], data[[rtime]]), ]
     split.data <- split(data, data[[id]])
