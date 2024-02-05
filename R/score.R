@@ -207,19 +207,20 @@ score <-
     w <- checked_input$w
     formula <- checked_input$formula
     cause <- checked_input$cause
+    id_col <- checked_input$id_col
 
-    if (!all("b" %in% colnames(data))) data$b <- 1
+    if (!all("bootstrap" %in% colnames(data))) data$bootstrap <- 1
 
-    num_B <- length(unique(data$b))
+    num_B <- length(unique(data$bootstrap))
     se.fit.b <- se.fit
     if (num_B > 1) se.fit.b <- FALSE
 
     # TODO: parallelize?
-    metrics <- lapply(unique(data$b), function(b) {
+    metrics <- lapply(unique(data$bootstrap), function(b) {
       m_b <- lapply(seq_along(times), function(t) {
         tLM <- times[t]
         # print(paste("tLM =", tLM))
-        idx <- (pred_LMs == tLM) & (data$b == b)
+        idx <- (pred_LMs == tLM) & (data$bootstrap == b)
         data_to_test <- data[idx, ]
         # TODO: decide how to handle the data
         #       by only including those who live after s, our censoring times
@@ -277,24 +278,25 @@ score <-
           brier_contrasts_b <- score_t$Brier$contrasts
 
           ###{
-          if (get.a.iid) a_iid <- cbind(tLM, score_t$AUC$iid.decomp, b)
-          if (get.b.iid) b_iid <- cbind(tLM, score_t$Brier$iid.decomp, b)
+          if (get.a.iid) a_iid <- cbind(tLM, score_t$AUC$iid.decomp, bootstrap = b)
+          if (get.b.iid) b_iid <- cbind(tLM, score_t$Brier$iid.decomp, bootstrap = b)
           ###}
         }
         metrics_b_t <- list()
         if (get.auc) {
-          metrics_b_t$AUC <- cbind(tLM, auct_b, b)
-          metrics_b_t$a_contrasts <- cbind(tLM, auc_contrasts_b, b)
+          metrics_b_t$AUC <- cbind(tLM, auct_b, bootstrap = b)
+          metrics_b_t$a_contrasts <- cbind(tLM, auc_contrasts_b, bootstrap = b)
           if (get.a.iid) metrics_b_t$a_iid <- a_iid
         }
         if (get.bs) {
-          metrics_b_t$Brier <- cbind(tLM, briert_b, b)
-          metrics_b_t$b_contrasts <- cbind(tLM, brier_contrasts_b, b)
+          metrics_b_t$Brier <- cbind(tLM, briert_b, bootstrap = b)
+          metrics_b_t$b_contrasts <- cbind(tLM, brier_contrasts_b, bootstrap = b)
           if (get.b.iid) metrics_b_t$b_iid <- b_iid
         }
         metrics_b_t
       })
 
+      # print(m_b)
       list(
         AUC = do.call("rbind", lapply(m_b, function(m) m$AUC)),
         Brier = do.call("rbind", lapply(m_b, function(m) m$Brier)),
@@ -335,7 +337,7 @@ score <-
           briert_out, c("model", "tLM", "Brier", "se", "lower", "upper"))
 
         if (!silent) {
-          b_na <- auct$b[is.na(auct$AUC)]
+          b_na <- auct$bootstrap[is.na(auct$AUC)]
           tlm_na <- auct$tLM[is.na(auct$AUC)]
           model_na <- auct$model[is.na(auct$AUC)]
           if (length(b_na) != 0) {
@@ -368,8 +370,8 @@ score <-
       briert_out <- briert
       a_contrasts_out <- a_contrasts
       b_contrasts_out <- b_contrasts
-      auct_out$b <- briert_out$b <- NULL
-      a_contrasts_out$b <- b_contrasts_out$b <- NULL
+      auct_out$bootstrap <- briert_out$bootstrap <- NULL
+      a_contrasts_out$bootstrap <- b_contrasts_out$bootstrap <- NULL
     }
 
     outlist <- list()
@@ -389,12 +391,18 @@ score <-
 
     if (summary) {
       if (get.a.iid) {
-        outlist$AUC_summary <- summary_metric("AUC", auct, a_contrasts,
-                                              a_iid, conf.int, weights, object)
+        model_levels <- levels(outlist$AUC$score$model)
+        if (!all(model_levels == levels(outlist$AUC$contrasts$model))) stop()
+        outlist$AUC_summary <- summary_metric(
+          "AUC", auct, a_contrasts, a_iid, conf.int, weights, object,
+          id_col, model_levels)
       }
       if (get.b.iid) {
-        outlist$Brier_summary <- summary_metric("Brier", briert, b_contrasts,
-                                                b_iid, conf.int,weights, object)
+        model_levels <- levels(outlist$Brier$score$model)
+        if (!all(model_levels == levels(outlist$Brier$contrasts$model))) stop()
+        outlist$Brier_summary <- summary_metric(
+          "Brier", briert, b_contrasts, b_iid, conf.int,weights, object,
+          id_col, model_levels)
       }
     }
     ###}
