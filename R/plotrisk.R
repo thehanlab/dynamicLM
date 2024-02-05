@@ -43,21 +43,38 @@
 #'   code
 #' @export
 #'
-plotrisk <- function(object, data, format, lm_col, id_col, w, cause, varying,
-                     end_time, extend = F, silence = F,
-                     pch, lty, lwd, col, main, xlab, ylab, xlim, ylim,
-                     x.legend, y.legend, ...) {
+plotrisk <- function(
+    object,
+    data,
+    format,
+    lm_col,
+    id_col,
+    w,
+    cause,
+    varying,
+    end_time,
+    extend = FALSE,
+    silence = FALSE,
+    pch, lty, lwd, col, main, xlab, ylab, xlim, ylim = c(0, 1),
+    x.legend,
+    y.legend,
+    ...
+) {
 
   model_w <- object$w
-  if (missing(w)) w <- model_w
-  else {
+  if (missing(w)) {
+    w <- model_w
+  } else {
     if (w > model_w && !extend)
-      stop(paste0("Prediction window w (=",w,") is larger than the window used in model fitting (=",model_w,").",
-                  "\nIf you wish to still make predictions at these times, set arg extend=T but note that results may be unreliable."))
-    else if (w > model_w & extend) {
+      stop(tidymess(paste0(
+        "Prediction window w (=", w, ") is larger than the window used in model
+        fitting (=", model_w, "). If you wish to still make predictions at these
+        times, set arg extend=TRUE but note that results may be unreliable.")))
+    else if (w > model_w && extend) {
       if (!silence)
-        message(paste0("NOTE: Prediction window w (=",w,") is larger than the window used in model fitting (=",model_w,"). ",
-                       "\nPredictions may be unreliable."))
+        message(tidymess(paste0(
+          "NOTE: Prediction window w (=", w, ") is larger than the window used
+          in model fitting (=", model_w, "). Predictions may be unreliable.")))
     }
   }
 
@@ -73,32 +90,41 @@ plotrisk <- function(object, data, format, lm_col, id_col, w, cause, varying,
       else if ("LM" %in% colnames(data)) lm_col <- "LM"
       else stop("argument 'lm_col' should be specified for long format data")
     }
-    if (!id_col %in% colnames(data)) stop("arg 'id_col' is not a column in data")
-    if (!lm_col %in% colnames(data)) stop("arg 'lm_col' is not a column in data")
+    if (!id_col %in% colnames(data))
+      stop("arg 'id_col' is not a column in data")
+    if (!lm_col %in% colnames(data))
+      stop("arg 'lm_col' is not a column in data")
     unique_ids <- unique(data[[id_col]])
     NF <- length(unique_ids)
-  } else if (format == "wide"){
+  } else if (format == "wide") {
     if (missing(varying))
-      message("NOTE: wide format but no column with varying covariates is given.")
+      message(tidymess("NOTE: wide format but no column with varying covariates
+                      is given."))
     NF <- nrow(data)
-  } else stop("format must be wide or long.")
+  } else {
+    stop("format must be wide or long.")
+  }
 
   if (missing(end_time)) end_time <- object$end_time
   else if (end_time > object$end_time & !extend) {
-    if (!silence) message(paste0("NOTE: arg end_time (=",end_time,") is later than the last LM used in model fitting (=",object$end_time,")",
-                                "\nand has been set back to the last LM used in model fitting. (=",object$end_time,")",
-                                "\nIf you wish to still plot until ",end_time, ", set arg extend=T but note that results after time ",object$end_time," may be unreliable."))
+    if (!silence) message(tidymess(paste0(
+      "NOTE: arg end_time (=", end_time, ") is later than the last LM used in
+      model fitting (=", object$end_time, ") and has been set back to the last
+      LM used in model fitting. (=", object$end_time, "). If you wish to still
+      plot until ", end_time, ", set arg extend=TRUE but note that results after
+      time ", object$end_time, " may be unreliable.")))
     end_time <- object$end_time
-  }
-  else if (end_time > object$end_time & extend) {
-    if (!silence) warning(paste0("NOTE: arg end_time (=",end_time,") is later than the last LM used in model fitting (=",object$end_time,")",
-                                 "\nResults after time ",object$end_time," may be unreliable."))
+  } else if (end_time > object$end_time & extend) {
+    if (!silence) warning(tidymess(paste0(
+      "NOTE: arg end_time (=", end_time, ") is later than the last LM used in
+      model fitting (=", object$end_time, "). Results after time ",
+      object$end_time, " may be unreliable.")))
   }
   type <- object$type
   if (type == "coxph") {
     if (!missing(cause)) stop("No cause should be specified for a coxph model.")
     cause <- NULL
-  } else if (type == "CauseSpecificCox" | type =="CSC") {
+  } else if (type == "CauseSpecificCox" || type == "CSC") {
     if (missing(cause)) cause <- NULL
   }
 
@@ -120,7 +146,7 @@ plotrisk <- function(object, data, format, lm_col, id_col, w, cause, varying,
   if (length(pch) < NF)
     pch <- rep(pch, NF)
   if(missing(main))
-    main <- paste0("Dynamic risk prediction (window length ", object$w,")")
+    main <- paste0("Dynamic risk prediction (window length ", object$w, ")")
   if(missing(xlab))
     xlab <- "LM prediction time"
   if(missing(ylab))
@@ -137,83 +163,87 @@ plotrisk <- function(object, data, format, lm_col, id_col, w, cause, varying,
   if (format == "long") {
     for (i in 1:NF){
       id <- unique_ids[i]
-      data_ind <- data[data[[id_col]] == id,]
+      data_ind <- data[data[[id_col]] == id, ]
       x <- data_ind[[lm_col]]
       idx <- x <= end_time
       x <- x[idx]
-      y <- predict.dynamicLM(object, data_ind[idx,], x, cause, extend=extend,
-                             silence=T, complete=F)$preds$risk
+      y <- predict.dynamicLM(object, data_ind[idx, ], x, cause, extend = extend,
+                             silence = TRUE, complete = FALSE)$preds$risk
 
       #if some entries have missing values we want to replace them by the most
       # recent score...
-      if (sum(is.na(y)) != 0){
-        if (sum(is.na(y)) == length(y)) y = FALSE # cannot be used
-        else {
+      if (sum(is.na(y)) != 0) {
+        if (sum(is.na(y)) == length(y)) {
+          y <- FALSE # cannot be used
+        } else {
           if (is.na(y[1])) { # find first non-NA index
-            firstNonNA <- min(which(!is.na(y)))
-            include <- firstNonNA:length(y)
+            first_non_na <- min(which(!is.na(y)))
+            include <- first_non_na:length(y)
             y <- y[include]
             x <- x[include]
             message(paste0(
-              "Individual with ID=",id,
+              "Individual with ID=", id,
               " had a first entry with missing value. Replaced by 0."))
           }
-          encountered_na <- T
-          ids_na <- c(ids_na,id)
-          y <- replace_na_with_last(y) # replace later NAs by the most recent score...
+          encountered_na <- TRUE
+          ids_na <- c(ids_na, id)
+
+          # replace later NAs by the most recent score...
+          y <- replace_na_with_last(y)
         }
       }
 
       if (inherits(y,"logical")) {
         message(paste0(
-          "Individual with ID=",id,
+          "Individual with ID=", id,
           " could not be plotted as they have missing values"))
       } else {
-        y <- c(y[1],y)
+        y <- c(y[1], y)
         if (max(x) < end_time) {
           x <- c(x, end_time)
           y <- c(y, y[length(y)])
         }
         if (!plotted) {
-          plot(stats::stepfun(x,y), xlab = xlab, ylab = ylab, main = main,
+          plot(stats::stepfun(x, y), xlab = xlab, ylab = ylab, main = main,
                pch = pch[i], lty = lty[i], lwd = lwd[i], col = col[i],
                xlim = xlim, ylim = ylim, ...)
           plotted <- TRUE
-        }
-        else{
-          graphics::lines(stats::stepfun(x,y), pch = pch[i], lty = lty[i],
+        } else {
+          graphics::lines(stats::stepfun(x, y), pch = pch[i], lty = lty[i],
                           lwd = lwd[i], col = col[i], ...)
         }
       }
     }
 
-    if(plotted) {
-      graphics::legend(x = x.legend, y =y.legend, legend = unique_ids,
+    if (plotted) {
+      graphics::legend(x = x.legend, y = y.legend, legend = unique_ids,
            lty = lty, col = col, lwd = lwd)
-      if(encountered_na)
-        message("Note that individual(s) (",paste(ids_na,collapse=", "),
-                ") had entries with missing data.The most recent previous non-missing entry was used instead.")
-    }
-    else{
-      message("No users with non-missing data were provided. No plot could be produced.")
+      if (encountered_na)
+        message(tidymess(
+          "Note that individual(s) (", paste(ids_na, collapse = ", "), ") had 
+          entries with missing data. The most recent previous non-missing entry 
+          was used instead."))
+    } else {
+      message(tidymess("No users with non-missing data were provided. No plot 
+          could be produced."))
       return(0) # exit
     }
 
   } else if (format == "wide") {
 
-    idx = data[[varying]] < end_time
+    idx <- data[[varying]] < end_time
 
-    no_change <- data[!idx,]
+    no_change <- data[!idx, ]
     if (nrow(no_change) > 0) {
       no_change$LM <- 0
       no_change[[varying]] <- 0
     }
-    change1 <- data[idx,]
+    change1 <- data[idx, ]
     if (nrow(change1) > 0) {
       change1$LM <- 0
       change1[[varying]] <- 0
     }
-    change2 = data[idx,]
+    change2 <- data[idx, ]
     if (nrow(change2) > 0) {
       change2$LM <- change2[[varying]]
       change2[[varying]] <- 1
@@ -221,7 +251,7 @@ plotrisk <- function(object, data, format, lm_col, id_col, w, cause, varying,
 
     long_form <- rbind(no_change, change1, change2)
 
-    plotrisk(object, long_form, format="long", lm_col="LM", id_col,
+    plotrisk(object, long_form, format = "long", lm_col = "LM", id_col,
              cause, varying, end_time, extend, silence,
              pch, lty, lwd, col, main, xlab, ylab, xlim, ylim,
              x.legend, y.legend, ...)
