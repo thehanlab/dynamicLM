@@ -81,6 +81,8 @@ cv.pen_lm <- function(x, y,
     foldid <- split.idx[match(IDs, unique.IDs)]
   }
 
+  # TODO: add parallelization!
+  # models <- parallel::mclapply(y, function(yi) {
   models <- lapply(y, function(yi) {
     glmnet::cv.glmnet(x = x, y = yi,
                       family = "cox",
@@ -88,6 +90,7 @@ cv.pen_lm <- function(x, y,
                       type.measure = type.measure,
                       foldid = foldid, ...)
   })
+  # }, mc.cores = 4)
   if (length(models) > 1){
     attr(models, "survival.type") <- "competing.risk"
   } else {
