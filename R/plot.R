@@ -39,7 +39,12 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
            call. = FALSE)
   }
 
-  if (missing(covars)) covars <- x$lm_covs
+  if (missing(covars)) {
+    covars <- x$lm_covs
+  } else {
+    # TODO: check if the covars given are in the model and are the main effects...
+  }
+
   if (missing(main)) {
     if (is.null(names(covars))) main <- covars
     else main <- names(covars)
@@ -92,6 +97,7 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
 
     if (conf_int) sig <- stats::vcov(fm$models[[cause]])
   }
+  set_ylim <- FALSE
   if (missing(ylim)) set_ylim <- TRUE
 
   t <- seq(0, end_time, by = 0.1)
@@ -106,7 +112,8 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
         if (name == covars[i]) {
           return(var)
         } else {
-          idx <- as.numeric(sub(".*\\D+", "\\1", name))
+          # idx <- as.numeric(sub(".*\\D+", "\\1", name))
+          idx <- as.numeric(sub(".*_(\\d)$", "\\1", name))
           return(func_covars[[idx]](x) * var)
         }
       })) # bet0 + bet1*x + bet2*x^2 + ...
@@ -148,12 +155,16 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
 #' Brier and/or AUC of dynamic landmark supermodels.
 #'
 #' @param x An object of class "LMScore" output from [score()]
-#' @param metrics One or both of "auc" and "brier"
+#' @param metrics One or both of "AUC" and "Brier"
 #' @param contrasts Plot the difference between metrics. Default is
 #'   FALSE and plots the metrics themselves.
+#' @param summary Plot the summary metric. Default is FAULT and plots
+#'   landmark-specific metrics.
 #' @param se Boolean, default TRUE. To include point wise confidence intervals.
 #' @param loc Location for legend.
 #' @param xlab,ylab,pch,ylim,xlim graphical parameters
+#' @param col TODO
+#' @param cex TODO (for legend)
 #' @param length The width of the ends of the error bars.
 #' @param legend Include a legend or not. Default is TRUE.
 #' @param auc Plot the AUC or not (if available). Default is TRUE.
@@ -162,89 +173,157 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
 #'
 #' @export
 # TODO add contrasts??
-plot.LMScore <- function(x, metrics, contrasts = FALSE, se = TRUE, loc, xlab, ylab, pch, ylim,
+plot.LMScore <- function(x, metrics, contrasts = FALSE, landmarks = TRUE,
+                         summary = FALSE, se = TRUE,
+                         pairwise_contrasts = FALSE, sig_level = 0.05,
+                         pairwise_heights, width,
+                         loc, xlab, ylab, pch, ylim, col = NULL, cex = 1,
                          xlim, length = 0.1, legend = TRUE, auc = TRUE,
                          brier = TRUE, ...) {
   if (missing(metrics)) {
     metrics <- c()
-    if (!is.null(x$AUC) && auc) metrics <- c("auc")
-    if (!is.null(x$Brier) && brier) metrics <- c(metrics, "brier")
+    if (!is.null(x$AUC) && auc) metrics <- c("AUC")
+    if (!is.null(x$Brier) && brier) metrics <- c(metrics, "Brier")
   }
 
-  if (missing(xlab))
-    xlab <- "Landmark Time (t)"
-  if (missing(pch))
-    pch <- 19
+  if (landmarks) {
+    if (missing(xlab))
+      xlab <- "Landmark Time (t)"
+    if (missing(pch))
+      pch <- 19
 
-  set_ylab <- FALSE
-  if (missing(ylab))
-    set_ylab <- TRUE
-  set_x <- FALSE
-  if (missing(loc))
-    set_x <- TRUE
+    set_ylab <- FALSE
+    if (missing(ylab))
+      set_ylab <- TRUE
+    set_x <- FALSE
+    if (missing(loc))
+      set_x <- TRUE
 
-  plot.metric <- function(df, metric, loc, ylim, xlim, contrasts = FALSE) {
-    if (set_ylab) ylab <- paste0(metric, "(t, t + ", x$w, ")")
+    plot.metric <- function(df, metric, col, loc, ylim, xlim, contrasts = FALSE) {
+      if (set_ylab) ylab <- paste0(metric, "(t, t + ", x$w, ")")
 
-    model_names <- unique(df$model)
-    num_models <- length(model_names)
-    tLM <- df$tLM
-    metric <- df[[metric]]
-    upper <- df[["upper"]]
-    lower <- df[["lower"]]
-    models <- df$model
+      model_names <- unique(df$model)
+      num_models <- length(model_names)
+      tLM <- df$tLM
+      metrics <- df[[metric]]
+      upper <- df[["upper"]]
+      lower <- df[["lower"]]
+      models <- df$model
 
-    if (missing(ylim)) {
-      ylim <- c(min(lower), max(upper))
-    }
-    if (missing(xlim)) {
-      xlim <- c(min(tLM), max(tLM))
-    }
+      if (is.null(col)) cols <- models
+      else cols <- col[as.numeric(as.factor(df$model))]
 
-    plot(tLM, metric, col = models, pch = pch, xlab = xlab, ylab = ylab,
-         ylim = ylim, xlim = xlim, ...)
-    if (contrasts) graphics::abline(h = 0, col = "black", lwd = 1, lty = 2)
+      if (missing(ylim)) ylim <- c(min(lower), max(upper))
+      if (missing(xlim)) xlim <- c(min(tLM), max(tLM))
 
-    for (i in 1:num_models){
-      idx <- models == model_names[i]
-      graphics::lines(tLM[idx], metric[idx], col = models[idx], pch = pch)
-      if (se) {
-        graphics::arrows(tLM[idx], lower[idx], tLM[idx], upper[idx],
-                         col = models[idx], length = length,
-                         angle = 90, code = 3)
+      plot(tLM, metrics, col = cols, pch = pch, xlab = xlab, ylab = ylab,
+           ylim = ylim, xlim = xlim, ...)
+      if (contrasts) graphics::abline(h = 0, col = "black", lwd = 1, lty = 2)
+
+      for (i in 1:num_models){
+        idx <- models == model_names[i]
+        graphics::lines(tLM[idx], metrics[idx], col = cols[idx], pch = pch)
+        if (se) {
+          graphics::arrows(tLM[idx], lower[idx], tLM[idx], upper[idx],
+                           col = cols[idx], length = length,
+                           angle = 90, code = 3)
+        }
+      }
+      if (legend) {
+        graphics::legend(loc, legend = model_names, col = cols,
+                         pch = pch, bty = "n", cex = cex)
       }
     }
-    if (legend) {
-      graphics::legend(loc, legend = model_names, col = models,
-                       pch = pch, bty = "n")
-    }
-  }
 
-  if ("auc" %in% metrics) {
-    if (is.null(x$AUC)) {
-      warning("AUC was not set as a metric when calling score() No results to plot. Either call score() again with auc as a metric or do not include it as a metric here.")
-    } else {
-      if (set_x) loc <- "topright"
-      if (!contrasts) {
-        plot.metric(x$AUC$score, "AUC", loc, ylim, xlim)
+    for (metric in metrics) {
+      if (is.null(x[[metric]])) {
+        warning(paste(metric, "was not set as a metric when calling score().",
+                      "No results to plot. Either call score() again with", metric,
+                      "as a metric or do not include it as a metric here."))
       } else {
-        df <- x$AUC$contrasts
-        df$model <- factor(paste(df$model, "-", df$reference))
-        plot.metric(df, "delta.AUC", loc, ylim, xlim, TRUE)
+        if (set_x && (metric == "AUC")) loc <- "topright"
+        else if (set_x && (metric == "Brier"))  loc <- "bottomright"
+        if (!contrasts) {
+          plot.metric(x[[metric]]$score, metric, col, loc, ylim, xlim)
+        } else {
+          df <- x[[metric]]$contrasts
+          df$model <- factor(paste(df$model, "-", df$reference))
+          plot.metric(df, paste0("delta.", metric), col, loc, ylim, xlim, TRUE)
+        }
       }
     }
+
   }
-  if ("brier" %in% metrics) {
-    if (is.null(x$Brier)) {
-      warning("Brier was not set as a metric when calling score() No results to plot. Either call score() again with auc as a metric or do not include it as a metric here.")
-    } else {
-      if (set_x) loc <- "bottomright"
-      if (!contrasts) {
-        plot.metric(x$Brier$score, "Brier", loc, ylim, xlim)
+
+  if (summary) { ### plot summary metric
+    if (missing(xlab)) xlab <- ""
+    if (missing(ylab)) ylab <- ""
+    for (metric in metrics) {
+      metric_summary <- paste0(metric, "_summary")
+      if (is.null(x[[metric_summary]])) {
+        warning(paste("Either", metric, "was not set as a metric when calling score()",
+                      "or the summary metric was not computed (summary = TRUE when calling score()).",
+                      "No results to plot. Either call score() again with", metric,
+                      "as a metric and summary = TRUE or do not include it as a metric here."))
       } else {
-        df <- x$Brier$contrasts
-        df$model <- factor(paste(df$model, "-", df$reference))
-        plot.metric(df, "delta.Brier", loc, ylim, xlim, TRUE)
+        if (!contrasts) {
+          df <- x[[metric_summary]]$score
+          col_name <- metric
+        } else {
+          df <- x[[metric_summary]]$contrasts
+          df$model <- factor(paste(df$model, "-", df$reference))
+          col_name <- paste0("delta.", metric)
+        }
+
+        if (is.null(col)) cols <- models
+        else cols <- col[as.numeric(as.factor(df$model))]
+
+        if (missing(ylim)) ylim <- c(0, max(df[["upper"]]))
+
+        mid <- barplot(df[[col_name]], plot = FALSE)
+        if (ylim[1] != 0) {
+          graphics::barplot(df[[col_name]], col = cols, names.arg = df$model,
+                            ylim=ylim, xpd = FALSE, xlab = xlab, ylab = ylab,
+                            axis.lty=1, ...)
+        } else {
+          graphics::barplot(df[[col_name]], col = cols, names.arg = df$model,
+                            ylim=ylim, xlab = xlab, ylab = ylab, axis.lty=1,
+                            ...)
+        }
+
+        if (se) {
+          graphics::arrows(mid, df[["lower"]], mid, df[["upper"]],
+                           col = "black", length = length,
+                           angle = 90, code = 3)
+        }
+        # add
+        # pairwise_contrasts
+        # significance_level
+        # pairwise_heights
+        if (pairwise_contrasts) {
+          x_axis <- as.numeric(mid)
+          names(x_axis) = df$model
+
+          df <- x[[metric_summary]]$contrasts
+          df$pair <- factor(paste(df$model, "-", df$reference))
+          col_name <- paste0("delta.", metric)
+
+          num_done <- 0
+          for (i in 1:nrow(df)) {
+            row <- df[i, ]
+            p_val <- row$p
+            if (p_val < sig_level) {
+              num_done <- num_done+1
+              x0 <- x_axis[as.character(row$reference)]
+              x1 <- x_axis[as.character(row$model)]
+              segments(x0=x0, x1=x0, y0=pairwise_heights[num_done]-width, y1=pairwise_heights[num_done])
+              segments(x0=x1, x1=x1, y0=pairwise_heights[num_done]-width, y1=pairwise_heights[num_done])
+              segments(x0=x0, x1=x1, y0=pairwise_heights[num_done], y1=pairwise_heights[num_done])
+              text(x=(x0+x1)/2, y=pairwise_heights[num_done]+width,
+                   labels=paste(format.pval(p_val, digits=2, eps=1e-5)), cex=.9)
+            }
+          }
+        }
       }
     }
   }
@@ -392,14 +471,11 @@ plot.coefs <- function(x, single_plot = TRUE, max_coefs = NULL,
     }
 
   } else {
-    if (length(pos_coefs) > 0)
-      pos_coefs <- pos_coefs[1:min(length(pos_coefs), max_coefs)]
-    if (length(neg_coefs) > 0)
-      neg_coefs <- neg_coefs[1:min(length(neg_coefs), max_coefs)]
-
     all_coefs <- c(pos_coefs, neg_coefs)
-    all_coefs <- all_coefs[order(abs(all_coefs))]
+    all_coefs <- all_coefs[order(-abs(all_coefs))]
     all_coefs <- all_coefs[1:min(length(all_coefs), max_coefs)]
+    all_coefs <- rev(all_coefs)
+
     graphics::barplot(all_coefs, col = col, names.arg = names(all_coefs),
                       horiz = TRUE, las = 1, xpd = FALSE, xlab = xlab, ...)
   }

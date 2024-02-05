@@ -9,12 +9,20 @@ Brier and/or AUC of dynamic landmark supermodels.}
   x,
   metrics,
   contrasts = FALSE,
+  landmarks = TRUE,
+  summary = FALSE,
   se = TRUE,
+  pairwise_contrasts = FALSE,
+  sig_level = 0.05,
+  pairwise_heights,
+  width,
   loc,
   xlab,
   ylab,
   pch,
   ylim,
+  col = NULL,
+  cex = 1,
   xlim,
   length = 0.1,
   legend = TRUE,
@@ -26,16 +34,23 @@ Brier and/or AUC of dynamic landmark supermodels.}
 \arguments{
 \item{x}{An object of class "LMScore" output from \code{\link[=score]{score()}}}
 
-\item{metrics}{One or both of "auc" and "brier"}
+\item{metrics}{One or both of "AUC" and "Brier"}
 
 \item{contrasts}{Plot the difference between metrics. Default is
 FALSE and plots the metrics themselves.}
+
+\item{summary}{Plot the summary metric. Default is FAULT and plots
+landmark-specific metrics.}
 
 \item{se}{Boolean, default TRUE. To include point wise confidence intervals.}
 
 \item{loc}{Location for legend.}
 
 \item{xlab, ylab, pch, ylim, xlim}{graphical parameters}
+
+\item{col}{TODO}
+
+\item{cex}{TODO (for legend)}
 
 \item{length}{The width of the ends of the error bars.}
 
