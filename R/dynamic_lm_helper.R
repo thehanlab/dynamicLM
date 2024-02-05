@@ -21,7 +21,6 @@ dynamic_lm_helper <- function(formula, type, data, lmdata, method, cluster,
   }
 
   lm_covs <- intersect(sub("_[^_]+$", "", all.vars(formula[[3]])), lm_covs)
-
   if (type == "coxph") {
     superfm <- survival::coxph(formula, data, method = method, ...)
     models <- list(superfm)
@@ -33,7 +32,6 @@ dynamic_lm_helper <- function(formula, type, data, lmdata, method, cluster,
     if (!requireNamespace("riskRegression", quietly = TRUE))
       stop("Package \"riskRegression\" must be installed to use this function.",
            call. = FALSE)
-
     superfm <- riskRegression::CSC(formula, data, method = method, ...)
     models <- superfm$models
     num_causes <- length(models)

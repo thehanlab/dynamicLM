@@ -4,7 +4,17 @@
 \alias{summary_metric}
 \title{Obtain the summary metric from landmark-specific estimates}
 \usage{
-summary_metric(metric, df_t, df_c, df_iid, conf_int, weights = NULL, object)
+summary_metric(
+  metric,
+  df_t,
+  df_c,
+  df_iid,
+  conf_int,
+  weights = NULL,
+  object,
+  id_col,
+  model_levels
+)
 }
 \arguments{
 \item{metric}{"AUC" or "Brier"}
@@ -46,6 +56,10 @@ simple average. Setting weights to TRUE or "km" or "survival" weights
 estimates by the probability of survival P(T > s).}
 
 \item{object}{Either fitted supermodel or risk predictions.}
+
+\item{id_col}{TODO}
+
+\item{model_levels}{TODO}
 }
 \value{
 TODO

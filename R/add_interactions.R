@@ -72,12 +72,12 @@
 #'
 #' @export
 add_interactions <- function(lmdata, lm_covs, func_covars, func_lms, lm_col,
-                             keep = T){
-  if (missing(lm_col)){
+                             keep = TRUE) {
+  if (missing(lm_col)) {
     lm_col <- lmdata$lm_col
   }
-  if (lm_col %in% func_covars){
-    stop(paste0("arg lm_col (given as/inferred as ",lm_col,
+  if (lm_col %in% func_covars) {
+    stop(paste0("arg lm_col (given as/inferred as ", lm_col,
                 ") should not be in arg func_covars."))
   }
   data <- lmdata$data
@@ -89,7 +89,7 @@ add_interactions <- function(lmdata, lm_covs, func_covars, func_lms, lm_col,
 
   if (missing(func_covars)) func_covars <- list(f1, f2)
   if (missing(func_lms)) func_lms <- list(f1, f2)
-  if (inherits(func_covars, "character")){
+  if (inherits(func_covars, "character")) {
     funcs <- list()
     if ("linear" %in% func_covars) funcs <- c(funcs, list(f1))
     if ("quadratic" %in% func_covars) funcs <- c(funcs, list(f2))
@@ -97,7 +97,7 @@ add_interactions <- function(lmdata, lm_covs, func_covars, func_lms, lm_col,
     if ("exp" %in% func_covars) funcs <- c(funcs, list(f4))
     func_covars <- funcs
   }
-  if (inherits(func_lms, "character")){
+  if (inherits(func_lms, "character")) {
     funcs <- list()
     if ("linear" %in% func_lms) funcs <- c(funcs, list(f1))
     if ("quadratic" %in% func_lms) funcs <- c(funcs, list(f2))
@@ -107,26 +107,26 @@ add_interactions <- function(lmdata, lm_covs, func_covars, func_lms, lm_col,
   }
 
   all_covs <- c(lm_covs)
-  data_LM <- data[[lm_col]]
+  data_lm <- data[[lm_col]]
   # Add func_covarss: covariate LM interactions
-  for(i in seq_along(lm_covs)){
-    for (j in seq_along(func_covars)){
+  for (i in seq_along(lm_covs)) {
+    for (j in seq_along(func_covars)) {
       f <- func_covars[[j]]
-      name <- paste0(lm_covs[i],"_",j)
-      data[[name]]  <- data[[lm_covs[i]]]*f(data_LM)
+      name <- paste0(lm_covs[i], "_", j)
+      data[[name]]  <- data[[lm_covs[i]]] * f(data_lm)
       all_covs <- c(all_covs, name)
     }
   }
   # Add func_lms: LM interactions
   for (k in seq_along(func_lms)){
     g <- func_lms[[k]]
-    name <- paste0("LM_",k)
-    data[[name]]  <- g(data_LM)
+    name <- paste0("LM_", k)
+    data[[name]]  <- g(data_lm)
     all_covs <- c(all_covs, name)
   }
 
-  if(!keep){
-    remaining = colnames(data)[! colnames(data)  %in% lm_covs]
+  if (!keep) {
+    remaining <- colnames(data)[! colnames(data)  %in% lm_covs]
     data <- data[remaining]
   }
   lmdata$data <- data

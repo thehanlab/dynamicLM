@@ -4,7 +4,7 @@
 \alias{add_interactions}
 \title{Add landmarking time interactions to a super dataset}
 \usage{
-add_interactions(lmdata, lm_covs, func_covars, func_lms, lm_col, keep = T)
+add_interactions(lmdata, lm_covs, func_covars, func_lms, lm_col, keep = TRUE)
 }
 \arguments{
 \item{lmdata}{An object of class "LMdataframe".

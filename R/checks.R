@@ -42,7 +42,7 @@ check_evaluation_inputs <- function(
   # check LMpred are given when not bootstrapping
   # check supermodels have data stored if bootstrapping
   for (i in 1:NF){
-    name = names(object)[[i]]
+    name <- names(object)[[i]]
     # check compatibility of object type with bootstrapping and predictions
     if (inherits(object[[i]], "LMpred")) {
       if (split.method != "none") {
@@ -141,7 +141,6 @@ check_evaluation_inputs <- function(
   if (missing(formula))
     formula <- object[[1]]$LHS
 
-
   ### Split method ###
 
   perform.boot <- FALSE
@@ -173,6 +172,7 @@ check_evaluation_inputs <- function(
     # check data
     preds <- data.frame(lapply(object, function(o) o$preds$risk))
     colnames(preds) <- names(object)
+
     pred_LMs <- object[[1]]$preds$LM
     data <- object[[1]]$data
     num_preds <- nrow(object[[1]]$preds)
@@ -249,7 +249,8 @@ check_evaluation_inputs <- function(
 
       if (length(preds.b) > 0) {
         colnames(preds.b) <- names(object)
-        return(cbind(outcomes_val_b, preds.b, b = rep(b, nrow(outcomes_val_b))))
+        return(cbind(outcomes_val_b, preds.b,
+                     bootstrap = rep(b, nrow(outcomes_val_b))))
       }
     })#, mc.cores=cores)
 
@@ -257,7 +258,7 @@ check_evaluation_inputs <- function(
     pred.df <- pred.df[stats::complete.cases(pred.df), ] # TODO: remove/fix
     preds <- pred.df[names(object)]
     pred_LMs <- pred.df[[lm_col]]
-    data <- pred.df[c(outcome$time, outcome$status, lm_col, "b")]
+    data <- pred.df[c(outcome$time, outcome$status, lm_col, "bootstrap")]
     num_preds <- nrow(data)
     type <- lapply(object,
                    function(o) ifelse(inherits(o, "LMcoxph"), "coxph", "CSC"))
@@ -287,6 +288,7 @@ check_evaluation_inputs <- function(
     w = w,
     formula = formula,
     cause = cause,
+    id_col = id_col,
     indicator = indicator
   )
   return(out)
