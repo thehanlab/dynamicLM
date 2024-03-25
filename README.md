@@ -75,6 +75,7 @@ You can install the development version of `dynamicLM` from
 
 ``` r
 # install.packages("devtools")
+<<<<<<< HEAD
 devtools::install_github("thehanlab/dynamicLM", ref = "extension/regularisation")
 #> Downloading GitHub repo thehanlab/dynamicLM@extension/regularisation
 #> 
@@ -89,6 +90,11 @@ devtools::install_github("thehanlab/dynamicLM", ref = "extension/regularisation"
 #>   ─  building ‘dynamicLM_0.3.0.tar.gz’
 #>      
 #> 
+=======
+devtools::install_github("thehanlab/dynamicLM", ref="updates/bug-fixes")
+#> Skipping install of 'dynamicLM' from a github remote, the SHA1 (eed8c2cb) has not changed since last install.
+#>   Use `force = TRUE` to force installation
+>>>>>>> main
 ```
 
 Package documentation can be found in [this
@@ -125,7 +131,11 @@ library(dynamicLM)
 #> Loading required package: survival
 #> Loading required package: prodlim
 #> Loading required package: riskRegression
+<<<<<<< HEAD
 #> riskRegression version 2023.07.26
+=======
+#> riskRegression version 2024.01.26
+>>>>>>> main
 ```
 
 ``` r
@@ -498,11 +508,12 @@ scores
 #> Metric: Time-dependent AUC (window 60)
 #> 
 #> Results by model:
-#>    tLM         model    AUC  lower  upper
-#> 1:   6 LM supermodel 61.808 51.891 71.726
-#> 2:  12 LM supermodel 60.855 50.447 71.262
-#> 3:  18 LM supermodel 61.374 51.034 71.714
-#> 4:  24 LM supermodel 55.188 43.949 66.427
+#>      tLM         model    AUC  lower  upper
+#>    <num>        <fctr> <char> <char> <char>
+#> 1:     6 LM supermodel 61.808 51.891 71.726
+#> 2:    12 LM supermodel 60.855 50.447 71.262
+#> 3:    18 LM supermodel 61.374 51.034 71.714
+#> 4:    24 LM supermodel 55.188 43.949 66.427
 #> NOTE: Values are multiplied by 100 and given in %.
 #> NOTE: The higher AUC the better.
 #> NOTE: Predictions are made at time tLM for risk windows of length 60
@@ -510,15 +521,16 @@ scores
 #> Metric: Time-dependent Brier Score (window 60)
 #> 
 #> Results by model:
-#>    tLM         model  Brier lower  upper
-#> 1:   6    Null model  8.493 6.288 10.698
-#> 2:   6 LM supermodel  8.141 6.017 10.266
-#> 3:  12    Null model 11.152 8.420 13.883
-#> 4:  12 LM supermodel 10.639 7.945 13.333
-#> 5:  18    Null model 11.582 8.591 14.574
-#> 6:  18 LM supermodel 11.163 8.246 14.081
-#> 7:  24    Null model 11.494 8.231 14.758
-#> 8:  24 LM supermodel 11.467 8.247 14.687
+#>      tLM         model  Brier  lower  upper
+#>    <num>        <fctr> <char> <char> <char>
+#> 1:     6    Null model  8.493  6.288 10.698
+#> 2:     6 LM supermodel  8.141  6.017 10.266
+#> 3:    12    Null model 11.152  8.420 13.883
+#> 4:    12 LM supermodel 10.639  7.945 13.333
+#> 5:    18    Null model 11.582  8.591 14.574
+#> 6:    18 LM supermodel 11.163  8.246 14.081
+#> 7:    24    Null model 11.494  8.231 14.758
+#> 8:    24 LM supermodel 11.467  8.247 14.687
 #> NOTE: Values are multiplied by 100 and given in %.
 #> NOTE: The lower Brier the better.
 #> NOTE: Predictions are made at time tLM for risk windows of length 60
@@ -624,7 +636,8 @@ head(dat)
 ```
 
 ``` r
-plotrisk(supermodel, dat, format = "long", ylim = c(0, 0.7), x.legend = "topright")
+plotrisk(supermodel, dat, format = "long", ylim = c(0, 0.7), 
+         x.legend = "topright")
 ```
 
 <img src="man/figures/README-plotrisk-1.png" width="100%" />

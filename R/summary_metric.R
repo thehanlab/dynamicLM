@@ -49,7 +49,7 @@ summary_metric <- function(metric,
                            df_c,
                            df_iid,
                            conf_int,
-                           weights = NULL,
+                           weights = FALSE,
                            # TODO: decide on argument inputs
                            # for now: NULL, (TRUE, "survival", "km")
                            object,
@@ -93,7 +93,6 @@ summary_metric <- function(metric,
 
   if (weights == FALSE) {
     weight_vector <- rep(1, num_lms)
-
   } else if (tolower(weights) %in% c("km", "survival") ||
              weights == TRUE) {
     # TODO: double check that we've checked that all are the same
@@ -109,7 +108,8 @@ summary_metric <- function(metric,
 
       # Check id_col
       if (!(id_col %in% colnames(object[[1]]$data))) {
-        stop(paste("An ID column that is in the data must be provided, you can set this with argument id_col."))
+        stop(tidymess(paste("An ID column that is in the data must be provided,
+                            you can set this with argument id_col.")))
       }
 
       data <- object[[1]]$data[, c(id_col, outcome$time, outcome$status)]
@@ -142,13 +142,17 @@ summary_metric <- function(metric,
     #       query for each landmark...
     #       this really complicates things for the delta method. May not be
     #       feasible.
-    stop("Only simple averages (weights = NULL) or probability of survival P(T>s) (weights = TRUE/\"km\"/\"survival\") may be used.")
+    stop(tidymess("Only simple averages (weights = FALSE) or probability of
+                  survival P(T>s) (weights = TRUE/\"km\"/\"survival\") may be
+                  used."))
   }
 
   # print(head(df_t))
   # print(head(df_c))
   # print(head(df_iid))
-  summary_score <- df_t[, lapply(.SD, weighted.mean, w = weight_vector),
+
+  # TODO: decide if we ditch the weighted version
+  summary_score <- df_t[, lapply(.SD, mean), # weighted.mean, w = weight_vector
                         by = "model", .SDcols = metric]
   # print(summary_score)
   if (get_contrasts) {

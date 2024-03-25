@@ -24,7 +24,7 @@
 #' @param times Landmark times for which calibration must be plot. These must be
 #'   a subset of landmark times used during the prediction
 #' @param metrics  Character vector specifying which metrics to apply. Choices
-#'   are "auc" and "brier". Case matters.
+#'   are "auc" and "brier".
 #' @param formula A survival or event history formula
 #'   ([prodlim::Hist()]). The left hand side is used to compute the
 #'   expected event status. If none is given, it is obtained from the prediction
@@ -408,7 +408,7 @@ score <-
         model_levels <- levels(outlist$Brier$score$model)
         if (!all(model_levels == levels(outlist$Brier$contrasts$model))) stop()
         outlist$Brier_summary <- summary_metric(
-          "Brier", briert, b_contrasts, b_iid, conf.int,weights, object,
+          "Brier", briert, b_contrasts, b_iid, conf.int, weights, object,
           id_col, model_levels)
       }
     }

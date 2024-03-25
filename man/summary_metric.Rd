@@ -10,7 +10,7 @@ summary_metric(
   df_c,
   df_iid,
   conf_int,
-  weights = NULL,
+  weights = FALSE,
   object,
   id_col,
   model_levels

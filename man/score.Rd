@@ -40,7 +40,7 @@ depending on the type of calibration.}
 a subset of landmark times used during the prediction}
 
 \item{metrics}{Character vector specifying which metrics to apply. Choices
-are "auc" and "brier". Case matters.}
+are "auc" and "brier".}
 
 \item{formula}{A survival or event history formula
 (\code{\link[prodlim:Hist]{prodlim::Hist()}}). The left hand side is used to compute the

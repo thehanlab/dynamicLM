@@ -59,13 +59,18 @@ check_evaluation_inputs <- function(
       }
 
     # TODO: update to include penalized classes
-    } else if (!(inherits(object[[i]],c("LMCSC", "LMcoxph")))) {
-      stop(paste("All prediction models in object must be of class LMCSC,",
-                 "LMcoxph (i.e., output from dynamic_lm) or LMpred (i.e.,",
-                 "output from predict.dynamicLM) but", name, "is of class",
-                 class(object[[i]])))
-    } else { # We know it is of class LMCSC or LMcoxph
+    } else if (!(inherits(object[[i]],c("LMCSC", "LMcoxph",
+                                        "penLMcoxph", "penLMCSC")))) {
+      stop(tidymess(paste("All prediction models in object must be of class
+                          LMCSC, LMcoxph, penLMcoxph, penLMCSC (i.e., output
+                          from dynamic_lm) or LMpred (i.e., output from
+                          predict.dynamicLM), but", name, "is of class",
+                          class(object[[i]]))))
+    } else { # We know it is of class LMCSC, LMcoxph, LMCSC, LMcoxph
       if (split.method == "bootcv") {
+        if (inherits(object[[i]], c("penLMcoxph", "penLMCSC")))
+          stop(tidymess("Bootstrapping for penalized risk predictions is not
+                        yet implemented."))
         lmdata <- object[[i]]$data
         if (is.null(lmdata)) {
           model.class <- class(object[[i]])
@@ -176,13 +181,15 @@ check_evaluation_inputs <- function(
 
   ### Create data we need: preds, preds_LM, data ###
 
-  if (inherits(object[[1]], "LMpred")) {
-    if (NF > 1) {
-      for (i in 2:NF) {
-        if (!inherits(object[[i]], "LMpred"))
-          stop("All prediction models must be supermodels or of type LMpred")
-      }
+  first_model_type <- setdiff(class(object[[1]]), "dynamicLM")
+  if (NF > 1) {
+    for (i in 2:NF) {
+      if (!inherits(object[[i]], first_model_type))
+        stop("All prediction models must be supermodels or of type LMpred")
     }
+  }
+
+  if (inherits(object[[1]], "LMpred")) {
 
     # check data
     preds <- data.frame(lapply(object, function(o) o$preds$risk))
@@ -191,6 +198,7 @@ check_evaluation_inputs <- function(
     pred_LMs <- object[[1]]$preds$LM
     data <- object[[1]]$data
     num_preds <- nrow(object[[1]]$preds)
+    if (missing(times)) times <- unique(pred_LMs)
 
     if (NF > 1) {
       for (i in 2:NF) {
@@ -206,30 +214,31 @@ check_evaluation_inputs <- function(
   } else if (!perform.boot) {
 
     # TODO: consider including w, extend, silence, complete as args to predict
-    if (type == "coxph") {
-      if (!missing(data)) {
-        preds <- lapply(object, function(o) predict.dynamicLM(o, data))
-      } else {
-        preds <- lapply(object, function(o) predict.dynamicLM(o))
-      }
-
+    if (!missing(data)) {
+      preds <- lapply(object, function(o) {
+        if (o$type == "coxph")
+          predict.dynamicLM(o, data)
+        else
+          predict.dynamicLM(o, data, cause = cause)
+      })
     } else {
-      if (!missing(data)) {
-        preds <- lapply(object, function(o) {
-          predict.dynamicLM(o, data, cause = cause)})
-      } else {
-        preds <- lapply(object, function(o) predict.dynamicLM(o, cause = cause))
-      }
+      preds <- lapply(object, function(o) {
+        if (o$type == "coxph") {
+          predict.dynamicLM(o)
+        } else
+          predict.dynamicLM(o, cause = cause)
+      })
     }
 
     args <- match.call()
     args$data <- NULL
     args$lms <- NULL
+    if (!missing(times)) args$times <- times
     args$object <- preds
     return(eval(args))
 
 
-  } else if (perform.boot){
+  } else if (perform.boot) {
     # pred.list <- parallel::mclapply(1:B,function(b){
     pred.list <- lapply(1:B, function(b) {
       id_train_b <- split.idx[, b]
@@ -285,8 +294,11 @@ check_evaluation_inputs <- function(
     pred_LMs <- pred.df[[lm_col]]
     data <- pred.df[c(outcome$time, outcome$status, lm_col, "bootstrap")]
     num_preds <- nrow(data)
-    type <- lapply(object,
-                   function(o) ifelse(inherits(o, "LMcoxph"), "coxph", "CSC"))
+    type <- lapply(object, function(o) {
+      switch(o, LMcoxph = "coxph", penLMcoxph = "coxph",
+                LMCSC = "CSC", penLMCSC = "CSC")
+    })
+    # function(o) ifelse(inherits(o, "LMcoxph"), "coxph", "CSC"))
 
     rm(pred.df)
   }

@@ -310,6 +310,8 @@ dynamic_lm.pen_lm <- function(object, lambda, ...) {
   w <- lmdata$w
   lm_covs <- lmdata$lm_covs
   all_covs <- lmdata$all_covs
+  id_col <- lmdata$id_col
+  lm_col <- lmdata$lm_col
 
   if (survival.type == "survival") {
     if (inherits(lambda, "list")) lambda <- lambda[[1]]

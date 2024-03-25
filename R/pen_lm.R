@@ -36,6 +36,11 @@
 #' @export
 pen_lm <- function(x, y, alpha = 1, ...) {
 
+  # TOOD: check inputs -
+  # * is lmdata an LMdataframe etc?
+  # * is s the correct length?
+  # * allow for (x,y)
+
   checked_input <- match.call()
   m <- match(c("x", "y", "alpha"), names(checked_input), 0L)
   checked_input <- as.list(checked_input[m])
