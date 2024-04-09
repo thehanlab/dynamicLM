@@ -210,6 +210,7 @@ score <-
     id_col <- checked_input$id_col
 
     if (!all("bootstrap" %in% colnames(data))) data$bootstrap <- 1
+    if (length(object) == 1) contrasts <- FALSE
 
     num_B <- length(unique(data$bootstrap))
     se.fit.b <- se.fit
@@ -268,12 +269,15 @@ score <-
                                se = NA, lower = NA, upper = NA)
           briert_b <- data.frame(model = names(object), times = NA, Brier = NA,
                                  se = NA, lower = NA, upper = NA)
-          auc_contrasts_b <- data.frame(times = NA, model = NA,
-                                        reference = NA, delta.AUC = NA,
-                                        lower = NA, upper = NA, p = NA)
-          brier_contrasts_b <- data.frame(times = NA, model = NA,
+          if (contrasts) {
+            auc_contrasts_b <- data.frame(times = NA, model = NA,
                                           reference = NA, delta.AUC = NA,
                                           lower = NA, upper = NA, p = NA)
+            brier_contrasts_b <- data.frame(times = NA, model = NA,
+                                            reference = NA, delta.AUC = NA,
+                                            lower = NA, upper = NA, p = NA)
+          }
+
           # TODO: should be NAs as above so we can catch them
           if (get.a.iid) a_iid <- data.frame()
           if (get.b.iid) b_iid <- data.frame()
@@ -281,8 +285,10 @@ score <-
         } else {
           auct_b <- score_t$AUC$score
           briert_b <- score_t$Brier$score
-          auc_contrasts_b <- score_t$AUC$contrasts
-          brier_contrasts_b <- score_t$Brier$contrasts
+          if (contrasts) {
+            auc_contrasts_b <- score_t$AUC$contrasts
+            brier_contrasts_b <- score_t$Brier$contrasts
+          }
 
           ###{
           if (get.a.iid) a_iid <- cbind(tLM, score_t$AUC$iid.decomp, bootstrap = b)
@@ -292,12 +298,12 @@ score <-
         metrics_b_t <- list()
         if (get.auc) {
           metrics_b_t$AUC <- cbind(tLM, auct_b, bootstrap = b)
-          metrics_b_t$a_contrasts <- cbind(tLM, auc_contrasts_b, bootstrap = b)
+          if (contrasts) metrics_b_t$a_contrasts <- cbind(tLM, auc_contrasts_b, bootstrap = b)
           if (get.a.iid) metrics_b_t$a_iid <- a_iid
         }
         if (get.bs) {
           metrics_b_t$Brier <- cbind(tLM, briert_b, bootstrap = b)
-          metrics_b_t$b_contrasts <- cbind(tLM, brier_contrasts_b, bootstrap = b)
+          if (contrasts) metrics_b_t$b_contrasts <- cbind(tLM, brier_contrasts_b, bootstrap = b)
           if (get.b.iid) metrics_b_t$b_iid <- b_iid
         }
         metrics_b_t
@@ -378,7 +384,9 @@ score <-
       a_contrasts_out <- a_contrasts
       b_contrasts_out <- b_contrasts
       auct_out$bootstrap <- briert_out$bootstrap <- NULL
-      a_contrasts_out$bootstrap <- b_contrasts_out$bootstrap <- NULL
+      if (contrasts) {
+        a_contrasts_out$bootstrap <- b_contrasts_out$bootstrap <- NULL
+      }
     }
 
     outlist <- list()

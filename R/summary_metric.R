@@ -79,7 +79,8 @@ summary_metric <- function(metric,
   sample_size <- length(unique(df_iid$ID))
 
   get_contrasts <- TRUE
-  if (ncol(df_c) <= 2) get_contrasts <- FALSE
+  if (is.null(df_c)) get_contrasts <- FALSE
+  else if (ncol(df_c) <= 2) get_contrasts <- FALSE
   # print(get_contrasts)
   # print(ncol(df_c))
 
