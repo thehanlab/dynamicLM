@@ -12,7 +12,7 @@ score(
   formula,
   data,
   lms = "LM",
-  id_col = "ID",
+  id_col,
   se.fit = TRUE,
   conf.int = 0.95,
   contrasts = TRUE,
