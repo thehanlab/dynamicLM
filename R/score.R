@@ -338,7 +338,8 @@ score <-
           data.table::setnames(
             out, c(by_columns, column, "se", "lower", "upper"))
           if (contrasts) {
-            out[, p := 2 * pnorm(abs(get(column) / se), lower.tail=FALSE)]
+            out[, p := 2 * stats::pnorm(abs(get(column) / se),
+                                        lower.tail=FALSE)]
           }
           return(out)
         }

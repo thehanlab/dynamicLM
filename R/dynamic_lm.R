@@ -315,7 +315,7 @@ dynamic_lm.pen_lm <- function(object, lambda, ...) {
 
   if (survival.type == "survival") {
     if (inherits(lambda, "list")) lambda <- lambda[[1]]
-    glmnet_coefs <- as.vector(coef(object[[1]], s = lambda))
+    glmnet_coefs <- as.vector(stats::coef(object[[1]], s = lambda))
 
     entry <- lmdata$lm_col
     exit <- lmdata$outcome$time
@@ -339,7 +339,7 @@ dynamic_lm.pen_lm <- function(object, lambda, ...) {
            call. = FALSE)}
 
     glmnet_coefs <- lapply(1:NC, function(i){
-      as.vector(coef(object[[i]], s = lambda[[i]]))
+      as.vector(stats::coef(object[[i]], s = lambda[[i]]))
     })
 
     entry <- lmdata$lm_col

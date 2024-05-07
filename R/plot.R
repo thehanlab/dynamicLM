@@ -350,7 +350,7 @@ plot.LMScore <- function(x,
         }
 
         # plot
-        mid <- barplot(df[[col_name]], plot = FALSE)
+        mid <- graphics::barplot(df[[col_name]], plot = FALSE)
         if (ylim[1] != 0) {
           graphics::barplot(df[[col_name]],
                             col = cols,
@@ -419,18 +419,20 @@ plot.LMScore <- function(x,
               num_done <- num_done + 1
               x0 <- x_axis[as.character(row$reference)]
               x1 <- x_axis[as.character(row$model)]
-              segments(x0 = x0, x1 = x0,
-                       y0 = pairwise_heights[num_done] - width,
-                       y1 = pairwise_heights[num_done])
-              segments(x0 = x1, x1 = x1,
-                       y0 = pairwise_heights[num_done] - width,
-                       y1 = pairwise_heights[num_done])
-              segments(x0 = x0, x1 = x1,
-                       y0 = pairwise_heights[num_done],
-                       y1 = pairwise_heights[num_done])
-              text(x = (x0 + x1) / 2, y = pairwise_heights[num_done] + width,
-                   labels = paste(format.pval(p_val, digits = 2, eps = 1e-5)),
-                   cex = cex)
+              graphics::segments(x0 = x0, x1 = x0,
+                                 y0 = pairwise_heights[num_done] - width,
+                                 y1 = pairwise_heights[num_done])
+              graphics::segments(x0 = x1, x1 = x1,
+                                 y0 = pairwise_heights[num_done] - width,
+                                 y1 = pairwise_heights[num_done])
+              graphics::segments(x0 = x0, x1 = x1,
+                                 y0 = pairwise_heights[num_done],
+                                 y1 = pairwise_heights[num_done])
+              graphics::text(x = (x0 + x1) / 2,
+                             y = pairwise_heights[num_done] + width,
+                             cex = cex,
+                             labels = paste(format.pval(p_val, digits = 2,
+                                                        eps = 1e-5)))
             }
           }
         }
@@ -536,7 +538,7 @@ plot.cv.pen_lm <- function(x, all_causes = FALSE, silent = FALSE, label = FALSE,
   if (all_causes) {
     for (i in 1:num_causes){
       plot(x[[i]], sign.lambda, se.bands, ...)
-      if (all_causes_title) title(paste("Cause", i), line = 2.5)
+      if (all_causes_title) graphics::title(paste("Cause", i), line = 2.5)
     }
   } else {
     plot(x[[1]], sign.lambda, se.bands, ...)

@@ -133,7 +133,8 @@ summary_metric <- function(metric,
                          c("time", "status"))
 
     # set weights
-    args <- list(formula = as.formula("Hist(time, status) ~ 1"), data = data)
+    args <- list(formula = stats::as.formula("Hist(time, status) ~ 1"),
+                 data = data)
     fit <- do.call(prodlim::prodlim, args)
     weight_vector <- predict(fit, times = lms, type = "surv")
 
@@ -218,14 +219,7 @@ summary_metric <- function(metric,
       cov(df)
     })
   }
-
   #}}}
-  # print("cov score (b)")
-  # print(cov_score)
-  # print("cov contrasts")
-  # print(cov_score_contrasts)
-  # print(weight_vector)
-  # print(dim(cov_score[[1]]))
 
   #{{{ 3. apply the delta method to get a confidence interval
   # TODO: check that this is correct
@@ -237,32 +231,28 @@ summary_metric <- function(metric,
   se_score <- sapply(cov_score, get_se)
   if (get_contrasts) se_score_contrasts <- sapply(cov_score_contrasts, get_se)
   #}}}
-  # print("se")
-  # print(se_score)
-  # print("se contrasts")
-  # print(se_score_contrasts)
 
   #{{{ 4. Make a data.table with model, mean, se, lower, upper
   alpha <- 1 - conf_int
   summary_score[, `:=`(
     se = se_score,
-    lower = get(metric) - qnorm(1 - alpha / 2) * se_score,
-    upper = get(metric) + qnorm(1 - alpha / 2) * se_score
+    lower = get(metric) - stats::qnorm(1 - alpha / 2) * se_score,
+    upper = get(metric) + stats::qnorm(1 - alpha / 2) * se_score
   )]
   if (get_contrasts) {
     contrasts[, se := se_score_contrasts]
     contrasts[, `:=`(
-      lower = get(delta_col) - qnorm(1 - alpha / 2) * se,
-      upper = get(delta_col) + qnorm(1 - alpha / 2) * se,
-      p = 2 * pnorm(abs(get(delta_col) / se), lower.tail=FALSE)
+      lower = get(delta_col) - stats::qnorm(1 - alpha / 2) * se,
+      upper = get(delta_col) + stats::qnorm(1 - alpha / 2) * se,
+      p = 2 * stats::pnorm(abs(get(delta_col) / se), lower.tail=FALSE)
     )]
   }
-
   #}}}
+
   if (get_contrasts)
-    return(list(score = summary_score, contrasts = contrasts, weighted = weights))
+    return(list(score = summary_score, contrasts = contrasts,
+                weighted = weights))
   else
     return(list(score = summary_score, weighted = weights))
-
 
 }
