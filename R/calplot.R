@@ -62,9 +62,6 @@
 #' @param plot If FALSE, do not plot the results, just return a plottable
 #'   object. Default is TRUE.
 #' @param main Optional title to override default.
-#' @param sub If TRUE, add a subheading with the number of individuals at risk,
-#"   and the number that under the event of interest.
-#'   Default is FALSE
 #' @param ... Additional arguments to pass to calPlot (`pec` package).
 #'   These arguments have been included for user flexibility but have not been
 #'   tested and should be used with precaution.
@@ -142,7 +139,6 @@ calplot <-
            cause,
            plot = TRUE,
            main,
-           sub = FALSE,
            ...) {
 
     ### Check input and set up some initial variables ###
@@ -228,22 +224,40 @@ calplot <-
 
       if (plot) {
         if (add_title) {
-          title <- paste0("Risk calibration at LM time ", tLM)
+          title <- paste("Risk calibration at landmark", tLM)
           graphics::title(main = title)
         } else {
           graphics::title(main = main)
         }
 
-        if (sub) {
-          num_patients <- length(risks_to_test[[1]])
-          status <- object[[1]]$outcome$status
-          num_events <- sum(data_to_test[[status]] == indicator)
-          subtitle <- paste0("#at risk=", num_patients,
-                            ",#that undergo event=", num_events)
-          graphics::title(sub = substitute(paste(italic(subtitle))))
-        }
-      }
+        # Older: Sub gave the number at risk and with an event
+        # if (sub) {
+        #   num_patients <- length(risks_to_test[[1]])
+        #   status <- object[[1]]$outcome$status
+        #   num_events <- sum(data_to_test[[status]] == indicator)
+        #   subtitle <- paste0("#at risk=", num_patients,
+        #                     ",#that undergo event=", num_events)
+        #   graphics::title(sub = substitute(paste(italic(subtitle))))
+        # }
 
+        # Potential addition: sub shows the regression values
+        # @param sub If TRUE and `regression_values` is also set to TRUE, add a
+        #    subheading with the regression slope and intercept.
+        # @param digits If `sub` and `regression_values` are TRUE, determines
+        #    the number of digits to print.
+        # if (sub && regression_values) {
+        #   slopes <- sapply(1:NF, function(i) {
+        #     reg_values_list[[i]][nrow(reg_values_list[[i]]), "Pred"]
+        #   })
+        #   intercepts <- sapply(1:NF, function(i) {
+        #     reg_values_list[[i]][nrow(reg_values_list[[i]]), "(Intercept)"]
+        #   })
+        #   subtitle <- paste0(names(object),
+        #                      ": slope:", round(slopes, digits),
+        #                      ", intercept:", round(intercepts, digits), "\n")
+        #   graphics::title(sub = substitute(paste(italic(subtitle))))
+        # }
+      }
 
       outlist[[t]] <- x
 

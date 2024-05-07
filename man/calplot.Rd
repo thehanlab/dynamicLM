@@ -20,7 +20,6 @@ calplot(
   cause,
   plot = TRUE,
   main,
-  sub = FALSE,
   ...
 )
 }
@@ -79,9 +78,6 @@ this is inferred from object.}
 object. Default is TRUE.}
 
 \item{main}{Optional title to override default.}
-
-\item{sub}{If TRUE, add a subheading with the number of individuals at risk,
-Default is FALSE}
 
 \item{...}{Additional arguments to pass to calPlot (\code{pec} package).
 These arguments have been included for user flexibility but have not been
