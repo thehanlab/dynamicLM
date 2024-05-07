@@ -139,7 +139,8 @@ print.LMScore <- function(x, digits = 3, print_lms = TRUE, print_summary = TRUE,
     if (!is.null(x$AUC)) {
       cat(paste0("\nMetric: Time-dependent AUC (w = ", x$w, ")\n"))
       obj <- x$AUC
-      obj$score$times <- obj$contrasts$times <- NULL
+      if (!is.null(obj$score$times)) obj$score$times <- NULL
+      if (!is.null(obj$contrasts$times)) obj$contrasts$times <- NULL
       class(obj) <- "scoreAUC"
       print(obj)
       message(paste("NOTE: Predictions are made at time tLM for time tLM +", x$w))
@@ -147,7 +148,8 @@ print.LMScore <- function(x, digits = 3, print_lms = TRUE, print_summary = TRUE,
     if (!is.null(x$Brier)) {
       cat(paste0("\nMetric: Time-dependent Brier Score (w = ", x$w, ")\n"))
       obj <- x$Brier
-      obj$score$times <- obj$contrasts$times <- NULL
+      if (!is.null(obj$score$times)) obj$score$times <- NULL
+      if (!is.null(obj$contrasts$times)) obj$contrasts$times <- NULL
       class(obj) <- "scoreBrier"
       print(obj, digits = digits)
       message(paste("NOTE: Predictions are made at time tLM for time tLM +", x$w))

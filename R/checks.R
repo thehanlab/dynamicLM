@@ -17,9 +17,26 @@ check_evaluation_inputs <- function(
   type <- lapply(object,
                  function(o) ifelse(o$type == "coxph", "coxph", "CSC"))
 
+  # Check all are same type (CSC or cox)
+  type1 <- type[[1]]
+  for (typei in type) {
+    if (typei != type1) {
+      stop(tidymess("All models should be fit on the same data, i.e., all should
+                    be competing risk or standard survival data."))
+    }
+  }
+
   # first checks
   split.method <- tolower(split.method)
-  if (split.method == "none") B <- 1
+  if (split.method == "none") {
+    if (B > 1) {
+      warning(tidymess(
+        "For bootstrapping, both arguments B (number of bootstraps) and
+        split.method must be set. As split.method is \"none\", B is being set
+        to 1."))
+    }
+    B <- 1
+  }
 
   if (!missing(cores))
     message(tidymess("Argument cores is unused. Parallel implementation is not
@@ -239,6 +256,9 @@ check_evaluation_inputs <- function(
 
 
   } else if (perform.boot) {
+    if (missing(times)) times <- unique(data[[lm_col]])
+    data <- data[data[[lm_col]] %in% times, ]
+
     # pred.list <- parallel::mclapply(1:B,function(b){
     pred.list <- lapply(1:B, function(b) {
       id_train_b <- split.idx[, b]
@@ -295,7 +315,7 @@ check_evaluation_inputs <- function(
     data <- pred.df[c(outcome$time, outcome$status, lm_col, "bootstrap")]
     num_preds <- nrow(data)
     type <- lapply(object, function(o) {
-      switch(o, LMcoxph = "coxph", penLMcoxph = "coxph",
+      switch(o$type, LMcoxph = "coxph", penLMcoxph = "coxph",
                 LMCSC = "CSC", penLMCSC = "CSC")
     })
     # function(o) ifelse(inherits(o, "LMcoxph"), "coxph", "CSC"))
