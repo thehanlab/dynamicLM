@@ -42,18 +42,7 @@
 #'   bootstrapping, CIs are calculated from empirical quantiles. If not, for
 #'   right censored data, they are calculated by the package [riskRegression] as
 #'   in Blanche et al (references).
-#' @param contrasts TODO reword!!!!
-#'   Either logical or a list of contrasts. A list of contrasts defines which
-#'   risk prediction models (markers) should be contrasted with respect to their
-#'   prediction performance. If TRUE do all possible comparisons. For example,
-#'   when object is a list with two risk prediction models and null.model=TRUE
-#'   setting TRUE is equivalent to list(c(0,1,2),c(1,2)) where c(0,1,2) codes
-#'   for the two comparisons: 1 vs 0 and 2 vs 0 (positive integers refer to
-#'   elements of object, 0 refers to the benchmark null model which ignores the
-#'   covariates). This again is equivalent to explicitly setting
-#'   list(c(0,1),c(0,2),c(1,2)). A more complex example: Suppose object has 7
-#'   elements and you want to do the following 3 comparisons: 6 vs 3, 2 vs 5 and
-#'   2 vs 3, you should set contrasts=c(6,3),c(2,5,3).
+#' @param contrasts If TRUE, perform model comparison tests.
 #' @param split.method Defines the internal validation design. Options are
 #'   currently "none" or "bootcv".
 #'
@@ -163,11 +152,6 @@ score <-
            seed,
            cause,
            silent = TRUE,
-
-           # TODO...
-           time = "time",
-           status = "status",
-           cens.model = "cox",
            ...) {
 
     if (!requireNamespace("data.table", quietly = TRUE)) {
@@ -180,7 +164,8 @@ score <-
     if ("auc" %in% tolower(metrics)) get.auc <- TRUE
     if ("brier" %in% tolower(metrics)) get.bs <- TRUE
     if (!get.auc && !get.bs)
-      stop("At least one of the following metrics must be specified: \"auc\", \"brier\".")
+      stop(tidymess("At least one of the following metrics must be specified:
+                    \"auc\", \"brier\"."))
 
     get.a.iid <- FALSE
     get.b.iid <- FALSE
@@ -220,16 +205,14 @@ score <-
     metrics <- lapply(unique(data$bootstrap), function(b) {
       m_b <- lapply(seq_along(times), function(t) {
         tLM <- times[t]
-        # print(paste("tLM =", tLM))
         idx <- (pred_LMs == tLM) & (data$bootstrap == b)
         data_to_test <- data[idx, ]
-        # TODO: decide how to handle the data
+
         #       by only including those who live after s, our censoring times
         #       etc align properly but we can also do it as below and set
         #       times = w
         # data_to_test[[time]] <- data_to_test[[time]] - tLM
         # data_to_test[["LM"]] <- data_to_test[["LM"]] - tLM
-        # TODO: add the individuals who have already had an event
 
         risks_to_test <- lapply(1:NF, function(i) {
           preds[idx, i]
@@ -242,8 +225,8 @@ score <-
 
         if (nrow(data_to_test) == 0) {
           warning(tidymess(paste0(
-            "Skipping calplot for landmark time ", tLM, " as no data was provided
-          for this landmark.")))
+            "Skipping calplot for landmark time ", tLM, " as no data was
+            provided for this landmark.")))
           return(NULL)
         }
 
@@ -255,7 +238,7 @@ score <-
             metrics = metrics,
             cause = cause,
             times = tLM + w - 10e-5,
-            se.fit = se.fit.b,
+            # se.fit = se.fit.b,
             conf.int = conf.int,
             keep = c("residuals", "iid"),
             ...
@@ -291,19 +274,27 @@ score <-
           }
 
           ###{
-          if (get.a.iid) a_iid <- cbind(tLM, score_t$AUC$iid.decomp, bootstrap = b)
-          if (get.b.iid) b_iid <- cbind(tLM, score_t$Brier$iid.decomp, bootstrap = b)
+          if (get.a.iid)
+            a_iid <- cbind(tLM, score_t$AUC$iid.decomp, bootstrap = b)
+          if (get.b.iid)
+            b_iid <- cbind(tLM, score_t$Brier$iid.decomp, bootstrap = b)
           ###}
         }
         metrics_b_t <- list()
         if (get.auc) {
           metrics_b_t$AUC <- cbind(tLM, auct_b, bootstrap = b)
-          if (contrasts) metrics_b_t$a_contrasts <- cbind(tLM, auc_contrasts_b, bootstrap = b)
+          if (contrasts) {
+            metrics_b_t$a_contrasts <- cbind(tLM, auc_contrasts_b,
+                                             bootstrap = b)
+          }
           if (get.a.iid) metrics_b_t$a_iid <- a_iid
         }
         if (get.bs) {
           metrics_b_t$Brier <- cbind(tLM, briert_b, bootstrap = b)
-          if (contrasts) metrics_b_t$b_contrasts <- cbind(tLM, brier_contrasts_b, bootstrap = b)
+          if (contrasts) {
+            metrics_b_t$b_contrasts <- cbind(tLM, brier_contrasts_b,
+                                             bootstrap = b)
+          }
           if (get.b.iid) metrics_b_t$b_iid <- b_iid
         }
         metrics_b_t
@@ -327,37 +318,58 @@ score <-
     a_iid <- do.call("rbind", lapply(metrics, function(m) m$a_iid))
     b_iid <- do.call("rbind", lapply(metrics, function(m) m$b_iid))
 
+
     if (B > 1) {
+      a_contrasts_out <- NULL
+      b_contrasts_out <- NULL
+
       # TODO: handle contrasts --
-      # TODO: conceptualize this
       if (se.fit == TRUE) {
+
+        clean_bootstraps <- function(table, column, contrasts = FALSE) {
+          by_columns <- c("tLM", "model")
+          if (contrasts) by_columns <- c("tLM", "model", "reference")
+          out <- table[, data.table::data.table(
+            mean(.SD[[column]], na.rm = TRUE),
+            se = stats::sd(.SD[[column]], na.rm = TRUE),
+            lower = stats::quantile(.SD[[column]], alpha / 2, na.rm = TRUE),
+            upper = stats::quantile(.SD[[column]], (1 - alpha / 2), na.rm = TRUE)
+          ), by = by_columns, .SDcols = column]
+          data.table::setnames(
+            out, c(by_columns, column, "se", "lower", "upper"))
+          if (contrasts) {
+            out[, p := 2 * pnorm(abs(get(column) / se), lower.tail=FALSE)]
+          }
+          return(out)
+        }
+
         alpha <- 1 - conf.int
-        auct_out <- auct[, data.table::data.table(
-          mean(.SD[["AUC"]], na.rm = TRUE),
-          se = stats::sd(.SD[["AUC"]], na.rm = TRUE),
-          lower = stats::quantile(.SD[["AUC"]], alpha / 2, na.rm = TRUE),
-          upper = stats::quantile(.SD[["AUC"]], (1 - alpha / 2), na.rm = TRUE)
-        ), by = c("model", "tLM"), .SDcols = "AUC"]
-        briert_out <- briert[, data.table::data.table(
-          mean(.SD[["Brier"]], na.rm = TRUE),
-          se = stats::sd(.SD[["Brier"]], na.rm = TRUE),
-          lower = stats::quantile(.SD[["Brier"]], alpha / 2, na.rm = TRUE),
-          upper = stats::quantile(.SD[["Brier"]], (1 - alpha / 2), na.rm = TRUE)
-        ), by = c("model", "tLM"), .SDcols = "Brier"]
-        data.table::setnames(
-          auct_out, c("model", "tLM", "AUC", "se", "lower", "upper"))
-        data.table::setnames(
-          briert_out, c("model", "tLM", "Brier", "se", "lower", "upper"))
+        if (get.auc) {
+          auct_out <- clean_bootstraps(auct, "AUC")
+          if (contrasts) {
+            a_contrasts_out <- clean_bootstraps(a_contrasts, "delta.AUC",
+                                                contrasts = TRUE)
+          }
+        }
+        if (get.bs) {
+          briert_out <- clean_bootstraps(briert, "Brier")
+          if (contrasts) {
+            b_contrasts_out <- clean_bootstraps(b_contrasts, "delta.Brier",
+                                                contrasts = TRUE)
+          }
+        }
 
         if (!silent) {
           b_na <- auct$bootstrap[is.na(auct$AUC)]
           tlm_na <- auct$tLM[is.na(auct$AUC)]
           model_na <- auct$model[is.na(auct$AUC)]
           if (length(b_na) != 0) {
-            message("Upper limit of followup in bootstrap samples was too low. Results at evaluation time(s) beyond these points could not be computed and are left as NA.")
-            message(paste0("Metrics not computed for (model, b, tLM) = ",
-                           paste0("(", model_na, ", ", b_na, ", ", tlm_na, ")",
-                                  collapse = ", ")))
+            message(tidymess(paste0(
+            "Upper limit of followup in bootstrap samples was too low. Results
+            at evaluation time(s) beyond these points could not be computed and
+            are left as NA.\nMetrics not computed for (model, b, tLM) = ",
+            paste0("(", model_na, ", ", b_na, ", ", tlm_na, ")",
+                   collapse = ", "))))
           }
         }
         # if (na.rm == FALSE) {
@@ -368,14 +380,30 @@ score <-
         # }
 
       } else {
-        auct_out <- auct[, data.table::data.table(
-          mean(.SD[["AUC"]], na.rm = TRUE)
-        ), by = c("model", "tLM"), .SDcols = "AUC"]
-        briert_out <- briert[, data.table::data.table(
-          mean(.SD[["Brier"]], na.rm = TRUE)
-        ), by = c("model", "tLM"), .SDcols = "Brier"]
-        data.table::setnames(auct_out, c("model", "tLM", "AUC"))
-        data.table::setnames(briert_out, c("model", "tLM", "Brier"))
+        clean_bootstraps_simple <- function(table, column, contrasts = FALSE) {
+          by_columns <- c("tLM", "model")
+          if (contrasts) by_columns <- c("tLM", "model", "reference")
+          out <- table[, data.table::data.table(
+            mean(.SD[[column]], na.rm = TRUE)
+          ), by = by_columns, .SDcols = column]
+          data.table::setnames(out, c(by_columns, column))
+          return(out)
+        }
+
+        if (get.auc) {
+          auct_out <- clean_bootstraps_simple(auct, "AUC")
+          if (contrasts) {
+            a_contrasts_out <- clean_bootstraps_simple(a_contrasts, "delta.AUC",
+                                                       contrasts = TRUE)
+          }
+        }
+        if (get.bs) {
+          briert_out <- clean_bootstraps_simple(briert, "Brier")
+          if (contrasts) {
+            b_contrasts_out <- clean_bootstraps_simple(b_contrasts, "delta.Brier",
+                                                       contrasts = TRUE)
+          }
+        }
       }
 
     } else { # B == 1
@@ -405,19 +433,24 @@ score <-
     #   -> or need supermodel to be fit with x = TRUE ... (TODO)
 
     if (summary) {
-      if (get.a.iid) {
-        model_levels <- levels(outlist$AUC$score$model)
-        if (!all(model_levels == levels(outlist$AUC$contrasts$model))) stop()
-        outlist$AUC_summary <- summary_metric(
-          "AUC", auct, a_contrasts, a_iid, conf.int, weights, object,
-          id_col, model_levels)
-      }
-      if (get.b.iid) {
-        model_levels <- levels(outlist$Brier$score$model)
-        if (!all(model_levels == levels(outlist$Brier$contrasts$model))) stop()
-        outlist$Brier_summary <- summary_metric(
-          "Brier", briert, b_contrasts, b_iid, conf.int, weights, object,
-          id_col, model_levels)
+      if (B > 1) {
+        warning(tidymess("Bootstrapping for summary metrics is not yet
+                         implemented, results are not calculated."))
+      } else {
+        if (get.a.iid) {
+          model_levels <- levels(outlist$AUC$score$model)
+          if (!all(model_levels == levels(outlist$AUC$contrasts$model))) stop()
+          outlist$AUC_summary <- summary_metric(
+            "AUC", auct, a_contrasts, a_iid, conf.int, weights, object,
+            id_col, model_levels)
+        }
+        if (get.b.iid) {
+          model_levels <- levels(outlist$Brier$score$model)
+          if (!all(model_levels == levels(outlist$Brier$contrasts$model))) stop()
+          outlist$Brier_summary <- summary_metric(
+            "Brier", briert, b_contrasts, b_iid, conf.int, weights, object,
+            id_col, model_levels)
+        }
       }
     }
     ###}

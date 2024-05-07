@@ -25,9 +25,6 @@ score(
   seed,
   cause,
   silent = TRUE,
-  time = "time",
-  status = "status",
-  cens.model = "cox",
   ...
 )
 }
@@ -65,18 +62,7 @@ bootstrapping, CIs are calculated from empirical quantiles. If not, for
 right censored data, they are calculated by the package \link{riskRegression} as
 in Blanche et al (references).}
 
-\item{contrasts}{TODO reword!!!!
-Either logical or a list of contrasts. A list of contrasts defines which
-risk prediction models (markers) should be contrasted with respect to their
-prediction performance. If TRUE do all possible comparisons. For example,
-when object is a list with two risk prediction models and null.model=TRUE
-setting TRUE is equivalent to list(c(0,1,2),c(1,2)) where c(0,1,2) codes
-for the two comparisons: 1 vs 0 and 2 vs 0 (positive integers refer to
-elements of object, 0 refers to the benchmark null model which ignores the
-covariates). This again is equivalent to explicitly setting
-list(c(0,1),c(0,2),c(1,2)). A more complex example: Suppose object has 7
-elements and you want to do the following 3 comparisons: 6 vs 3, 2 vs 5 and
-2 vs 3, you should set contrasts=c(6,3),c(2,5,3).}
+\item{contrasts}{If TRUE, perform model comparison tests.}
 
 \item{split.method}{Defines the internal validation design. Options are
 currently "none" or "bootcv".
