@@ -158,11 +158,16 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
 #' @param metrics One or both of "AUC" and "Brier"
 #' @param contrasts Plot the difference between metrics. Default is
 #'   FALSE and plots the metrics themselves.
+#' @param landmarks TODO
 #' @param summary Plot the summary metric. Default is FAULT and plots
 #'   landmark-specific metrics.
 #' @param se Boolean, default TRUE. To include point wise confidence intervals.
+#' @param pairwise_contrasts TODO
+#' @param cutoff_contrasts TODO
+#' @param pairwise_heights TODO
+#' @param width TODO
 #' @param loc Location for legend.
-#' @param xlab,ylab,pch,ylim,xlim graphical parameters
+#' @param xlab,ylab,pch,ylim,xlim,main graphical parameters
 #' @param col TODO
 #' @param cex TODO (for legend)
 #' @param length The width of the ends of the error bars.
@@ -172,13 +177,24 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
 #' @param ... Additional arguments to `plot()`
 #'
 #' @export
-# TODO add contrasts??
-plot.LMScore <- function(x, metrics, contrasts = FALSE, landmarks = TRUE,
-                         summary = FALSE, se = TRUE,
-                         pairwise_contrasts = FALSE, sig_level = 0.05,
-                         pairwise_heights, width,
-                         loc, xlab, ylab, pch, ylim, col = NULL, cex = 1,
-                         xlim, length = 0.1, legend = TRUE, auc = TRUE,
+# TODO example code
+plot.LMScore <- function(x,
+                         metrics,
+                         contrasts = FALSE,
+                         landmarks = TRUE,
+                         summary = FALSE,
+                         se = TRUE,
+                         pairwise_contrasts = FALSE,
+                         cutoff_contrasts = 0.05,
+                         pairwise_heights,
+                         width,
+                         loc, xlab, ylab, pch, ylim, xlim, main,
+                         col = NULL,
+                         cex = 1,
+                         length = 0.1,
+                         legend = TRUE,
+                         legend.title = NULL,
+                         auc = TRUE,
                          brier = TRUE, ...) {
   if (missing(metrics)) {
     metrics <- c()
@@ -198,6 +214,9 @@ plot.LMScore <- function(x, metrics, contrasts = FALSE, landmarks = TRUE,
     set_x <- FALSE
     if (missing(loc))
       set_x <- TRUE
+    set_ylim <- FALSE
+    if (missing(ylim))
+      set_ylim <- TRUE
 
     plot.metric <- function(df, metric, col, loc, ylim, xlim,
                             contrasts = FALSE) {
@@ -214,9 +233,16 @@ plot.LMScore <- function(x, metrics, contrasts = FALSE, landmarks = TRUE,
       if (is.null(col)) cols <- models
       else cols <- col[as.numeric(as.factor(df$model))]
 
+      if (is.null(lower)) se <- FALSE
+
       if (missing(ylim)) {
-        ylim <- c(min(lower), max(upper))
-        diff <- 0.2 *  (ylim[2] - ylim[1])
+        if (!is.null(lower)) {
+          ylim <- c(min(lower), max(upper))
+        } else {
+          ylim <- c(min(metrics), max(metrics))
+        }
+
+        diff <- abs(0.2 *  (ylim[2] - ylim[1]))
         ylim <- c(ylim[1] - diff, ylim[2] + diff)
       }
       if (missing(xlim)) {
@@ -237,8 +263,9 @@ plot.LMScore <- function(x, metrics, contrasts = FALSE, landmarks = TRUE,
         }
       }
       if (legend) {
-        graphics::legend(loc, legend = model_names, col = cols,
-                         pch = pch, bty = "n", cex = cex)
+        graphics::legend(loc, legend = model_names,
+                         col = cols[match(model_names, models)],
+                         pch = pch, bty = "n", cex = cex, title = legend.title)
       }
     }
 
@@ -264,12 +291,20 @@ plot.LMScore <- function(x, metrics, contrasts = FALSE, landmarks = TRUE,
   }
 
   if (summary) { ### plot summary metric
-    if (missing(xlab)) xlab <- ""
-    if (missing(ylab)) ylab <- ""
     for (metric in metrics) {
       metric_summary <- paste0(metric, "_summary")
+
+      if (!requireNamespace("latex2exp", quietly = TRUE)) {
+        stop(tidymess("Package \"latex2exp\" must be installed to use function
+                      plot.LMScore on summary metrics"), call. = FALSE)
+      }
+      set_main <- set_ylab <- set_ylim <- FALSE
+      if (missing(main)) set_main <- TRUE
+      if (missing(ylab)) set_ylab <- TRUE
+      if (missing(ylim)) set_ylim <- TRUE
+
       if (is.null(x[[metric_summary]])) {
-        warning(paste(tidymess(
+        warning(tidymess(paste(
           "Either", metric, "was not set as a metric when calling score() or
           the summary metric was not computed (summary = TRUE when calling
           score()). No results to plot. Either call score() again with", metric,
@@ -285,32 +320,90 @@ plot.LMScore <- function(x, metrics, contrasts = FALSE, landmarks = TRUE,
           col_name <- paste0("delta.", metric)
         }
 
-        if (is.null(col)) cols <- models # TODO: binding for models??
+        # colors
+        if (is.null(col)) cols <- as.numeric(as.factor(df$model))
         else cols <- col[as.numeric(as.factor(df$model))]
 
-        if (missing(ylim)) ylim <- c(0, max(df[["upper"]]))
+        # graphical params
+        if (set_main && metric == "Brier") {
+          main <- latex2exp::TeX("Summary $\\bar{BS}_{w}$")
+        } else if (set_main && metric == "AUC") {
+          main <- latex2exp::TeX("Summary $\\bar{AUC}_{w}$")
+        }
+        if (set_ylab && metric == "Brier") {
+          ylab <- latex2exp::TeX("$\\bar{BS}_{w}$")
+        } else if (set_ylab && metric == "AUC") {
+          ylab <- latex2exp::TeX("$\\bar{AUC}_{w}$")
+        }
+        if (missing(xlab)) xlab <- ""
+        if (xlab == "Landmark Time (t)") xlab <- ""
+        if (is.null(df[["lower"]])) se <- FALSE
 
+        if (set_ylim) {
+          if (!is.null(df[["lower"]])) {
+            ylim <- c(min(df[["lower"]]), max(df[["upper"]]))
+          } else {
+            ylim <- c(min(df[[col_name]]), max(df[[col_name]]))
+          }
+          diff <- abs(0.2 *  (ylim[2] - ylim[1]))
+          ylim <- c(ylim[1] - diff, ylim[2] + diff)
+        }
+
+        # plot
         mid <- barplot(df[[col_name]], plot = FALSE)
         if (ylim[1] != 0) {
-          graphics::barplot(df[[col_name]], col = cols, names.arg = df$model,
-                            ylim = ylim, xpd = FALSE, xlab = xlab, ylab = ylab,
+          graphics::barplot(df[[col_name]],
+                            col = cols,
+                            cex.axis = cex,
+                            cex.names = cex,
+                            names.arg = df$model,
+                            ylim = ylim,
+                            xpd = FALSE, # added parameter
+                            xlab = xlab,
+                            ylab = ylab,
+                            main = main,
                             axis.lty = 1, ...)
         } else {
-          graphics::barplot(df[[col_name]], col = cols, names.arg = df$model,
-                            ylim = ylim, xlab = xlab, ylab = ylab, axis.lty = 1,
+          graphics::barplot(df[[col_name]],
+                            col = cols,
+                            cex.axis = cex,
+                            cex.names = cex,
+                            names.arg = df$model,
+                            ylim = ylim,
+                            xlab = xlab,
+                            ylab = ylab,
+                            main = main,
+                            axis.lty = 1,
                             ...)
         }
 
+        # add error bars
         if (se) {
           graphics::arrows(mid, df[["lower"]], mid, df[["upper"]],
                            col = "black", length = length,
                            angle = 90, code = 3)
         }
-        # add
-        # pairwise_contrasts
-        # significance_level
-        # pairwise_heights
-        if (pairwise_contrasts) {
+
+        # add significant contrasts
+        if (pairwise_contrasts && contrasts) {
+          warning(tidymess(
+            "Plotting pairwise contrasts (pairwise_contrasts=TRUE) does not make
+            sense when already plotting contrasts (contrasts=TRUE). No pairwise
+            contrasts are plotted."))
+        }
+        else if (pairwise_contrasts) {
+          if (missing(pairwise_heights)) {
+            stop(tidymess("When plotting pairwise contrasts, argument
+                          pairwise_heights must be given."))
+          }
+          if (missing(width)) {
+            stop(tidymess("When plotting pairwise contrasts, argument
+                          width must be given."))
+          }
+          if (set_ylim) {
+            warning(tidymess("Using the default ylim may results in pairwise
+                             contrasts not being shown, try expanding it."))
+          }
           x_axis <- as.numeric(mid)
           names(x_axis) = df$model
 
@@ -322,7 +415,7 @@ plot.LMScore <- function(x, metrics, contrasts = FALSE, landmarks = TRUE,
           for (i in seq_len(nrow(df))) {
             row <- df[i, ]
             p_val <- row$p
-            if (p_val < sig_level) {
+            if (p_val < cutoff_contrasts) {
               num_done <- num_done + 1
               x0 <- x_axis[as.character(row$reference)]
               x1 <- x_axis[as.character(row$model)]
@@ -337,7 +430,7 @@ plot.LMScore <- function(x, metrics, contrasts = FALSE, landmarks = TRUE,
                        y1 = pairwise_heights[num_done])
               text(x = (x0 + x1) / 2, y = pairwise_heights[num_done] + width,
                    labels = paste(format.pval(p_val, digits = 2, eps = 1e-5)),
-                   cex = .9)
+                   cex = cex)
             }
           }
         }
@@ -404,7 +497,7 @@ plot.pen_lm <- function(x, xvar = "norm", all_causes = FALSE, silent = FALSE,
   } else {
     plot(x[[1]], xvar, label, ...)
     if (length(x) > 1 && !silent)
-      message(tidymess("\n (To print plot paths for remaining cause-specific 
+      message(tidymess("\n (To print plot paths for remaining cause-specific
           models, call plot with argument all_causes = TRUE)\n"))
   }
 }
@@ -432,19 +525,23 @@ plot.pen_lm <- function(x, xvar = "norm", all_causes = FALSE, silent = FALSE,
 #'   if set to -1.
 #' @param se.bands Logical. If TRUE, shading is produced to show stand-error
 #'   bands. Defaults to TRUE.
+#' @param all_causes_title If `all_causes` is set to TRUE, includes a title with
+#'   the cause. Defaults to TRUE
 #' @param \dots additional graphical parameters
 #' @export
 plot.cv.pen_lm <- function(x, all_causes = FALSE, silent = FALSE, label = FALSE,
-                          sign.lambda = 1, se.bands = TRUE, ...) {
+                          sign.lambda = 1, se.bands = TRUE,
+                          all_causes_title = TRUE, ...) {
   num_causes <- length(x)
   if (all_causes) {
     for (i in 1:num_causes){
       plot(x[[i]], sign.lambda, se.bands, ...)
+      if (all_causes_title) title(paste("Cause", i), line = 2.5)
     }
   } else {
     plot(x[[1]], sign.lambda, se.bands, ...)
     if (length(x) > 1 && !silent)
-      message(tidymess("\n (To print plot paths for remaining cause-specific 
+      message(tidymess("\n (To print plot paths for remaining cause-specific
           models, call plot with argument all_causes = TRUE)\n"))
   }
 }

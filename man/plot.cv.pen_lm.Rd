@@ -12,6 +12,7 @@ from \code{\link[=cv.glmnet]{cv.glmnet()}}}
   label = FALSE,
   sign.lambda = 1,
   se.bands = TRUE,
+  all_causes_title = TRUE,
   ...
 )
 }
@@ -30,6 +31,9 @@ if set to -1.}
 
 \item{se.bands}{Logical. If TRUE, shading is produced to show stand-error
 bands. Defaults to TRUE.}
+
+\item{all_causes_title}{If \code{all_causes} is set to TRUE, includes a title with
+the cause. Defaults to TRUE}
 
 \item{\dots}{additional graphical parameters}
 }

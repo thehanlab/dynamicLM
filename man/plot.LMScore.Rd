@@ -13,7 +13,7 @@ Brier and/or AUC of dynamic landmark supermodels.}
   summary = FALSE,
   se = TRUE,
   pairwise_contrasts = FALSE,
-  sig_level = 0.05,
+  cutoff_contrasts = 0.05,
   pairwise_heights,
   width,
   loc,
@@ -21,11 +21,13 @@ Brier and/or AUC of dynamic landmark supermodels.}
   ylab,
   pch,
   ylim,
+  xlim,
+  main,
   col = NULL,
   cex = 1,
-  xlim,
   length = 0.1,
   legend = TRUE,
+  legend.title = NULL,
   auc = TRUE,
   brier = TRUE,
   ...
@@ -39,14 +41,24 @@ Brier and/or AUC of dynamic landmark supermodels.}
 \item{contrasts}{Plot the difference between metrics. Default is
 FALSE and plots the metrics themselves.}
 
+\item{landmarks}{TODO}
+
 \item{summary}{Plot the summary metric. Default is FAULT and plots
 landmark-specific metrics.}
 
 \item{se}{Boolean, default TRUE. To include point wise confidence intervals.}
 
+\item{pairwise_contrasts}{TODO}
+
+\item{cutoff_contrasts}{TODO}
+
+\item{pairwise_heights}{TODO}
+
+\item{width}{TODO}
+
 \item{loc}{Location for legend.}
 
-\item{xlab, ylab, pch, ylim, xlim}{graphical parameters}
+\item{xlab, ylab, pch, ylim, xlim, main}{graphical parameters}
 
 \item{col}{TODO}
 
