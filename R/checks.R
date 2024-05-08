@@ -272,12 +272,17 @@ check_evaluation_inputs <- function(
       data_train_b$data <- data[id_train_b, ]
 
       preds.b <- do.call("cbind", lapply(1:NF, function(f) {
+        # Fit a model with the new data by altering the function call
         original_model <- object[[f]]
         args <- original_model$args
-        args$lmdata <- NULL
-        args$lmdata <- data_train_b
+        args[[1]] <- as.name("dynamic_lm")
+        args <- c(as.name("dynamic_lm"),
+                  list(lmdata = data_train_b),
+                  as.list(args)[-1])
+        args <- as.call(args)
         model.b <- eval(args, envir = globalenv())
 
+        # Make predictions
         pred.b <- try(
           # TODO: consider including w, extend, silence, complete
           #       as args to predict.dynamicLM
