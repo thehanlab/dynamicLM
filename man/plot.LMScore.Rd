@@ -12,7 +12,7 @@ Brier and/or AUC of dynamic landmark supermodels.}
   landmarks = TRUE,
   summary = FALSE,
   se = TRUE,
-  pairwise_contrasts = FALSE,
+  add_pairwise_contrasts = FALSE,
   cutoff_contrasts = 0.05,
   pairwise_heights,
   width,
@@ -23,6 +23,7 @@ Brier and/or AUC of dynamic landmark supermodels.}
   ylim,
   xlim,
   main,
+  font.main = 1,
   col = NULL,
   cex = 1,
   length = 0.1,
@@ -41,28 +42,30 @@ Brier and/or AUC of dynamic landmark supermodels.}
 \item{contrasts}{Plot the difference between metrics. Default is
 FALSE and plots the metrics themselves.}
 
-\item{landmarks}{TODO}
+\item{landmarks}{Plot time-dependent metrics. Default is TRUE.}
 
-\item{summary}{Plot the summary metric. Default is FAULT and plots
-landmark-specific metrics.}
+\item{summary}{Plot the summary metric. Default is TRUE.}
 
-\item{se}{Boolean, default TRUE. To include point wise confidence intervals.}
+\item{se}{To include point wise confidence intervals. Default is TRUE.}
 
-\item{pairwise_contrasts}{TODO}
+\item{add_pairwise_contrasts}{If plotting summary metrics (\code{summary = TRUE},
+\code{landmarks = FALSE}) set this argument TRUE to include the p-values of
+significant pairwise contrasts. In this case, arguments \code{pairwise_heights}
+and \code{width} must be set. The argument \code{cutoff_contrasts} is optional,
+specifying the significance cutoff.}
 
-\item{cutoff_contrasts}{TODO}
+\item{cutoff_contrasts}{If \code{add_pairwise_contrasts}, sets the signifance
+level of which tests are considered significant (numeric, default is 0.05).}
 
-\item{pairwise_heights}{TODO}
+\item{pairwise_heights}{If \code{add_pairwise_contrasts}, sets the height at which
+the p-values are plotted. Given as a vector of heights.}
 
-\item{width}{TODO}
+\item{width}{If \code{add_pairwise_contrasts}, the width of the ends of the
+contrast bars as a numeric value.}
 
 \item{loc}{Location for legend.}
 
-\item{xlab, ylab, pch, ylim, xlim, main}{graphical parameters}
-
-\item{col}{TODO}
-
-\item{cex}{TODO (for legend)}
+\item{xlab, ylab, pch, ylim, xlim, main, font.main, col, cex}{graphical parameters}
 
 \item{length}{The width of the ends of the error bars.}
 

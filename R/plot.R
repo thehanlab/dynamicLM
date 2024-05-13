@@ -42,7 +42,10 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
   if (missing(covars)) {
     covars <- x$lm_covs
   } else {
-    # TODO: check if the covars given are in the model and are the main effects
+    if (any(!covars %in% x$lm_covs))
+      stop(tidymess(paste(
+        covars[!covars %in% x$lm_covs][1], "is not a variable in the model.
+        Please check if the argument covars is correct.")))
   }
 
   if (missing(main)) {
@@ -158,18 +161,22 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
 #' @param metrics One or both of "AUC" and "Brier"
 #' @param contrasts Plot the difference between metrics. Default is
 #'   FALSE and plots the metrics themselves.
-#' @param landmarks TODO
-#' @param summary Plot the summary metric. Default is FAULT and plots
-#'   landmark-specific metrics.
-#' @param se Boolean, default TRUE. To include point wise confidence intervals.
-#' @param pairwise_contrasts TODO
-#' @param cutoff_contrasts TODO
-#' @param pairwise_heights TODO
-#' @param width TODO
+#' @param landmarks Plot time-dependent metrics. Default is TRUE.
+#' @param summary Plot the summary metric. Default is TRUE.
+#' @param se To include point wise confidence intervals. Default is TRUE.
+#' @param add_pairwise_contrasts If plotting summary metrics (`summary = TRUE`,
+#'   `landmarks = FALSE`) set this argument TRUE to include the p-values of
+#'   significant pairwise contrasts. In this case, arguments `pairwise_heights`
+#'   and `width` must be set. The argument `cutoff_contrasts` is optional,
+#'   specifying the significance cutoff.
+#' @param cutoff_contrasts If `add_pairwise_contrasts`, sets the signifance
+#'   level of which tests are considered significant (numeric, default is 0.05).
+#' @param pairwise_heights If `add_pairwise_contrasts`, sets the height at which
+#'   the p-values are plotted. Given as a vector of heights.
+#' @param width If `add_pairwise_contrasts`, the width of the ends of the
+#'   contrast bars as a numeric value.
 #' @param loc Location for legend.
-#' @param xlab,ylab,pch,ylim,xlim,main graphical parameters
-#' @param col TODO
-#' @param cex TODO (for legend)
+#' @param xlab,ylab,pch,ylim,xlim,main,font.main,col,cex graphical parameters
 #' @param length The width of the ends of the error bars.
 #' @param legend Include a legend or not. Default is TRUE.
 #' @param auc Plot the AUC or not (if available). Default is TRUE.
@@ -177,20 +184,18 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
 #' @param ... Additional arguments to `plot()`
 #'
 #' @export
-# TODO example code
 plot.LMScore <- function(x,
                          metrics,
                          contrasts = FALSE,
                          landmarks = TRUE,
                          summary = FALSE,
                          se = TRUE,
-                         pairwise_contrasts = FALSE,
+                         add_pairwise_contrasts = FALSE,
                          cutoff_contrasts = 0.05,
                          pairwise_heights,
                          width,
-                         loc, xlab, ylab, pch, ylim, xlim, main,
-                         col = NULL,
-                         cex = 1,
+                         loc, xlab, ylab, pch, ylim, xlim, main, font.main = 1,
+                         col = NULL, cex = 1,
                          length = 0.1,
                          legend = TRUE,
                          legend.title = NULL,
@@ -202,25 +207,22 @@ plot.LMScore <- function(x,
     if (!is.null(x$Brier) && brier) metrics <- c(metrics, "Brier")
   }
 
+  set_main <- set_ylab <- set_ylim <- FALSE
+  if (missing(main)) set_main <- TRUE
+  if (missing(ylab)) set_ylab <- TRUE
+  if (missing(ylim)) set_ylim <- TRUE
+
   if (landmarks) {
     if (missing(xlab))
       xlab <- "Landmark Time (t)"
     if (missing(pch))
       pch <- 19
 
-    set_ylab <- FALSE
-    if (missing(ylab))
-      set_ylab <- TRUE
-    set_x <- FALSE
-    if (missing(loc))
-      set_x <- TRUE
-    set_ylim <- FALSE
-    if (missing(ylim))
-      set_ylim <- TRUE
+    if (missing(loc)) set_x <- TRUE
+    else set_x <- FALSE
 
-    plot.metric <- function(df, metric, col, loc, ylim, xlim,
+    plot.metric <- function(df, metric, col, loc, ylim, xlim, main,
                             contrasts = FALSE) {
-      if (set_ylab) ylab <- paste0(metric, "(t, t + ", x$w, ")")
 
       model_names <- unique(df$model)
       num_models <- length(model_names)
@@ -235,7 +237,7 @@ plot.LMScore <- function(x,
 
       if (is.null(lower)) se <- FALSE
 
-      if (missing(ylim)) {
+      if (set_ylim) {
         if (!is.null(lower)) {
           ylim <- c(min(lower), max(upper))
         } else {
@@ -248,9 +250,23 @@ plot.LMScore <- function(x,
       if (missing(xlim)) {
         xlim <- c(min(tLM), max(tLM))
       }
+      if (set_main) {
+        if (metric == "AUC") main <- "Time-dependent AUC"
+        if (metric == "delta.AUC") main <- "Difference in Time-dependent AUC"
+        if (metric == "Brier") main <- "Time-dependent Brier Score"
+        if (metric == "delta.Brier") main <- "Difference in Time-dependent Brier Score"
+      }
+      if (set_ylab) {
+        if (metric == "AUC") ylab <- paste0("AUC(t, t + ", x$w, ")")
+        if (metric == "Brier") ylab <- paste0("BS(t, t + ", x$w, ")")
+        if (metric == "delta.AUC")
+          ylab <- paste0("Difference in AUC(t, t + ", x$w, ")")
+        if (metric == "delta.Brier")
+          ylab <- paste0("Difference in BS(t, t + ", x$w, ")")
+      }
 
       plot(tLM, metrics, col = cols, pch = pch, xlab = xlab, ylab = ylab,
-           ylim = ylim, xlim = xlim, ...)
+           ylim = ylim, xlim = xlim, main = main, font.main = font.main, ...)
       if (contrasts) graphics::abline(h = 0, col = "black", lwd = 1, lty = 2)
 
       for (i in 1:num_models){
@@ -279,11 +295,13 @@ plot.LMScore <- function(x,
         if (set_x && (metric == "AUC")) loc <- "topright"
         else if (set_x && (metric == "Brier"))  loc <- "bottomright"
         if (!contrasts) {
-          plot.metric(x[[metric]]$score, metric, col, loc, ylim, xlim)
+          plot.metric(x[[metric]]$score, metric,
+                      col, loc, ylim, xlim, main)
         } else {
           df <- x[[metric]]$contrasts
           df$model <- factor(paste(df$model, "-", df$reference))
-          plot.metric(df, paste0("delta.", metric), col, loc, ylim, xlim, TRUE)
+          plot.metric(df, paste0("delta.", metric),
+                      col, loc, ylim, xlim, main, TRUE)
         }
       }
     }
@@ -298,10 +316,7 @@ plot.LMScore <- function(x,
         stop(tidymess("Package \"latex2exp\" must be installed to use function
                       plot.LMScore on summary metrics"), call. = FALSE)
       }
-      set_main <- set_ylab <- set_ylim <- FALSE
-      if (missing(main)) set_main <- TRUE
-      if (missing(ylab)) set_ylab <- TRUE
-      if (missing(ylim)) set_ylim <- TRUE
+
 
       if (is.null(x[[metric_summary]])) {
         warning(tidymess(paste(
@@ -326,14 +341,30 @@ plot.LMScore <- function(x,
 
         # graphical params
         if (set_main && metric == "Brier") {
-          main <- latex2exp::TeX("Summary $\\bar{BS}_{w}$")
+          if (contrasts) {
+            main <- latex2exp::TeX("Difference in Summary $\\bar{BS}_{w}$")
+          } else {
+            main <- latex2exp::TeX("Summary $\\bar{BS}_{w}$")
+          }
         } else if (set_main && metric == "AUC") {
-          main <- latex2exp::TeX("Summary $\\bar{AUC}_{w}$")
+          if (contrasts) {
+            main <- latex2exp::TeX("Difference in Summary $\\bar{AUC}_{w}$")
+          } else {
+            main <- latex2exp::TeX("Summary $\\bar{AUC}_{w}$")
+          }
         }
         if (set_ylab && metric == "Brier") {
-          ylab <- latex2exp::TeX("$\\bar{BS}_{w}$")
+          if (contrasts) {
+            ylab <- latex2exp::TeX("$\\Delta\\bar{BS}_{w}$")
+          } else {
+            ylab <- latex2exp::TeX("$\\bar{BS}_{w}$")
+          }
         } else if (set_ylab && metric == "AUC") {
-          ylab <- latex2exp::TeX("$\\bar{AUC}_{w}$")
+          if (contrasts) {
+            ylab <- latex2exp::TeX("$\\Delta\\bar{AUC}_{w}$")
+          } else {
+            ylab <- latex2exp::TeX("$\\bar{AUC}_{w}$")
+          }
         }
         if (missing(xlab)) xlab <- ""
         if (xlab == "Landmark Time (t)") xlab <- ""
@@ -362,6 +393,7 @@ plot.LMScore <- function(x,
                             xlab = xlab,
                             ylab = ylab,
                             main = main,
+                            font.main = font.main,
                             axis.lty = 1, ...)
         } else {
           graphics::barplot(df[[col_name]],
@@ -373,6 +405,7 @@ plot.LMScore <- function(x,
                             xlab = xlab,
                             ylab = ylab,
                             main = main,
+                            font.main = font.main,
                             axis.lty = 1,
                             ...)
         }
@@ -385,13 +418,13 @@ plot.LMScore <- function(x,
         }
 
         # add significant contrasts
-        if (pairwise_contrasts && contrasts) {
+        if (add_pairwise_contrasts && contrasts) {
           warning(tidymess(
-            "Plotting pairwise contrasts (pairwise_contrasts=TRUE) does not make
-            sense when already plotting contrasts (contrasts=TRUE). No pairwise
-            contrasts are plotted."))
+            "Plotting pairwise contrasts (add_pairwise_contrasts=TRUE) does not
+            make sense when already plotting contrasts (contrasts=TRUE). No
+            pairwise contrasts are plotted."))
         }
-        else if (pairwise_contrasts) {
+        else if (add_pairwise_contrasts) {
           if (missing(pairwise_heights)) {
             stop(tidymess("When plotting pairwise contrasts, argument
                           pairwise_heights must be given."))
