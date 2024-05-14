@@ -57,6 +57,8 @@
 #'
 stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"),
                        id, rtime, left.open = FALSE) {
+  ### Check input ###
+
   # Check all the columns are in the data
   if (!all(covs$fixed %in% colnames(data))) {
     stop(paste("Fixed column(s): ",
@@ -96,6 +98,7 @@ stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"),
   }
   covs$fixed <- fixed
   covs$varying <- varying
+  all_covs <- c(covs$fixed, covs$varying)
 
   # Make sure that (ID, rtime) is never duplicated
   if (sum(duplicated(data[, c(id, rtime)])) > 0) {
@@ -104,6 +107,35 @@ stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"),
                   There can only be one entry for each patient at each time
                   point."))
   }
+
+  # Check there are no variables in the form {name}_{integer}
+  matches_pattern <- function(x) grepl("^[^_]+_[0-9]+$", x)
+  matching_strings <- all_covs[matches_pattern(all_covs)]
+  if (length(matching_strings) > 0) {
+    stop(tidymess(paste(
+      "Covariates should not be named in the form {name}_{integer} as the
+      dynamicLM library reserves this naming convention for time interactions.
+      Please rename the following columns:",
+      paste(matching_strings, collapse = ", "))))
+  }
+
+  # Check that there are no factor variables in the data
+  factors <- sapply(data[, all_covs], function(v) inherits(v, "factor"))
+  chars <- sapply(data[, all_covs], function(v) inherits(v, "character"))
+  if (any(factors)) {
+    stop(tidymess(paste(
+      "No covariates can be factors. Please convert the following column(s) to
+      dummy variables:", paste(all_covs[factors], collapse = ", "), "")))
+  }
+  if (any(chars)) {
+    stop(tidymess(paste(
+      "No covariates can be factors or characters. Please convert the following
+      column(s) to dummy or numeric variables:",
+      paste(all_covs[chars], collapse = ","), "")))
+  }
+
+
+  ### Stack data ###
 
   if (format == "wide"){
     if (!(id %in% covs$fixed)) covs$fixed <- c(id, covs$fixed)
@@ -138,7 +170,7 @@ stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"),
     end_time = lms[length(lms)],
     lm_col = "LM",
     id_col = id,
-    all_covs = c(covs$fixed, covs$varying)
+    all_covs = all_covs
   )
   class(out) <- "LMdataframe"
   return(out)
