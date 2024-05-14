@@ -4,16 +4,16 @@
 \alias{print.LMScore}
 \title{Print function for object of class LMScore, i.e., output from \code{\link[=score]{score()}}}
 \usage{
-\method{print}{LMScore}(x, digits = 3, print_lms = TRUE, print_summary = TRUE, ...)
+\method{print}{LMScore}(x, digits = 3, landmarks = TRUE, summary = TRUE, ...)
 }
 \arguments{
 \item{x}{Object of class LMScore}
 
 \item{digits}{Number of significant digits to include}
 
-\item{print_lms}{TODO}
+\item{landmarks}{TODO}
 
-\item{print_summary}{= TODO}
+\item{summary}{= TODO}
 
 \item{...}{Arguments passed to print.}
 }

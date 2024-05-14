@@ -126,16 +126,16 @@ print.LMdataframe <- function(x, verbose = FALSE, ...) {
 #'
 #' @param x Object of class LMScore
 #' @param digits Number of significant digits to include
-#' @param print_lms TODO
-#' @param print_summary = TODO
+#' @param landmarks TODO
+#' @param summary = TODO
 #' @param ... Arguments passed to print.
 #'
 #' @importFrom data.table :=
 #'
 #' @return Printed output.
 #' @export
-print.LMScore <- function(x, digits = 3, print_lms = TRUE, print_summary = TRUE, ...) {
-  if (print_lms) {
+print.LMScore <- function(x, digits = 3, landmarks = TRUE, summary = TRUE, ...) {
+  if (landmarks) {
     if (!is.null(x$AUC)) {
       cat(paste0("\nMetric: Time-dependent AUC (w = ", x$w, ")\n"))
       obj <- x$AUC
@@ -155,7 +155,7 @@ print.LMScore <- function(x, digits = 3, print_lms = TRUE, print_summary = TRUE,
       message(paste("NOTE: Predictions are made at time tLM for time tLM +", x$w))
     }
   }
-  if (print_summary) {
+  if (summary) {
     if (!is.null(x$AUC_summary)) {
       if (x$AUC_summary$weighted == FALSE)
         cat(paste0("\nMetric: Averaged time-dependent AUC (w = ", x$w, ")\n"))
@@ -331,8 +331,13 @@ print.LMcoxph <- function(x, verbose = FALSE, ...) {
 print.pen_lm <- function(x, all_causes = FALSE, silent = FALSE,
                          digits = 3, ...) {
     num_causes <- length(x)
+    if (attr(x, "survival.type") == "competing.risk") {
+      cat("\n", tidymess("Penalized cause-specific Cox landmark supermodel fit
+                         for dynamic prediction:"))
+    } else {
+      cat("\nPenalized Cox landmark supermodel fit for dynamic prediction:")
+    }
 
-    cat(paste0("\nPenalized landmark Cox super model fit for dynamic prediction:"))
     if (all_causes) {
       for (i in 1:num_causes){
         cat(paste0("\n\nCause ", i, ":\n"))
@@ -344,7 +349,9 @@ print.pen_lm <- function(x, all_causes = FALSE, silent = FALSE,
       if (num_causes > 1) cat(paste0("First Cause:\n"))
       print(x[[1]])
       if (num_causes > 1 && !silent)
-        message("\n (To print paths for remaining cause-specific models, call print with argument all_causes = TRUE)\n")
+        message("\n", tidymess("(To print paths for the remaining
+                      cause-specific models, call print with argument
+                      all_causes = TRUE)"), "\n")
     }
 }
 
@@ -373,7 +380,13 @@ print.cv.pen_lm <- function(x, all_causes = FALSE, silent = FALSE,
                             digits = 3, ...) {
   num_causes <- length(x)
 
-  cat(paste0("\nCross-validated penalized landmark Cox super model fit for dynamic prediction:"))
+  if (attr(x, "survival.type") == "competing.risk") {
+    cat("\n", tidymess("Cross-validated penalized cause-specific Cox landmark
+                       supermodel fit for dynamic prediction:"))
+  } else {
+    cat("\n", tidymess("Cross-validated penalized Cox landmark supermodel
+                       fit for dynamic prediction:"))
+  }
   if (all_causes){
     for (i in 1:num_causes){
       cat(paste0("\n\nCause ", i, ":\n"))
@@ -385,7 +398,8 @@ print.cv.pen_lm <- function(x, all_causes = FALSE, silent = FALSE,
     if (num_causes > 1) cat(paste0("First Cause:\n"))
     print(x[[1]])
     if (num_causes > 1 & !silent)
-      message("\n (To print for remaining cause-specific models, call print with argument all_causes = TRUE)\n")
+      message("\n", tidymess("(To print for remaining cause-specific models,
+                          call print with argument all_causes = TRUE)"), "\n")
   }
 }
 
