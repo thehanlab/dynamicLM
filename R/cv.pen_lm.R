@@ -47,6 +47,11 @@ cv.pen_lm <- function(x, y,
                      foldid = NULL,
                      ...
 ) {
+  if (!requireNamespace("glmnet", quietly = TRUE)) {
+    stop("Package \"glmnet\" must be installed to use function cv.pen_lm.",
+         call. = FALSE)
+  }
+
   checked_input <- match.call()
   m <- match(c("x", "y", "id_col", "alpha"), names(checked_input), 0L)
   checked_input <- as.list(checked_input[m])

@@ -30,11 +30,10 @@
 #' @import glmnet
 #' @export
 pen_lm <- function(x, y, alpha = 1, ...) {
-
-  # TOOD: check inputs -
-  # * is lmdata an LMdataframe etc?
-  # * is s the correct length?
-  # * allow for (x,y)
+  if (!requireNamespace("glmnet", quietly = TRUE)) {
+    stop("Package \"glmnet\" must be installed to use function pen_lm.",
+         call. = FALSE)
+  }
 
   checked_input <- match.call()
   m <- match(c("x", "y", "alpha"), names(checked_input), 0L)
