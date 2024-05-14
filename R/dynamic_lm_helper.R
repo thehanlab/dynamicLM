@@ -17,13 +17,22 @@ dynamic_lm_helper <- function(formula, type, data, lmdata, method, cluster,
 
   # check if the number of events matches too
   # TODO: do this more rigorously, this assumes censoring is coded with a 0
-  if ((type == "coxph" && length(setdiff(unique(data[[outcome$status]]), 0)) > 1) ||
-      (type == "CSC" && length(setdiff(unique(data[[outcome$status]]), 0)) < 2)) {
-    stop(tidymess("Mismatch between the number of events and the type of model
-          fit. For standard survival data (one event and possible
-          censoring), use type = \"coxph\" and a LHS of the form Surv(LM, Time,
-          event). For competing risks (multiple events and possible censoring),
-          use type = \"CSC\" and a LHS of the form Hist(Time, event, LM)"))
+  not_cox <- (type == "coxph" && length(setdiff(unique(data[[outcome$status]]), 0)) > 1)
+  not_csc <- (type == "CSC" && length(setdiff(unique(data[[outcome$status]]), 0)) < 2)
+  if (not_cox || not_csc){
+    data_type <- ifelse(not_cox, "competing risks data",
+                                 "standard survival data")
+    input_type <- ifelse(not_cox, "standard survival data",
+                                  "competing risks data")
+    if (not_cox)
+    stop(tidymess(paste0("Mismatch between the number of events and the type of
+      model fit. You appear to have ", data_type, ", but have specified ",
+      input_type, " (i.e., type = ",    type, "). For standard
+      survival data (one event and possible censoring), use type = \"coxph\" and
+      a formula with left hand side of the form Surv(LM, Time, event). For
+      competing risks (multiple events and possible censoring), use type =
+      \"CSC\" and a formula with left hand side of the form
+      Hist(Time, event, LM).")))
   }
 
   # check if we have a cluster term and extract it
