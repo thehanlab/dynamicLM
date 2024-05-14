@@ -38,6 +38,42 @@ dynamic_lm <- function(...) {
   UseMethod("dynamic_lm")
 }
 
+
+#' Fit a dynamic Cox or cause-specific Cox landmark supermodel
+#'
+#' @param formula The formula to be used, remember to include `+cluster(ID)` for
+#'  the column that indicates the ID of the individual for robust error
+#'  estimates. See details for further information.
+#'  Note that transformations (e.g., `x1*x2`) cannot be used in the formula and
+#'  factors/categorical variables must first be made into dummy variables.
+#' @param lmdata  An object of class "LMdataframe", this can be created by
+#'   running [dynamicLM::stack_data()] and [dynamicLM::add_interactions()]
+#' @param type "coxph" or "CSC"/"CauseSpecificCox"
+#' @param ... Arguments given to coxph or CSC.
+#'
+#' @details For standard survival data (one event and possible censoring), use
+#'   `type = "coxph"` and a a formula with left-hand side (LHS) of the form
+#'   `Surv(LM, Time, event)`. For competing risks (multiple events and possible
+#'   censoring), use `type = "CSC"` and a LHS of the form
+#'   `Hist(Time, event, LM)`. This form is kept to ensure compatibility with the
+#'   original dynamicLM library, although in later versions, the formula is the
+#'   second argument.
+#'
+#' @return An object of class "LMcoxph" or "LMCSC" with components:
+#'   - model: fitted model
+#'   - type: as input
+#'   - w, func_covars, func_lms, lm_covs, all_covs, outcome: as in `lmdata`
+#'   - LHS: the survival outcome
+#'   - linear.predictors: the vector of linear predictors, one per subject.
+#'     Note that this vector has not been centered.
+#'   - args: arguments used to call model fitting
+#'   - id_col: the cluster argument, often specifies the column with patient ID
+#'   - lm_col: column name that indicates the landmark time point for a row.
+#' @export
+dynamic_lm.formula <-  function(formula, lmdata, ...) {
+  dynamic_lm(lmdata=lmdata, formula=formula, ...)
+}
+
 #' Fit a dynamic Cox or cause-specific Cox landmark supermodel to a stacked
 #' landmark dataset
 #'
@@ -283,24 +319,32 @@ dynamic_lm.data.frame <- function(lmdata,
 #' }
 #' @import survival glmnet
 #' @export
-# TODO: allow for the pen_lm object to have been fit with
-# (x,y) = (matrix, response)
 dynamic_lm.pen_lm <- function(object, lambda, ...) {
   survival.type <- attr(object, "survival.type")
   lmdata <- attr(object, "lmdata")
 
-  if(is.null(lmdata))
+  if (!requireNamespace("glmnet", quietly = TRUE)) {
+    stop(tidymess("Package \"glmnet\" must be installed to use function
+                  dynamic_lm on an object created from pen_lm.",
+         call. = FALSE))
+  }
+
+  if(is.null(lmdata)) {
     stop(tidymess("To fit a penalized model, pen_lm() or cv.pen_lm() must be
       called with arguments (x,y) as a LMdataframe and colnames. Matrices and
       responses are not yet implemented"))
+  }
+
   xcols <- attr(object, "xcols")
   data <- lmdata$data
   NC <- length(object)
 
-  if (NC != length(lambda)) stop(tidymess(paste0(
-    "One lambda should be specified for each cause. ", length(lambda),
-    " lambda(s) were given for ", NC, " cause(s). Please provide ", NC,
-    " lambda(s) as a vector or list.")))
+  if (NC != length(lambda)) {
+    stop(tidymess(paste0(
+      "One lambda should be specified for each cause. ", length(lambda),
+      " lambda(s) were given for ", NC, " cause(s). Please provide ", NC,
+      " lambda(s) as a vector or list.")))
+  }
 
   func_covars <- lmdata$func_covars
   func_lms <- lmdata$func_lms
@@ -425,6 +469,12 @@ dynamic_lm.pen_lm <- function(object, lambda, ...) {
 #' @import survival glmnet
 #' @export
 dynamic_lm.cv.pen_lm <- function(object, lambda = "lambda.min", ...) {
+  if (!requireNamespace("glmnet", quietly = TRUE)) {
+    stop(tidymess("Package \"glmnet\" must be installed to use function
+                  dynamic_lm on an object created from cv.pen_lm",
+                  call. = FALSE))
+  }
+
   if (inherits(lambda, "character")) {
     if (lambda == "lambda.1se")
       lambda <- lapply(object, function(o) o$lambda.1se)
