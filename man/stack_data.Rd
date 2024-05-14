@@ -33,7 +33,8 @@ time w landmark points)}
 
 \item{covs}{A list with items fixed and varying, containing character strings
 specifying column names in the data containing time-fixed and time-varying
-covariates, respectively.}
+covariates, respectively. If missing, all columns that are not the outcome,
+rtime or id column are set to be time-varying covariates.}
 
 \item{format}{Character string specifying whether the original data are in
 wide (default) or in long format.}

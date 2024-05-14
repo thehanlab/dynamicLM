@@ -17,7 +17,8 @@
 #'   time w landmark points)
 #' @param covs A list with items fixed and varying, containing character strings
 #'   specifying column names in the data containing time-fixed and time-varying
-#'   covariates, respectively.
+#'   covariates, respectively. If missing, all columns that are not the outcome,
+#'   rtime or id column are set to be time-varying covariates.
 #' @param format Character string specifying whether the original data are in
 #'   wide (default) or in long format.
 #' @param id Character string specifying the column name in data containing the
@@ -56,6 +57,7 @@
 #'
 stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"),
                        id, rtime, left.open = FALSE) {
+  # Check all the columns are in the data
   if (!all(covs$fixed %in% colnames(data))) {
     stop(paste("Fixed column(s): ",
                paste(covs$fixed[!(covs$fixed %in% colnames(data))],
@@ -78,10 +80,30 @@ stack_data <- function(data, outcome, lms, w, covs, format = c("wide", "long"),
   }
   if (!(id %in% colnames(data)))
     stop(paste("ID column ", id, "is not in the data."))
+  if (!(rtime %in% colnames(data)))
+    stop(paste("rtime column ", rtime, "is not in the data."))
 
-  # Make sure to not duplicate
+  # Make sure to not duplicate columns
   fixed <- setdiff(covs$fixed, c(outcome$time, outcome$status))
   varying <- setdiff(covs$varying, c(outcome$time, outcome$status))
+
+  # Default covs$varying to all covariates if the covs argument is not specified
+  if (is.null(fixed) && is.null(varying)) {
+    varying <- setdiff(colnames(data), c(id, outcome$time, outcome$status))
+    if (!missing(rtime)) {
+      varying <- setdiff(varying, rtime)
+    }
+  }
+  covs$fixed <- fixed
+  covs$varying <- varying
+
+  # Make sure that (ID, rtime) is never duplicated
+  if (sum(duplicated(data[, c(id, rtime)])) > 0) {
+    stop(tidymess("There are multiple entries for some patients (i.e., id
+                  column) at some (running) time points (i.e., rtime column).
+                  There can only be one entry for each patient at each time
+                  point."))
+  }
 
   if (format == "wide"){
     if (!(id %in% covs$fixed)) covs$fixed <- c(id, covs$fixed)
