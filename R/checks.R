@@ -74,8 +74,15 @@ check_evaluation_inputs <- function(
         stop(paste0("Cannot use deterministic predictions of type LMpred (",
                 name, ") on new data, data argument should not be specified."))
       }
+      if (!missing(cause)) {
+        if (cause != object[[i]]$cause) {
+          stop(tidymess(paste0(
+            "Predictions of ", name, "are made for cause ", object[[i]]$cause,
+            ", but evaluation is set for cause ", cause, ". Either change the
+            argument cause or rerun predictions for the desired cause.")))
+        }
+      }
 
-    # TODO: update to include penalized classes
     } else if (!(inherits(object[[i]],c("LMCSC", "LMcoxph",
                                         "penLMcoxph", "penLMCSC")))) {
       stop(tidymess(paste("All prediction models in object must be of class
@@ -323,12 +330,11 @@ check_evaluation_inputs <- function(
       switch(o$type, LMcoxph = "coxph", penLMcoxph = "coxph",
                 LMCSC = "CSC", penLMCSC = "CSC")
     })
-    # function(o) ifelse(inherits(o, "LMcoxph"), "coxph", "CSC"))
 
     rm(pred.df)
   }
 
-  # subset data to our the times we want to predict at (times)
+  #TODO: subset data to our the times we want to predict at (times)
 
 
 
@@ -353,7 +359,6 @@ check_penlm_inputs <- function(x, y, id_col = NULL, alpha = 1, CV = FALSE) {
 
   ### check which data inputs are provided & setup lmdata, xcols ###
 
-  use_lmdata <- FALSE
   lmdata <- NULL
   xcols <- NULL
 
@@ -361,70 +366,55 @@ check_penlm_inputs <- function(x, y, id_col = NULL, alpha = 1, CV = FALSE) {
     stop("argument x is missing with no default.")
 
   if (inherits(x, "LMdataframe")) {
-    use_lmdata <- TRUE
     lmdata <- x
     if (!missing(y)) {
-      if (!inherits(y, "character"))
+      if (!inherits(y, "character")) {
         stop(tidymess("Inputs are mismatched. Arguments (x, y) should be of
-            type (matrix, Surv object) or (LMdataframe, vector of column
-            names)"))
-      else
+            type (LMdataframe, vector of column names)"))
+      } else {
         xcols <- y
+      }
     }
   } else {
-    if (!inherits(x, "matrix"))
-      stop("argument x should be of class LMdataframe or matrix.")
-    if (missing(y))
-      stop("argument y is missing with no default as x is a matrix.")
-    if (!inherits(y, c("Surv", "Hist")))
-      stop("argument y should be a Surv or Hist object as x is a matrix.")
+    stop("argument x should be of class LMdataframe.")
   }
 
   ### get IDs if performing cross-validation ###
 
   if (CV) {
     # get id_col if parent function is cv.pen_lm
-    if (is.null(id_col) && !use_lmdata) {
-      stop("argument id_col must be provided when x is matrix.")
-    } else if (is.null(id_col) && use_lmdata) {
+    if (is.null(id_col)) {
       id_col <- lmdata$id_col
       if (length(lmdata$data[[id_col]]) == 0)
         stop(tidymess("The extraction of an ID column from lmdata was
             unsuccessful, provide argument id_col"))
     }
     # use id_col to extract IDs
-    if (use_lmdata) {
-      IDs <- lmdata$data[[id_col]]
+    IDs <- lmdata$data[[id_col]]
+  }
+
+  ### create x and y for glmnet ###
+
+  entry <- lmdata$data[[lmdata$lm_col]]
+  exit <- lmdata$data[[lmdata$outcome$time]]
+  status <- lmdata$data[[lmdata$outcome$status]]
+  y <- prodlim::Hist(exit, status, entry)
+
+  if (is.null(xcols)) {
+    if (!is.null(lmdata$all_covs)) {
+      xcols <- lmdata$all_covs
     } else {
-      IDs <- x[, id_col]
-      if (inherits(id_col, "numeric")) x <- x[, -id_col]
-      else x <- x[, colnames(x) != id_col]
+      all_cols <- colnames(lmdata$data)
+      target_cols <- c(lmdata$lm_col, lmdata$outcome$time,
+                      lmdata$outcome$status, id_col)
+      idx <- all_cols %in% target_cols
+      xcols <- all_cols[!idx]
     }
   }
-
-  ### if using an LMdataframe, create x and y for glmnet ###
-
-  if (use_lmdata) {
-    entry <- lmdata$data[[lmdata$lm_col]]
-    exit <- lmdata$data[[lmdata$outcome$time]]
-    status <- lmdata$data[[lmdata$outcome$status]]
-    y <- prodlim::Hist(exit, status, entry)
-
-    if (is.null(xcols)) {
-      if (!is.null(lmdata$all_covs)) {
-        xcols <- lmdata$all_covs
-      } else {
-        all_cols <- colnames(lmdata$data)
-        target_cols <- c(lmdata$lm_col, lmdata$outcome$time,
-                        lmdata$outcome$status, id_col)
-        idx <- all_cols %in% target_cols
-        xcols <- all_cols[!idx]
-      }
-    }
-    x <- as.matrix(lmdata$data[xcols])
-  }
+  x <- as.matrix(lmdata$data[xcols])
 
   ### handle competing risks ###
+
   # check if x is competing risks (CR) or not
   # if CR create the correct number of x's: one for each cause
   if (inherits(y, "Surv")) {
