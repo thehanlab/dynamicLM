@@ -7,16 +7,11 @@
 #' `glmnet` in the form of `x` and `y` which are a matrix and response object
 #'  or with a landmark super dataset specifying the dependent columns in `y`.
 #'
-#' @param x Either an object of class "LMdataframe" or a matrix. An LMdataframe
-#'   can be created by running [stack_data()] and [add_interactions()]. A
-#'   matrix should have each row be an observation.
-#' @param y If `x` is an LMdataframe, `y` is optional and should be vector of
-#'   column names of the data stored in `x` that are to be used as
-#'   dependent variables. If not specified, it is assumed that all non-response
-#'   variables are the dependent variables.
-#'
-#'   If `x` is a matrix, `y` should be the response variable: either a
-#'   [survival::Surv()] or [prodlim::Hist()] object.
+#' @param x An "LMdataframe", which can be created by running [stack_data()] and
+#'   [add_interactions()].
+#' @param y Optional, a vector of column names of the data stored in `lmdata`
+#'   that are to be used as dependent variables. If not specified, it is assumed
+#'   that all non-response variables are the dependent variables.
 #' @param alpha The elastic net mixing parameter: Lies between 0 and 1. At 1,
 #'   the penalty is the LASSO penalty, and at 0, the penalty is the ridge
 #'   penalty. The default is 1.

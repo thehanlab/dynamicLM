@@ -8,17 +8,12 @@ cause-specific Cox landmark supermodel with lasso or elasticnet penalization.}
 pen_lm(x, y, alpha = 1, ...)
 }
 \arguments{
-\item{x}{Either an object of class "LMdataframe" or a matrix. An LMdataframe
-can be created by running \code{\link[=stack_data]{stack_data()}} and \code{\link[=add_interactions]{add_interactions()}}. A
-matrix should have each row be an observation.}
+\item{x}{An "LMdataframe", which can be created by running \code{\link[=stack_data]{stack_data()}} and
+\code{\link[=add_interactions]{add_interactions()}}.}
 
-\item{y}{If \code{x} is an LMdataframe, \code{y} is optional and should be vector of
-column names of the data stored in \code{x} that are to be used as
-dependent variables. If not specified, it is assumed that all non-response
-variables are the dependent variables.
-
-If \code{x} is a matrix, \code{y} should be the response variable: either a
-\code{\link[survival:Surv]{survival::Surv()}} or \code{\link[prodlim:Hist]{prodlim::Hist()}} object.}
+\item{y}{Optional, a vector of column names of the data stored in \code{lmdata}
+that are to be used as dependent variables. If not specified, it is assumed
+that all non-response variables are the dependent variables.}
 
 \item{alpha}{The elastic net mixing parameter: Lies between 0 and 1. At 1,
 the penalty is the LASSO penalty, and at 0, the penalty is the ridge
