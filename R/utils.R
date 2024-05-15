@@ -131,6 +131,38 @@ update_hist_formula <- function(formula, type) {
 
 
 # ----------------------------------------------------------
+# clean_bootstraps
+# TODO
+# ----------------------------------------------------------
+clean_bootstraps <- function(table, column, alpha, contrasts = FALSE,
+                             se.fit = TRUE, summary = FALSE) {
+  by_columns <- c("tLM", "model")
+  if (summary) by_columns <- c("model")
+  if (contrasts) by_columns <- c(by_columns, "reference")
+
+  if (se.fit) {
+    out <- table[, data.table::data.table(
+      mean(.SD[[column]], na.rm = TRUE),
+      se = stats::sd(.SD[[column]], na.rm = TRUE),
+      lower = stats::quantile(.SD[[column]], alpha / 2, na.rm = TRUE),
+      upper = stats::quantile(.SD[[column]], (1 - alpha / 2), na.rm = TRUE)
+    ), by = by_columns, .SDcols = column]
+    data.table::setnames(
+      out, c(by_columns, column, "se", "lower", "upper"))
+    if (contrasts) {
+      out[, p := 2 * stats::pnorm(abs(get(column) / se),
+                                  lower.tail=FALSE)]
+    }
+  } else {
+    out <- table[, data.table::data.table(
+      mean(.SD[[column]], na.rm = TRUE)
+    ), by = by_columns, .SDcols = column]
+    data.table::setnames(out, c(by_columns, column))
+  }
+  return(out)
+}
+
+# ----------------------------------------------------------
 # CSC.extended: cause-specific Cox proportional hazard regression
 # extended to accomodate specific arguments to each cause-specific
 # Cox model
@@ -157,7 +189,7 @@ CSC.fixed.coefs <- function(formula, data, cause,
   } else {
     entry <- NULL
   }
-  if (any(entry > time)) stop(tidymess("entry > time detected. Entry time into 
+  if (any(entry > time)) stop(tidymess("entry > time detected. Entry time into
       the study must be strictly greater than outcome time."))
   ## remove event history variables from data
   if (any((this <- match(all.vars(Rform), names(data), nomatch = 0)) > 0)) {

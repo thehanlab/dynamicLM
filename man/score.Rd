@@ -20,7 +20,6 @@ score(
   B = 1,
   M,
   summary = FALSE,
-  weights = FALSE,
   cores = 1,
   seed,
   cause,
@@ -78,6 +77,8 @@ of size \code{M}. Models are then assessed in observations not in the sample.}
 
 \item{M}{Subsample size for training in cross-validation. Entries not sampled
 in the M subsamples are used for validation.}
+
+\item{summary}{TODO}
 
 \item{cores}{To perform parallel computing, specifies the number of cores.
 (Not yet implemented)}

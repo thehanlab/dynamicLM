@@ -1,7 +1,5 @@
 #' Obtain the summary metric from landmark-specific estimates
 #'
-#' TODO: add more description?
-#'
 #' @param metric "AUC" or "Brier"
 #' @param df_t time-dependent table of scores (AUC(s,t) or Brier(s,t)), i.e.,
 #' a smaller table with entries for each landmark and model used for
@@ -34,27 +32,23 @@
 #'  ...
 #'
 #' @param conf_int Coverage level of the confidence interval.
-#' @param weights What kind of weighting to use? Default is NULL which gives a
-#'   simple average. Setting weights to TRUE or "km" or "survival" weights
-#'   estimates by the probability of survival P(T > s).
 #' @param object Either fitted supermodel or risk predictions.
 #' @param id_col TODO
 #' @param model_levels TODO
+#' @param B TODO
+#' @param se.fit TODO
 #'
 #' @return TODO
-#'
-#' @examples #TODO
 summary_metric <- function(metric,
                            df_t,
                            df_c,
                            df_iid,
                            conf_int,
-                           weights = FALSE,
-                           # TODO: decide on argument inputs
-                           # for now: NULL, (TRUE, "survival", "km")
                            object,
                            id_col,
-                           model_levels
+                           model_levels,
+                           B,
+                           se.fit
                            ) {
   if (!metric %in% c("Brier", "AUC"))
     stop("Only Brier and AUC are handled.")
@@ -81,178 +75,223 @@ summary_metric <- function(metric,
   get_contrasts <- TRUE
   if (is.null(df_c)) get_contrasts <- FALSE
   else if (ncol(df_c) <= 2) get_contrasts <- FALSE
-  # print(get_contrasts)
-  # print(ncol(df_c))
 
-  #{{{ 1. get the (weighted) average of the score from df_t by model over times
-  #       and of the contrasts from df_c by model over times
-  #       First set the weights, then calculate the average
-  #       * if (is.null(weights)): use simple weighted average
-  #       * if weights is "km" or "survival" or TRUE: weight points by P(T > s)
-  #         estimated by Kaplan-Meier
-  #       * else user provided function (TODO: maybe later)
+  if (!missing(conf_int)) alpha <- 1 - conf_int
 
-  if (weights == FALSE) {
-    weight_vector <- rep(1, num_lms)
-  } else if (tolower(weights) %in% c("km", "survival") ||
-             weights == TRUE) {
-    # TODO: double check that we've checked that all are the same
-    # i.e., data and outcome of the different entries of object (a list)
-    #       are the same
+  weight_vector <- rep(1, num_lms)
 
-    outcome <- object[[1]]$outcome
-    type <- object[[1]]$type
+  ### No bootstrapping: use i.i.d. decomposition
+  if (B == 1) {
+    #{{{ 1. get the average of the score from df_t by model over times
+    #       and of the contrasts from df_c by model over times
+    summary_score <- df_t[, lapply(.SD, mean),
+                          by = "model", .SDcols = metric]
 
-    # extract survival data
-    if (inherits(object[[1]], "LMpred")) {
-      # TODO: add id_col to LMpred objects (exists for supermodel)
-
-      # Check id_col
-      if (!(id_col %in% colnames(object[[1]]$data))) {
-        stop(tidymess(paste("An ID column that is in the data must be provided,
-                            you can set this with argument id_col.")))
-      }
-
-      data <- object[[1]]$data[, c(id_col, outcome$time, outcome$status)]
-      data <- data.table::as.data.table(data)
-
-    } else if (FALSE) {
-      # TODO:
-      # check if LMCSC or LMCox (double check classes)
-      # and if it is then check if fit with x = TRUE
-      # otherwise throw an error
-
-    } else {
-      stop("object must be XXXX")
+    if (get_contrasts) {
+      contrasts <- merge(unique(df_c[,c("model", "reference")]), summary_score,
+                         by.x = "model", by.y = "model")
+      contrasts <- merge(contrasts, summary_score,
+                         by.x="reference", by.y="model",
+                         suffixes = c(".model", ".reference"))
+      contrasts[, delta := get(paste0(metric, ".model")) -
+                  get(paste0(metric, ".reference"))]
+      contrasts <- contrasts[, .(model, reference, delta)]
+      data.table::setnames(contrasts, "delta", delta_col)
     }
+    #}}}
 
-    # revert from stacked data frame to single times and events
-    data <- data[, lapply(.SD, max), by = id_col,
-                 .SDcols = c(outcome$time, outcome$status)]
-    data.table::setnames(data, c(outcome$time, outcome$status),
-                         c("time", "status"))
+    #{{{ 2. get the se/CIs
+    if (se.fit == TRUE) {
+      #{{{{ 2.1. get the covariance of the iid decomp by model across times
+      # print("cov score (a)")
+      # print(model_levels)
+      # print(class(model_levels))
+      # print(unique(df_iid$model))
+      # print(match(unique(df_iid$model), model_levels)-1)
+      cov_score <- lapply(unique(df_iid$model), function(m) {
+        df <- df_iid[df_iid$model == m, c("ID", "tLM", if_col), with = FALSE]
+        subsample_sizes <- table(df$tLM)
+        if (subsample_sizes[1] != sample_size) stop("Something went wrong.") # TODO
+        adjustment <- subsample_sizes / sample_size
+        df <- data.table::dcast(df, ID ~ tLM, value.var = if_col)
+        df[, "ID" := NULL]
+        df[is.na(df),] <- 0
+        df <- sweep(df, MARGIN = 2, STATS = adjustment, FUN = "/")
+        cov(df)
+      })
 
-    # set weights
-    args <- list(formula = stats::as.formula("Hist(time, status) ~ 1"),
-                 data = data)
-    fit <- do.call(prodlim::prodlim, args)
-    weight_vector <- predict(fit, times = lms, type = "surv")
+      # print(sapply(cov_score, function(c) sqrt(diag(c) / sample_size)))
+      if (get_contrasts) {
+        cov_score_contrasts <- lapply(1:nrow(contrasts), function(i) {
+          # TODO
+          # m1 <- match(contrasts[i, ]$reference, model_levels)-1
+          # m2 <- match(contrasts[i, ]$model, model_levels)-1
+          m1 <- contrasts[i, ]$reference
+          m2 <- contrasts[i, ]$model
+          df1 <- df_iid[df_iid$model == m1,
+                        c("ID", "tLM", if_col), with = FALSE]
+          df2 <- df_iid[df_iid$model == m2,
+                        c("ID", "tLM", if_col), with = FALSE]
+          df <- merge(df1, df2, by=c("ID", "tLM"),
+                      suffixes = c(".df1", ".df2"))
+          df[, (if_col) :=
+                  get(paste0(if_col, ".df1")) - get(paste0(if_col, ".df2"))]
+          df <- df[, c("ID", "tLM", if_col), with = FALSE]
 
-  } else {
-    # TODO: (later) allow for a more flexible weighting scheme from the user?
-    #       maybe they can input a function get_weights(tLM) which we can
-    #       query for each landmark...
-    #       this really complicates things for the delta method. May not be
-    #       feasible.
-    stop(tidymess("Only simple averages (weights = FALSE) or probability of
-                  survival P(T>s) (weights = TRUE/\"km\"/\"survival\") may be
-                  used."))
+          subsample_sizes <- table(df$tLM)
+          if (subsample_sizes[1] != sample_size) stop("Something went wrong.") # TODO
+          df <- data.table::dcast(df, ID ~ tLM, value.var = if_col)
+          df[, ID := NULL]
+          df[is.na(df),] <- 0
+          adjustment <- subsample_sizes / sample_size
+          df <- sweep(df, MARGIN = 2, STATS = adjustment, FUN = "/")
+          cov(df)
+        })
+      }
+      #}}}}
+
+      #{{{{ 2.2. apply the delta method to get a confidence interval
+      get_se <- function(cov) {
+        nabla_g <- weight_vector / sum(weight_vector) # gradient
+        var <- nabla_g %*% cov %*% nabla_g            # delta method for var
+        sqrt(var / sample_size)                       # variance -> std error
+      }
+      se_score <- sapply(cov_score, get_se)
+      if (get_contrasts) {
+        se_score_contrasts <- sapply(cov_score_contrasts, get_se)
+      }
+      #}}}}
+
+      #{{{{ 2.3. Make a data.table with model, mean, se, lower, upper
+      summary_score[, `:=`(
+        se = se_score,
+        lower = get(metric) - stats::qnorm(1 - alpha / 2) * se_score,
+        upper = get(metric) + stats::qnorm(1 - alpha / 2) * se_score
+      )]
+      if (get_contrasts) {
+        contrasts[, se := se_score_contrasts]
+        contrasts[, `:=`(
+          lower = get(delta_col) - stats::qnorm(1 - alpha / 2) * se,
+          upper = get(delta_col) + stats::qnorm(1 - alpha / 2) * se,
+          p = 2 * stats::pnorm(abs(get(delta_col) / se), lower.tail=FALSE)
+        )]
+      }
+      #}}}}
+    }
+    #}}}
+
+  } else { # B > 1 -- bootstrapping: use empirical values
+    summary_score1 <- df_t[, lapply(.SD, mean),
+                          by = c("model", "bootstrap"), .SDcols = metric]
+    summary_score <- clean_bootstraps(summary_score1, metric, alpha,
+                                      se.fit = se.fit, summary = TRUE)
+
+    if (get_contrasts) {
+      contrasts <- merge(unique(df_c[,c("model", "reference", "bootstrap")]),
+                         summary_score1,
+                         by.x = c("model", "bootstrap"),
+                         by.y = c("model", "bootstrap"))
+      contrasts <- merge(contrasts, summary_score1,
+                         by.x=c("reference", "bootstrap"),
+                         by.y=c("model", "bootstrap"),
+                         suffixes = c(".model", ".reference"))
+      contrasts[, delta := get(paste0(metric, ".model")) -
+                  get(paste0(metric, ".reference"))]
+      contrasts <- contrasts[, .(model, reference, delta, bootstrap)]
+      data.table::setnames(contrasts, "delta", delta_col)
+
+      contrasts <- clean_bootstraps(contrasts, paste0("delta.", metric), alpha,
+                                    se.fit = se.fit, contrasts = TRUE,
+                                    summary = TRUE)
+    }
   }
-
-  # print(head(df_t))
-  # print(head(df_c))
-  # print(head(df_iid))
-
-  # TODO: decide if we ditch the weighted version
-  summary_score <- df_t[, lapply(.SD, mean), # weighted.mean, w = weight_vector
-                        by = "model", .SDcols = metric]
-  # print(summary_score)
-  if (get_contrasts) {
-    contrasts <- merge(unique(df_c[,c("model", "reference")]), summary_score,
-                       by.x="model", by.y="model")
-    contrasts <- merge(contrasts, summary_score, by.x="reference", by.y="model",
-                       suffixes = c(".model", ".reference"))
-    contrasts[, delta := get(paste0(metric, ".model")) -
-                get(paste0(metric, ".reference"))]
-    contrasts <- contrasts[, .(model, reference, delta)]
-    data.table::setnames(contrasts, "delta", delta_col)
-  }
-
-  #}}}
-
-
-  #{{{ 2. get the covariance of the iid decomposition by model across times
-  # print("cov score (a)")
-  # print(model_levels)
-  # print(class(model_levels))
-  # print(unique(df_iid$model))
-
-  # print(match(unique(df_iid$model), model_levels)-1)
-  cov_score <- lapply(unique(df_iid$model), function(m) {
-    df <- df_iid[df_iid$model == m, c("ID", "tLM", if_col), with = FALSE]
-    subsample_sizes <- table(df$tLM)
-    if (subsample_sizes[1] != sample_size) stop("Something went wrong.") # TODO
-    adjustment <- subsample_sizes / sample_size
-    df <- data.table::dcast(df, ID ~ tLM, value.var = if_col)
-    df[, "ID" := NULL]
-    df[is.na(df),] <- 0
-    df <- sweep(df, MARGIN = 2, STATS = adjustment, FUN = "/")
-    cov(df)
-  })
-
-  # if (!weights) {
-  #   cat("\ncov score:\n")
-  #   print(round(cov_score[[1]], 8))
-  # }
-
-  # print(sapply(cov_score, function(c) sqrt(diag(c) / sample_size)))
-  if (get_contrasts) {
-    cov_score_contrasts <- lapply(1:nrow(contrasts), function(i) {
-      # TODO
-      # m1 <- match(contrasts[i, ]$reference, model_levels)-1
-      # m2 <- match(contrasts[i, ]$model, model_levels)-1
-      m1 <- contrasts[i, ]$reference
-      m2 <- contrasts[i, ]$model
-      df1 <- df_iid[df_iid$model == m1, c("ID", "tLM", if_col), with = FALSE]
-      df2 <- df_iid[df_iid$model == m2, c("ID", "tLM", if_col), with = FALSE]
-      df <- merge(df1, df2, by=c("ID", "tLM"), suffixes = c(".df1", ".df2"))
-      df[, (if_col) := get(paste0(if_col, ".df1")) - get(paste0(if_col, ".df2"))]
-      df <- df[, c("ID", "tLM", if_col), with = FALSE]
-
-      subsample_sizes <- table(df$tLM)
-      if (subsample_sizes[1] != sample_size) stop("Something went wrong.") # TODO
-      df <- data.table::dcast(df, ID ~ tLM, value.var = if_col)
-      df[, ID := NULL]
-      df[is.na(df),] <- 0
-      adjustment <- subsample_sizes / sample_size
-      df <- sweep(df, MARGIN = 2, STATS = adjustment, FUN = "/")
-      cov(df)
-    })
-  }
-  #}}}
-
-  #{{{ 3. apply the delta method to get a confidence interval
-  # TODO: check that this is correct
-  get_se <- function(cov) {
-    nabla_g <- weight_vector / sum(weight_vector) # gradient
-    var <- nabla_g %*% cov %*% nabla_g            # delta method for variance
-    sqrt(var / sample_size)                       # variance -> standard error
-  }
-  se_score <- sapply(cov_score, get_se)
-  if (get_contrasts) se_score_contrasts <- sapply(cov_score_contrasts, get_se)
-  #}}}
-
-  #{{{ 4. Make a data.table with model, mean, se, lower, upper
-  alpha <- 1 - conf_int
-  summary_score[, `:=`(
-    se = se_score,
-    lower = get(metric) - stats::qnorm(1 - alpha / 2) * se_score,
-    upper = get(metric) + stats::qnorm(1 - alpha / 2) * se_score
-  )]
-  if (get_contrasts) {
-    contrasts[, se := se_score_contrasts]
-    contrasts[, `:=`(
-      lower = get(delta_col) - stats::qnorm(1 - alpha / 2) * se,
-      upper = get(delta_col) + stats::qnorm(1 - alpha / 2) * se,
-      p = 2 * stats::pnorm(abs(get(delta_col) / se), lower.tail=FALSE)
-    )]
-  }
-  #}}}
 
   if (get_contrasts)
-    return(list(score = summary_score, contrasts = contrasts,
-                weighted = weights))
+    return(list(score = summary_score, contrasts = contrasts))
   else
-    return(list(score = summary_score, weighted = weights))
-
+    return(list(score = summary_score))
 }
+
+
+
+### Code to add alternative weights ###
+
+### * Add argument: weights = FALSE, # (FALSE, TRUE, "survival", "km")
+        #' @param weights What kind of weighting to use? Default is NULL which
+        #'   gives a simple average. Setting weights to TRUE or "km" or
+        #'   "survival" weights estimates by the probability of survival
+        #'   P(T > s).
+### * The code below would replace the line of `weight_vector <- ...`
+### * Add weighted = weights to the outlist
+### * Add argument weights = FALSE, to score()
+### * Would need to add something like below to checks in score
+        # if tolower(weighted) %in% c("km", "survival") || weighted == TRUE
+        #   -> then either need preds (to use p1$data with p1$outcome)
+        #   -> or need supermodel to be fit with x = TRUE ... (TODO)
+
+# #{{{ 1. get the (weighted) average of the score from df_t by model over times
+# #       and of the contrasts from df_c by model over times
+# #       First set the weights, then calculate the average
+# #       * if (is.null(weights)): use simple weighted average
+# #       * if weights is "km" or "survival" or TRUE: weight points by P(T > s)
+# #         estimated by Kaplan-Meier
+# #       * else user provided function (TODO: maybe later)
+#
+# if (weights == FALSE) {
+#   weight_vector <- rep(1, num_lms)
+# } else if (tolower(weights) %in% c("km", "survival") ||
+#            weights == TRUE) {
+#   # TODO: double check that we've checked that all are the same
+#   # i.e., data and outcome of the different entries of object (a list)
+#   #       are the same
+#
+#   outcome <- object[[1]]$outcome
+#   type <- object[[1]]$type
+#
+#   # extract survival data
+#   if (inherits(object[[1]], "LMpred")) {
+#     # TODO: add id_col to LMpred objects (exists for supermodel)
+#
+#     # Check id_col
+#     if (!(id_col %in% colnames(object[[1]]$data))) {
+#       stop(tidymess(paste("An ID column that is in the data must be provided,
+#                           you can set this with argument id_col.")))
+#     }
+#
+#     data <- object[[1]]$data[, c(id_col, outcome$time, outcome$status)]
+#     data <- data.table::as.data.table(data)
+#
+#   } else if (FALSE) {
+#     # TODO:
+#     # check if LMCSC or LMCox (double check classes)
+#     # and if it is then check if fit with x = TRUE
+#     # otherwise throw an error
+#
+#   } else {
+#     stop("object must be XXXX")
+#   }
+#
+#   # revert from stacked data frame to single times and events
+#   data <- data[, lapply(.SD, max), by = id_col,
+#                .SDcols = c(outcome$time, outcome$status)]
+#   data.table::setnames(data, c(outcome$time, outcome$status),
+#                        c("time", "status"))
+#
+#   # set weights
+#   args <- list(formula = stats::as.formula("Hist(time, status) ~ 1"),
+#                data = data)
+#   fit <- do.call(prodlim::prodlim, args)
+#   weight_vector <- predict(fit, times = lms, type = "surv")
+#
+# } else {
+#   # TODO: (later) allow for a more flexible weighting scheme from the user?
+#   #       maybe they can input a function get_weights(tLM) which we can
+#   #       query for each landmark...
+#   #       this really complicates things for the delta method. May not be
+#   #       feasible.
+#   stop(tidymess("Only simple averages (weights = FALSE) or probability of
+#                 survival P(T>s) (weights = TRUE/\"km\"/\"survival\") may be
+#                 used."))
+# }
+# summary_score <- df_t[, lapply(.SD, mean), # weighted.mean, w = weight_vector
+#                       by = "model", .SDcols = metric]

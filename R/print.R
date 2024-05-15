@@ -157,19 +157,19 @@ print.LMScore <- function(x, digits = 3, landmarks = TRUE, summary = TRUE, ...) 
   }
   if (summary) {
     if (!is.null(x$AUC_summary)) {
-      if (x$AUC_summary$weighted == FALSE)
+      # if (x$AUC_summary$weighted == FALSE)
         cat(paste0("\nMetric: Averaged time-dependent AUC (w = ", x$w, ")\n"))
-      else
-        cat(paste0("\nMetric: Weighted average time-dependent AUC (w = ", x$w, ")\n"))
+      # else
+      #   cat(paste0("\nMetric: Weighted average time-dependent AUC (w = ", x$w, ")\n"))
       obj <- x$AUC_summary
       class(obj) <- "scoreAUC"
       print(obj, digits = digits)
     }
     if (!is.null(x$Brier_summary)) {
-      if (x$Brier_summary$weighted == FALSE)
+      # if (x$Brier_summary$weighted == FALSE)
         cat(paste0("\nMetric: Averaged time-dependent Brier Score (w = ", x$w, ")\n"))
-      else
-        cat(paste0("\nMetric: Weighted average time-dependent Brier Score (w = ", x$w, ")\n"))
+      # else
+      #   cat(paste0("\nMetric: Weighted average time-dependent Brier Score (w = ", x$w, ")\n"))
       obj <- x$Brier_summary
       class(obj) <- "scoreBrier"
       print(obj, digits = digits)

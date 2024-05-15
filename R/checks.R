@@ -36,6 +36,14 @@ check_evaluation_inputs <- function(
         to 1."))
     }
     B <- 1
+  } else {
+    if (B == 1) {
+      split.method <- "none"
+      warning(tidymess(
+        "For bootstrapping, argument B (the number of bootstraps) must be
+        greater than 1. As it is 1, argument split.method is being set
+        to \"none\"."))
+    }
   }
 
   if (!missing(cores))

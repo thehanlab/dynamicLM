@@ -10,10 +10,11 @@ summary_metric(
   df_c,
   df_iid,
   conf_int,
-  weights = FALSE,
   object,
   id_col,
-  model_levels
+  model_levels,
+  B,
+  se.fit
 )
 }
 \arguments{
@@ -51,22 +52,19 @@ tLM ID model   times      IF.Brier b
 
 \item{conf_int}{Coverage level of the confidence interval.}
 
-\item{weights}{What kind of weighting to use? Default is NULL which gives a
-simple average. Setting weights to TRUE or "km" or "survival" weights
-estimates by the probability of survival P(T > s).}
-
 \item{object}{Either fitted supermodel or risk predictions.}
 
 \item{id_col}{TODO}
 
 \item{model_levels}{TODO}
+
+\item{B}{TODO}
+
+\item{se.fit}{TODO}
 }
 \value{
 TODO
 }
 \description{
-TODO: add more description?
-}
-\examples{
-#TODO
+Obtain the summary metric from landmark-specific estimates
 }
