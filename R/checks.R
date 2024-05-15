@@ -174,16 +174,18 @@ check_evaluation_inputs <- function(
   if (missing(cause)){
     if (inherits(object[[1]],"LMpred"))
       cause <- as.numeric(object[[1]]$cause)
-    else
+    else if (type1 == "CSC")
       cause <- as.numeric(object[[1]]$model$theCause)
+    else
+      cause <- 1
   }
   if (is.null(cause)) {
     cause <- 1
-    indicator <- 1
   }
   indicator <- cause
-  if (missing(formula))
+  if (missing(formula)) {
     formula <- object[[1]]$LHS
+  }
 
   ### Split method ###
 
@@ -335,8 +337,6 @@ check_evaluation_inputs <- function(
   }
 
   #TODO: subset data to our the times we want to predict at (times)
-
-
 
   out <- list(
     object = object,
