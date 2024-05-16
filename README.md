@@ -1,13 +1,26 @@
 - [1 dynamicLM](#dynamiclm)
 - [2 Introduction](#introduction)
-  - [2.1 What is landmarking and when is it
-    used?](#what-is-landmarking-and-when-is-it-used)
+  - [2.1 What is landmarking and when is it used?](#what-is-landmarking-and-when-is-it-used)
   - [2.2 Installation](#installation)
 - [3 Tutorial](#tutorial)
   - [3.1 Data preparation](#data-preparation)
+    - [3.1.1 Original data](#original-data)
+    - [3.1.2 Build a super data set](#build-a-super-data-set)
   - [3.2 Model fitting](#model-fitting)
+    - [3.2.1 Traditional (unpenalized) landmark supermodel](#traditional-unpenalized-landmark-supermodel)
+    - [3.2.2 Penalized landmark supermodel](#penalized-landmark-supermodel)
+      - [3.2.2.1 Coefficient path](#coefficient-path)
+      - [3.2.2.2 Cross-validated model](#cross-validated-model)
+      - [3.2.2.3 Fitting a penalized landmark supermodel](#fitting-a-penalized-landmark-supermodel)
   - [3.3 Prediction](#prediction)
+    - [3.3.1 Training data](#training-data)
+    - [3.3.2 Testing data](#testing-data)
   - [3.4 Model evaluation](#model-evaluation)
+    - [3.4.1 Calibration plots](#calibration-plots)
+    - [3.4.2 Predictive performance](#predictive-performance)
+    - [3.4.3 Bootstrapping](#bootstrapping)
+    - [3.4.4 External validation](#external-validation)
+    - [3.4.5 Visualize individual dynamic risk trajectories](#visualize-individual-dynamic-risk-trajectories)
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
@@ -19,19 +32,6 @@
 The goal of dynamicLM is to provide a simple framework to make dynamic
 w-year risk predictions, allowing for penalization, competing risks,
 time-dependent covariates, and censored data.
-
-**Table of contents**
-
-1.  Introduction 1.1. What is landmarking and when is it used? 1.2.
-    Installation
-2.  Tutorial 3.1. Data preparation 3.2. Model fitting 3.2.1. Traditional
-    (unpenalized) landmark supermodel 3.2.2. Penalized landmark
-    supermodel 3.2.2.1. Coefficient path 3.2.2.2. Cross-validated model
-    3.2.2.3. Fitting a penalized landmark supermodel 3.3. Prediction
-    3.3.1. Training data 3.3.2. Testing data 3.4. Model evaluation
-    3.4.1. Calibration plots 3.4.2. Predictive performance 3.4.3.
-    Bootstrapping 3.4.4. External validation 3.4.5. Visualize individual
-    dynamic risk trajectories
 
 # 2 Introduction
 
@@ -341,7 +341,7 @@ print(all_covs)
 A traditional (unpenalized) or penalized landmark supermodel can be fit
 to the data.
 
-### 3.2.1 a) Traditional (unpenalized) landmark supermodel
+### 3.2.1 Traditional (unpenalized) landmark supermodel
 
 To fit a supermodel, a formula, stacked dataset and method need to be
 provided. The input to `dynamic_lm` varies slightly depending on if
@@ -428,7 +428,7 @@ of dynamic hazard ratios to be plotted and `conf_int = FALSE` removes
 the confidence intervals.
 
 ``` r
-plot(supermodel, logHR = FALSE, covars = c("age", "stage"), conf_int = FALSE)
+plot(supermodel, logHR = FALSE, covars = c("bili", "albumin"), conf_int = FALSE)
 ```
 
 If the super dataset is not created via the functions `stack_data()` and
@@ -437,7 +437,7 @@ be specified. (In this case, see `?dynamic_lm.data.frame` for the
 additional parameters and the details section of `?add_interactions` for
 how the landmark interaction terms must be named).
 
-### 3.2.2 b) Penalized landmark supermodel
+### 3.2.2 Penalized landmark supermodel
 
 To fit a penalized landmark supermodel, the lmdata is the only required
 input. First, for multiple penalties (lambdas), either a coefficient
@@ -468,7 +468,7 @@ par(mfrow = c(1, 2))
 plot(path, all_causes = TRUE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-14-1.png" width="100%" />
+<img src="man/figures/README-pathplot-1.png" width="100%" />
 
 Alternatively, the path can be printed.
 
@@ -507,7 +507,7 @@ par(mfrow = c(1, 2))
 plot(cv_model, all_causes = TRUE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-18-1.png" width="100%" />
+<img src="man/figures/README-cvplot-1.png" width="100%" />
 
 To specify only a subset of covariates to fit to
 
@@ -535,20 +535,19 @@ largest coefficients. For further arguments, see `?plot.penLMCSC` or
 `?plot.penLMcoxph`.
 
 ``` r
-par(mar = c(5, 7, 4, 2)) # Make more space on the left for y-labels
+# Add more space on the sides
+par(mar = c(5, 10, 1, 7)) # default is c(5.1, 4.1, 4.1, 2.1)
 plot(supermodel_pen, max_coefs=15)
 ```
 
-<img src="man/figures/README-unnamed-chunk-22-1.png" width="100%" />
-
-To plot dynamic HRs: (TODO: this bugs when knitting)
+<img src="man/figures/README-covarplot-1.png" width="100%" />
 
 ``` r
-par(mfrow=c(1,2))
-plot(supermodel_pen, HR = TRUE, covars = c("bili", "stage"))
+par(mfrow=c(1,3))
+plot(supermodel_pen, HR = TRUE, covars = c("bili", "stage", "edema"))
 ```
 
-<img src="man/figures/README-unnamed-chunk-23-1.png" width="100%" />
+<img src="man/figures/README-hr2-1.png" width="100%" />
 
 ## 3.3 Prediction
 
@@ -641,14 +640,14 @@ between models. This list can be of supermodels or prediction objects
 
 ``` r
 par(mfrow = c(1, 3), pty = "s")
-outlist <- calplot(list("LM supermodel" = p1, "Penalized" = p2), 
+outlist <- calplot(list("LM" = p1, "penLM" = p2), 
                     times = c(0,2,4), # landmarks to plot at
                     method = "quantile", q=10,  # method for calibration plot
                     # Optional plotting parameters to alter
-                    ylim = c(0, 0.5), xlim = c(0, 0.5),
+                    ylim = c(0, 0.52), xlim = c(0, 0.52),
                     lwd = 1, 
                     xlab = "Predicted Risk", ylab = "Observed Risk", 
-                    legend = TRUE)
+                    legend = TRUE, legend.x = "bottomright")
 ```
 
 <img src="man/figures/README-calplot-1.png" width="100%" />
@@ -671,7 +670,7 @@ curve or time-dependent dynamic Brier score. This enables one score per
 model or one comparison for a pair of models.
 
 ``` r
-scores <- score(list("LM supermodel" = p1, "Penalized" = p2),
+scores <- score(list("LM" = p1, "penLM" = p2),
                 times = c(0, 2, 4), # landmarks at which to assess
                 summary = TRUE)     # also include the summary metrics
 ```
@@ -692,48 +691,38 @@ par(mfrow = c(1, 4))
 plot(scores, summary = TRUE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-31-1.png" width="100%" />
+<img src="man/figures/README-score-1.png" width="100%" />
 
-Additional parameters control which plots to include, for example:
-
-``` r
-# E.g., plot only the summary Brier scores
-plot(scores, auc = FALSE, landmarks = FALSE, summary = TRUE)
-```
-
-<img src="man/figures/README-unnamed-chunk-32-1.png" width="100%" />
+Additional parameters control which plots to include and additional
+information, for example, one can plot the time-dependent contrasts. One
+can also plot if model summary metrics are significantly different or
+not, either plotting the p-values of the significant comparisons to a
+plot, or by plotting the contrasts directly.
 
 ``` r
+# Three plots and make extra space below for the x-labels
+par(mfrow = c(1, 3), mar = c(9, 4, 4, 3)) 
 
 # E.g., plot only the time-dependent AUC contrasts
 plot(scores, brier = FALSE, landmarks = TRUE, summary = FALSE, contrasts = TRUE)
-```
 
-<img src="man/figures/README-unnamed-chunk-32-2.png" width="100%" />
-
-Once can also plot if models are significantly different or not, either
-plotting the p-values of the significant comparisons to a plot, or by
-plotting the contrasts.
-
-``` r
-# Two plots, make extra space below for the x-labels
-par(mfrow = c(1, 2), mar = c(14, 4, 4, 2)) 
-
-# E.g., Add comparison bars
+# E.g., plot only summary BS and add p-value comparisons
 plot(scores, auc = FALSE, landmarks = FALSE, summary = TRUE,
      ylim = c(0, 0.15), 
      las = 2,                                # Rotate x-axis labels
      add_pairwise_contrasts = TRUE,          # Include the contrasts
      cutoff_contrasts = 0.05,                # Significance cutoff, default 0.05
-     pairwise_heights = c(0.09, 0.11, 0.13), # Height of the contrast labels
-     width = 0.004)
+     pairwise_heights = c(0.1, 0.13),        # Height of the contrast labels 
+                                             #  (only 2/3 are significant so 
+                                             #  only need to specify 2 heights)
+     width = 0.01)                           # Width of ends of bars
 
-# E.g., Plot comparisons directly 
+# E.g., plot summary BS contrasts  
 plot(scores, auc = FALSE, landmarks = FALSE, summary = TRUE, 
      contrasts = TRUE, las = 2)
 ```
 
-<img src="man/figures/README-unnamed-chunk-33-1.png" width="100%" />
+<img src="man/figures/README-scoreextra-1.png" width="100%" />
 
 ### 3.4.3 Bootstrapping
 
@@ -745,7 +734,6 @@ specified when fitting the model (i.e., when calling `dynamic_lm()`).
 TODO: only bootstrapping for unpenalized models.
 
 ``` r
-# TODO
 # Remember to fit the supermodel with argument 'x = TRUE'
 scores <- score(list("LM supermodel" = supermodel),
               times = c(0, 2, 4),
@@ -845,7 +833,7 @@ plotrisk(supermodel, dat, format = "long", ylim = c(0, 0.35),
          x.legend = "topright")
 ```
 
-<img src="man/figures/README-plotrisk-1.png" width="100%" />
+<img src="man/figures/README-risk-1.png" width="100%" />
 
 We can see that the male has a higher and increasing 5-year risk of
 recurrence that peaks around 1 year, and then rapidly decreases. This
