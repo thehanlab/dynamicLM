@@ -56,6 +56,7 @@
 #' @param B Number of times bootstrapping is performed.
 #' @param M Subsample size for training in cross-validation. Entries not sampled
 #'   in the M subsamples are used for validation.
+#' @param summary TODO
 #' @param cores To perform parallel computing, specifies the number of cores.
 #'   (Not yet implemented)
 #' @param seed Optional, integer passed to set.seed. If not given or NA, no seed
@@ -67,6 +68,7 @@
 #'   tested and should be used with precaution.
 #' @param silent Show any error messages when computing `score` for each
 #'   landmark time (and potentially bootstrap iteration)
+#'
 #' @return An list with entries `AUC` and `Brier` if "auc" and "brier" were
 #'   included as metrics respectively and `AUC_Summary` and/or `Brier_summary`
 #'   if `summary` is not null. Each will have entries:
@@ -143,11 +145,7 @@ score <-
            split.method = "none",
            B = 1,
            M,
-
-           #TODO: * maybe combine summary and weights, summary = TRUE, summary = "km"
-           summary = FALSE, # TODO - description, checks
-           weights = FALSE,  # TODO - description, checks
-
+           summary = FALSE,
            cores = 1,
            seed,
            cause,
@@ -246,7 +244,6 @@ score <-
         ))
         # print(score_t)
 
-        # TODO: handle the case where there are no contrasts
         if (inherits(score_t, "try-error")) {
           auct_b <- data.frame(model = names(object), times = NA, AUC = NA,
                                se = NA, lower = NA, upper = NA)
@@ -323,89 +320,43 @@ score <-
       a_contrasts_out <- NULL
       b_contrasts_out <- NULL
 
-      # TODO: handle contrasts --
-      if (se.fit == TRUE) {
-
-        clean_bootstraps <- function(table, column, contrasts = FALSE) {
-          by_columns <- c("tLM", "model")
-          if (contrasts) by_columns <- c("tLM", "model", "reference")
-          out <- table[, data.table::data.table(
-            mean(.SD[[column]], na.rm = TRUE),
-            se = stats::sd(.SD[[column]], na.rm = TRUE),
-            lower = stats::quantile(.SD[[column]], alpha / 2, na.rm = TRUE),
-            upper = stats::quantile(.SD[[column]], (1 - alpha / 2), na.rm = TRUE)
-          ), by = by_columns, .SDcols = column]
-          data.table::setnames(
-            out, c(by_columns, column, "se", "lower", "upper"))
-          if (contrasts) {
-            out[, p := 2 * stats::pnorm(abs(get(column) / se),
-                                        lower.tail=FALSE)]
-          }
-          return(out)
-        }
-
-        alpha <- 1 - conf.int
-        if (get.auc) {
-          auct_out <- clean_bootstraps(auct, "AUC")
-          if (contrasts) {
-            a_contrasts_out <- clean_bootstraps(a_contrasts, "delta.AUC",
-                                                contrasts = TRUE)
-          }
-        }
-        if (get.bs) {
-          briert_out <- clean_bootstraps(briert, "Brier")
-          if (contrasts) {
-            b_contrasts_out <- clean_bootstraps(b_contrasts, "delta.Brier",
-                                                contrasts = TRUE)
-          }
-        }
-
-        if (!silent) {
-          b_na <- auct$bootstrap[is.na(auct$AUC)]
-          tlm_na <- auct$tLM[is.na(auct$AUC)]
-          model_na <- auct$model[is.na(auct$AUC)]
-          if (length(b_na) != 0) {
-            message(tidymess(paste0(
-            "Upper limit of followup in bootstrap samples was too low. Results
-            at evaluation time(s) beyond these points could not be computed and
-            are left as NA.\nMetrics not computed for (model, b, tLM) = ",
-            paste0("(", model_na, ", ", b_na, ", ", tlm_na, ")",
-                   collapse = ", "))))
-          }
-        }
-        # if (na.rm == FALSE) {
-        #   auct_out <- auct_out[is.na(auct_out[, 3]),
-        #                        `:=`("se" = NA, "lower" = NA, "upper" = NA)]
-        #   briert_out <- briert_out[is.na(briert_out[, 3]),
-        #                            `:=`("se" = NA, "lower" = NA, "upper" = NA)]
-        # }
-
-      } else {
-        clean_bootstraps_simple <- function(table, column, contrasts = FALSE) {
-          by_columns <- c("tLM", "model")
-          if (contrasts) by_columns <- c("tLM", "model", "reference")
-          out <- table[, data.table::data.table(
-            mean(.SD[[column]], na.rm = TRUE)
-          ), by = by_columns, .SDcols = column]
-          data.table::setnames(out, c(by_columns, column))
-          return(out)
-        }
-
-        if (get.auc) {
-          auct_out <- clean_bootstraps_simple(auct, "AUC")
-          if (contrasts) {
-            a_contrasts_out <- clean_bootstraps_simple(a_contrasts, "delta.AUC",
-                                                       contrasts = TRUE)
-          }
-        }
-        if (get.bs) {
-          briert_out <- clean_bootstraps_simple(briert, "Brier")
-          if (contrasts) {
-            b_contrasts_out <- clean_bootstraps_simple(b_contrasts, "delta.Brier",
-                                                       contrasts = TRUE)
-          }
+      alpha <- 1 - conf.int
+      if (get.auc) {
+        auct_out <- clean_bootstraps(auct, "AUC", alpha, se.fit = se.fit)
+        if (contrasts) {
+          a_contrasts_out <- clean_bootstraps(
+            a_contrasts, "delta.AUC", alpha, contrasts = TRUE, se.fit = se.fit
+          )
         }
       }
+      if (get.bs) {
+        briert_out <- clean_bootstraps(briert, "Brier", alpha, se.fit = se.fit)
+        if (contrasts) {
+          b_contrasts_out <- clean_bootstraps(
+            b_contrasts, "delta.Brier", alpha, contrasts = TRUE, se.fit = se.fit
+          )
+        }
+      }
+
+      if (!silent) {
+        b_na <- auct$bootstrap[is.na(auct$AUC)]
+        tlm_na <- auct$tLM[is.na(auct$AUC)]
+        model_na <- auct$model[is.na(auct$AUC)]
+        if (length(b_na) != 0) {
+          message(tidymess(paste0(
+          "Upper limit of followup in bootstrap samples was too low. Results
+          at evaluation time(s) beyond these points could not be computed and
+          are left as NA.\nMetrics not computed for (model, b, tLM) = ",
+          paste0("(", model_na, ", ", b_na, ", ", tlm_na, ")",
+                 collapse = ", "))))
+        }
+      }
+      # if (na.rm == FALSE) {
+      #   auct_out <- auct_out[is.na(auct_out[, 3]),
+      #                        `:=`("se" = NA, "lower" = NA, "upper" = NA)]
+      #   briert_out <- briert_out[is.na(briert_out[, 3]),
+      #                            `:=`("se" = NA, "lower" = NA, "upper" = NA)]
+      # }
 
     } else { # B == 1
       auct_out <- auct
@@ -429,29 +380,21 @@ score <-
     ###{
     # TODO: add as an argument
     # TODO: add checks for left-censoring
-    # TODO: if tolower(weighted) %in% c("km", "survival") || weighted == TRUE
-    #   -> then either need preds (to use p1$data with p1$outcome)
-    #   -> or need supermodel to be fit with x = TRUE ... (TODO)
 
     if (summary) {
-      if (B > 1) {
-        warning(tidymess("Bootstrapping for summary metrics is not yet
-                         implemented, results are not calculated."))
-      } else {
-        if (get.a.iid) {
-          model_levels <- levels(outlist$AUC$score$model)
-          if (!all(model_levels == levels(outlist$AUC$contrasts$model))) stop()
-          outlist$AUC_summary <- summary_metric(
-            "AUC", auct, a_contrasts, a_iid, conf.int, weights, object,
-            id_col, model_levels)
-        }
-        if (get.b.iid) {
-          model_levels <- levels(outlist$Brier$score$model)
-          if (!all(model_levels == levels(outlist$Brier$contrasts$model))) stop()
-          outlist$Brier_summary <- summary_metric(
-            "Brier", briert, b_contrasts, b_iid, conf.int, weights, object,
-            id_col, model_levels)
-        }
+      if (get.a.iid) {
+        model_levels <- levels(outlist$AUC$score$model)
+        if (!all(model_levels == levels(outlist$AUC$contrasts$model))) stop()
+        outlist$AUC_summary <- summary_metric(
+          "AUC", auct, a_contrasts, a_iid, conf.int, object,
+          id_col, model_levels, B, se.fit)
+      }
+      if (get.b.iid) {
+        model_levels <- levels(outlist$Brier$score$model)
+        if (!all(model_levels == levels(outlist$Brier$contrasts$model))) stop()
+        outlist$Brier_summary <- summary_metric(
+          "Brier", briert, b_contrasts, b_iid, conf.int, object,
+          id_col, model_levels, B, se.fit)
       }
     }
     ###}
