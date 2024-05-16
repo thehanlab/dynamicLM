@@ -2,7 +2,8 @@
 % Please edit documentation in R/plot.R
 \name{plot.penLMcoxph}
 \alias{plot.penLMcoxph}
-\title{Plot the non-zero coefficients of a penalized Cox landmark supermodel}
+\title{Plot the non-zero coefficients of a penalized Cox landmark supermodel or
+the dynamic log-hazard ratios}
 \usage{
 \method{plot}{penLMcoxph}(
   x,
@@ -10,6 +11,7 @@
   max_coefs = NULL,
   col = "blue",
   xlab = "Coefficient value",
+  HR = FALSE,
   ...
 )
 }
@@ -23,9 +25,17 @@ positive and negative coefficients, or two separate plots.}
 \item{max_coefs}{Default is to plot all coefficients. If specified, gives the
 maximum number of coefficients to plot.}
 
-\item{...}{Additional arguments to barplot.}
+\item{col}{Fill color for the barplot.}
+
+\item{xlab}{x-axis Label}
+
+\item{HR}{Plot the hazard ratio? Default is FALSE. See \code{\link[=plot.dynamicLM]{plot.dynamicLM()}}
+for additional arguments.}
+
+\item{...}{Additional arguments to barplot or to \code{\link[=plot.dynamicLM]{plot.dynamicLM()}}.}
 }
 \description{
 Can plot positive and negative coefficients in two separate plots or the
-same. X-axes are the same if separate plots are used.
+same. X-axes are the same if separate plots are used. If plotting the log
+hazard ratios, check \code{\link[=plot.dynamicLM]{plot.dynamicLM()}} to see further arguments.
 }

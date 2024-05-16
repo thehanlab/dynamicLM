@@ -30,7 +30,7 @@
 #'
 plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
                            logHR = TRUE, extend = FALSE, silence = FALSE,
-                           xlab = "LM time", ylab, ylim, main, ...) {
+                           xlab = "Landmark time", ylab, ylim, main, ...) {
   fm <- x$model
 
   if (conf_int) {
@@ -643,10 +643,12 @@ plot.coefs <- function(x, single_plot = TRUE, max_coefs = NULL,
   }
 }
 
-#' Plot the non-zero coefficients of a penalized Cox landmark supermodel
+#' Plot the non-zero coefficients of a penalized Cox landmark supermodel or
+#' the dynamic log-hazard ratios
 #'
 #' Can plot positive and negative coefficients in two separate plots or the
-#' same. X-axes are the same if separate plots are used.
+#' same. X-axes are the same if separate plots are used. If plotting the log
+#' hazard ratios, check [plot.dynamicLM()] to see further arguments.
 #'
 #' @param x a penalized Cox supermodel - created by calling [dynamic_lm()] on an
 #'   object created from [pen_lm()] or [cv.pen_lm()].
@@ -654,12 +656,23 @@ plot.coefs <- function(x, single_plot = TRUE, max_coefs = NULL,
 #'   positive and negative coefficients, or two separate plots.
 #' @param max_coefs Default is to plot all coefficients. If specified, gives the
 #'   maximum number of coefficients to plot.
-#' @param ... Additional arguments to barplot.
+#' @param col Fill color for the barplot.
+#' @param xlab x-axis Label
+#' @param HR Plot the hazard ratio? Default is FALSE. See [plot.dynamicLM()]
+#'   for additional arguments.
+#' @param ... Additional arguments to barplot or to [plot.dynamicLM()].
 #' @export
 plot.penLMcoxph <- function(x, single_plot = TRUE, max_coefs = NULL,
-                            col = "blue", xlab = "Coefficient value", ...) {
-  coefs <- x$model$coefficients
-  plot.coefs(coefs, single_plot, max_coefs, col, xlab, ...)
+                            col = "blue", xlab = "Coefficient value",
+                            HR = FALSE, ...) {
+  if (HR) {
+    tmp <- x
+    class(tmp) <- "dynamicLM"
+    plot(tmp, ...)
+  } else {
+    coefs <- x$model$coefficients
+    plot.coefs(coefs, single_plot, max_coefs, col, xlab, ...)
+  }
 }
 
 
@@ -675,23 +688,31 @@ plot.penLMcoxph <- function(x, single_plot = TRUE, max_coefs = NULL,
 #'   positive and negative coefficients, or two separate plots.
 #' @param max_coefs Default is to plot all coefficients. If specified, gives the
 #'   maximum number of coefficients to plot.
-#' @param all_causes Logical, default is FALSE. Plot coefficients for all
-#'   cause-specific models.
 #' @param col Fill color for the barplot.
 #' @param xlab x-axis Label
-#' @param ... Additional arguments to barplot.
+#' @param HR Plot the hazard ratio? Default is FALSE. See [plot.dynamicLM()]
+#'   for additional arguments.
+#' @param all_causes Logical, default is FALSE. Plot coefficients for all
+#'   cause-specific models.
+#' @param ... Additional arguments to barplot or to [plot.dynamicLM()].
 #' @export
 plot.penLMCSC <- function(x, single_plot = TRUE, max_coefs = NULL,
-                          all_causes = FALSE, col = "blue",
-                          xlab = "Coefficient value", ...) {
-  if (!all_causes) {
-    coefs <- x$model$models[[1]]$coefficients
-    plot.coefs(coefs, single_plot, max_coefs, col, xlab, ...)
+                          col = "blue", xlab = "Coefficient value", HR = FALSE,
+                          all_causes = FALSE, ...) {
+  if (HR) {
+    tmp <- x
+    class(tmp) <- "dynamicLM"
+    plot(tmp, ...)
   } else {
-    lapply(seq_along(x$model$models),
-           function(i) {
-            plot.coefs(x$model$models[[i]]$coefficients,
-                       single_plot, max_coefs, col, xlab, ...)
-           })
+    if (!all_causes) {
+      coefs <- x$model$models[[1]]$coefficients
+      plot.coefs(coefs, single_plot, max_coefs, col, xlab, ...)
+    } else {
+      lapply(seq_along(x$model$models),
+             function(i) {
+               plot.coefs(x$model$models[[i]]$coefficients,
+                          single_plot, max_coefs, col, xlab, ...)
+             })
+    }
   }
 }

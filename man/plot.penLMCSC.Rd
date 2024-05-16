@@ -9,9 +9,10 @@ supermodel}
   x,
   single_plot = TRUE,
   max_coefs = NULL,
-  all_causes = FALSE,
   col = "blue",
   xlab = "Coefficient value",
+  HR = FALSE,
+  all_causes = FALSE,
   ...
 )
 }
@@ -25,14 +26,17 @@ positive and negative coefficients, or two separate plots.}
 \item{max_coefs}{Default is to plot all coefficients. If specified, gives the
 maximum number of coefficients to plot.}
 
-\item{all_causes}{Logical, default is FALSE. Plot coefficients for all
-cause-specific models.}
-
 \item{col}{Fill color for the barplot.}
 
 \item{xlab}{x-axis Label}
 
-\item{...}{Additional arguments to barplot.}
+\item{HR}{Plot the hazard ratio? Default is FALSE. See \code{\link[=plot.dynamicLM]{plot.dynamicLM()}}
+for additional arguments.}
+
+\item{all_causes}{Logical, default is FALSE. Plot coefficients for all
+cause-specific models.}
+
+\item{...}{Additional arguments to barplot or to \code{\link[=plot.dynamicLM]{plot.dynamicLM()}}.}
 }
 \description{
 Can plot positive and negative coefficients in two separate plots or the
