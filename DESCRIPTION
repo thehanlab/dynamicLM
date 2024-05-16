@@ -24,6 +24,7 @@ Imports:
     stats,
     utils
 Suggests:
+    latex2exp,
     msm (>= 1.6.9),
     pec (>= 2021.10.11)
 LazyData: true

@@ -13,7 +13,7 @@
   logHR = TRUE,
   extend = FALSE,
   silence = FALSE,
-  xlab = "LM time",
+  xlab = "Landmark time",
   ylab,
   ylim,
   main,
