@@ -36,6 +36,7 @@
 #' @param x.legend,y.legend The x and y co-ordinates to be used to position the
 #'   legend. They can be specified by keyword or in any way which is accepted
 #'   by xy.coords.
+#' @param las the style of axis labels
 #' @param ... Additional arguments passed to plot
 #'
 #' @return Single plot of the absolute w-year risk of individuals
@@ -58,6 +59,7 @@ plotrisk <- function(
     pch, lty, lwd, col, main, xlab, ylab, xlim, ylim = c(0, 1),
     x.legend,
     y.legend,
+    las = 1,
     ...
 ) {
 
@@ -206,11 +208,11 @@ plotrisk <- function(
         if (!plotted) {
           plot(stats::stepfun(x, y), xlab = xlab, ylab = ylab, main = main,
                pch = pch[i], lty = lty[i], lwd = lwd[i], col = col[i],
-               xlim = xlim, ylim = ylim, ...)
+               xlim = xlim, ylim = ylim, las = las, ...)
           plotted <- TRUE
         } else {
           graphics::lines(stats::stepfun(x, y), pch = pch[i], lty = lty[i],
-                          lwd = lwd[i], col = col[i], ...)
+                          lwd = lwd[i], col = col[i], las = las, ...)
         }
       }
     }
@@ -220,11 +222,11 @@ plotrisk <- function(
            lty = lty, col = col, lwd = lwd)
       if (encountered_na)
         message(tidymess(
-          "Note that individual(s) (", paste(ids_na, collapse = ", "), ") had 
-          entries with missing data. The most recent previous non-missing entry 
+          "Note that individual(s) (", paste(ids_na, collapse = ", "), ") had
+          entries with missing data. The most recent previous non-missing entry
           was used instead."))
     } else {
-      message(tidymess("No users with non-missing data were provided. No plot 
+      message(tidymess("No users with non-missing data were provided. No plot
           could be produced."))
       return(0) # exit
     }
@@ -254,6 +256,6 @@ plotrisk <- function(
     plotrisk(object, long_form, format = "long", lm_col = "LM", id_col,
              cause, varying, end_time, extend, silence,
              pch, lty, lwd, col, main, xlab, ylab, xlim, ylim,
-             x.legend, y.legend, ...)
+             x.legend, y.legend, las, ...)
   }
 }

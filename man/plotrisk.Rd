@@ -28,6 +28,7 @@ plotrisk(
   ylim = c(0, 1),
   x.legend,
   y.legend,
+  las = 1,
   ...
 )
 }
@@ -87,6 +88,8 @@ the model}
 \item{x.legend, y.legend}{The x and y co-ordinates to be used to position the
 legend. They can be specified by keyword or in any way which is accepted
 by xy.coords.}
+
+\item{las}{the style of axis labels}
 
 \item{...}{Additional arguments passed to plot}
 }
