@@ -468,13 +468,14 @@ $$\log l(\beta, \alpha) - \lambda p(\beta, \alpha)$$ Penalization
 balances model complexity and goodness-of-fit, where the optimal weight
 $\lambda$ is chosen via cross-validation.
 
-To fit a penalized landmark supermodel, the lmdata is the only required
-input. First, either a coefficient path (using `pen_lm`) or a
-cross-validated model (using `cv.pen_lm`) is created for multiple
-penalties (lambdas $\lambdas$). Then, a specific penalty can be chosen
-to fit a model via `dynamic_lm`.
+To fit a penalized landmark supermodel, the lmdata is the only required 
+input. First, either a coefficient path (using `pen_lm`) or a 
+cross-validated model (using `cv.pen_lm`) is created for multiple 
+penalties (lambdas $\lambda$s). Then, a specific penalty can be chosen 
+to fit a model via `dynamic_lm()`.
 
-The code largely makes calls to the `glmnet` library.
+The code largely makes calls to the 
+[glmnet](https://glmnet.stanford.edu/articles/glmnet.html) library.
 
 #### 3.2.2.1 Coefficient path
 
