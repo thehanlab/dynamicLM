@@ -220,7 +220,7 @@ Please note that convergence warnings in `cox.fit` are common throughout but can
 
 ### Traditional (unpenalized) landmark supermodel
 
-To fit a supermodel, a stacked data set, formula, and method need to be provided. The input to `dynamic_lm` varies slightly depending on if standard survival data or competing events are being considered.
+To fit a supermodel, a stacked data set, formula, and method need to be provided. The input to `dynamic_lm()` varies slightly depending on if standard survival data or competing events are being considered.
 
 In the case of **standard survival data**:
 
@@ -239,7 +239,7 @@ formula <- "Hist(time, status, LM) ~
             stage + bili + bili_1 + bili_2 + albumin +  albumin_1 + albumin_2 +
             LM_1 + LM_2 + cluster(id)"
 supermodel <- dynamic_lm(lmdata, as.formula(formula), "CSC", x = TRUE) 
-print(supermodel)
+print(supermodel) 
 ```
 
 There are additional ways of printing/accessing the model.

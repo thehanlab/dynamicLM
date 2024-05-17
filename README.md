@@ -1,31 +1,31 @@
-- [1 dynamicLM](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#dynamiclm)
-- [2 Introduction](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#introduction)
+- [1 dynamicLM](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#1-dynamiclm)
+- [2 Introduction](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#2-introduction)
   - [2.1 What is landmarking and when is it
-    used?](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#what-is-landmarking-and-when-is-it-used)
-  - [2.2 Installation](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#installation)
-- [3 Tutorial](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#tutorial)
-  - [3.1 Data preparation](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#data-preparation)
-    - [3.1.1 Data](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#data)
-    - [3.1.2 Build a super data set](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#build-a-super-data-set)
-  - [3.2 Model fitting](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#model-fitting)
+    used?](#what-is-landmarking-and-when-is-it-used)
+  - [2.2 Installation](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#22-installation)
+- [3 Tutorial](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#3-tutorial)
+  - [3.1 Data preparation](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#31-data-preparation)
+    - [3.1.1 Data](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#311-data)
+    - [3.1.2 Build a super data set](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#312-build-a-super-data-set)
+  - [3.2 Model fitting](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#32-model-fitting)
     - [3.2.1 Traditional (unpenalized) landmark
-      supermodel](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#traditional-unpenalized-landmark-supermodel)
+      supermodel](#traditional-unpenalized-landmark-supermodel)
     - [3.2.2 Penalized landmark
-      supermodel](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#penalized-landmark-supermodel)
-      - [3.2.2.1 Coefficient path](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#coefficient-path)
-      - [3.2.2.2 Cross-validated model](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#cross-validated-model)
+      supermodel](#penalized-landmark-supermodel)
+      - [3.2.2.1 Coefficient path](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#3221-coefficient-path)
+      - [3.2.2.2 Cross-validated model](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#3222-crossvalidated-model)
       - [3.2.2.3 Fitting a penalized landmark
-        supermodel](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#fitting-a-penalized-landmark-supermodel)
-  - [3.3 Prediction](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#prediction)
-    - [3.3.1 Training data](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#training-data)
-    - [3.3.2 Testing data](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#testing-data)
-  - [3.4 Model evaluation](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#model-evaluation)
-    - [3.4.1 Calibration plots](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#calibration-plots)
-    - [3.4.2 Predictive performance](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#predictive-performance)
-    - [3.4.3 Bootstrapping](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#bootstrapping)
-    - [3.4.4 External validation](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#external-validation)
+        supermodel](#fitting-a-penalized-landmark-supermodel)
+  - [3.3 Prediction](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#33-prediction)
+    - [3.3.1 Training data](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#331-training-data)
+    - [3.3.2 Testing data](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#332-testing-data)
+  - [3.4 Model evaluation](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#34-model-evaluation)
+    - [3.4.1 Calibration plots](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#341-calibration-plots)
+    - [3.4.2 Predictive performance](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#342-predictive-performance)
+    - [3.4.3 Bootstrapping](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#343-bootstrapping)
+    - [3.4.4 External validation](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#344-external-validation)
     - [3.4.5 Visualize individual dynamic risk
-      trajectories](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#visualize-individual-dynamic-risk-trajectories)
+      trajectories](#visualize-individual-dynamic-risk-trajectories)
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
@@ -366,7 +366,7 @@ and [here](https://stackoverflow.com/a/19370173)).
 ### 3.2.1 Traditional (unpenalized) landmark supermodel
 
 To fit a supermodel, a stacked data set, formula, and method need to be
-provided. The input to `dynamic_lm` varies slightly depending on if
+provided. The input to `dynamic_lm()` varies slightly depending on if
 standard survival data or competing events are being considered.
 
 In the case of **standard survival data**:
@@ -386,7 +386,7 @@ formula <- "Hist(time, status, LM) ~
             stage + bili + bili_1 + bili_2 + albumin +  albumin_1 + albumin_2 +
             LM_1 + LM_2 + cluster(id)"
 supermodel <- dynamic_lm(lmdata, as.formula(formula), "CSC", x = TRUE) 
-print(supermodel)
+print(supermodel) 
 #> 
 #> Landmark cause-specific cox super model fit for dynamic prediction of window size 5:
 #> 
