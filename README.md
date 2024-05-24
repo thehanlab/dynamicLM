@@ -35,13 +35,13 @@ time-dependent covariates, and censored data.
 
 If you use our library, please reference it:
 
-Anya H Fries\*, Eunji Choi\*, Julie T Wu, Justin H Lee, Victoria Y Ding,
-Robert J Huang, Su-Ying Liang, Heather A Wakelee, Lynne R Wilkens, Iona
-Cheng, Summer S Han, Software Application Profile: *dynamicLM*—a tool
-for performing dynamic risk prediction using a landmark supermodel for
-survival data under competing risks, *International Journal of
-Epidemiology*, Volume 52, Issue 6, December 2023, Pages 1984–1989,
-<https://doi.org/10.1093/ije/dyad122>
+> Anya H Fries\*, Eunji Choi\*, Julie T Wu, Justin H Lee, Victoria Y
+> Ding, Robert J Huang, Su-Ying Liang, Heather A Wakelee, Lynne R
+> Wilkens, Iona Cheng, Summer S Han, Software Application Profile:
+> *dynamicLM*—a tool for performing dynamic risk prediction using a
+> landmark supermodel for survival data under competing risks,
+> *International Journal of Epidemiology*, Volume 52, Issue 6, December
+> 2023, Pages 1984–1989, <https://doi.org/10.1093/ije/dyad122>
 
 # 2 Introduction
 
@@ -68,8 +68,8 @@ current covariates *Z*(*s*) (e.g., 30+*s* years old, off treatment).
 Note that here the predictions make use of the most recent covariate
 value of the patient.
 
-The landmark model for survival data is a simple and powerful approach
-to dynamic prediction for many reasons:
+The landmark model for survival data is is a simple and powerful
+approach to dynamic prediction for many reasons:
 
 - **Time-varying effects** are captured by considering interaction terms
   between the prediction (“landmark”) time and covariates
@@ -87,6 +87,17 @@ to dynamic prediction for many reasons:
   by penalizing model coefficients to either select covariates or shrink
   coefficients.
 
+It is built on hazards, like a (cause-specific) Cox model. From a
+landmark time $s\in[s_0,s_L ]$, the hazard for $j$ th event (“cause”)
+($j=1,2,…,C$) at time $t$ ($s \le t \le s+w$) is:  
+$$h_j (t│Z(s), s)=h_{j0} (t)  exp⁡(\alpha_j (s)+ \beta_j (s)^T Z(s))$$
+where $Z(s)$ are the most up-to-date values of an individual’s
+covariates at time (landmark) $s$ and $\alpha(s)$ models the main
+effects of the landmark time. The interaction of $s$ with the
+covariates, modeled by $\beta_j (s)$, captures the time-dependent
+effects of covariates. For example, $\beta(s)= \beta_0+ \beta_1 s$
+models a main and linear time-dependent effect.
+
 In short, the creation of the landmark model for survival data is built
 on the concept of risk assessment times (i.e., landmarks) that span risk
 prediction times of interest. In this approach, a training dataset of
@@ -96,9 +107,10 @@ fit on these stacked datasets (i.e., supermodel), and dynamic risk
 prediction is then performed by using the most up-to-date value of a
 patient’s covariate values.
 
-Putter and Houwelingen describe landmarking extensively
-[here](https://onlinelibrary.wiley.com/doi/10.1111/j.1467-9469.2006.00529.x)
-and [here](https://onlinelibrary.wiley.com/doi/full/10.1002/sim.5665).
+> *Further references*: Putter and Houwelingen describe landmarking
+> extensively
+> [here](https://onlinelibrary.wiley.com/doi/10.1111/j.1467-9469.2006.00529.x)
+> and [here](https://onlinelibrary.wiley.com/doi/full/10.1002/sim.5665).
 
 ## 2.2 Installation
 
@@ -125,11 +137,6 @@ First, load the library:
 
 ``` r
 library(dynamicLM)
-#> Loading required package: dynpred
-#> Loading required package: survival
-#> Loading required package: prodlim
-#> Loading required package: riskRegression
-#> riskRegression version 2024.04.25
 ```
 
 ## 3.1 Data preparation
@@ -213,8 +220,7 @@ head(pbc_df)
 ### 3.1.2 Build a super data set
 
 We first specify which variables are fixed or longitudinal
-(time-varying). When there are no landmark-varying variables, set
-`varying = NULL`.
+(time-varying).
 
 ``` r
 outcome <- list(time = "time", status = "status")
@@ -227,8 +233,8 @@ covars <- list(fixed = fixed_variables, varying = varying_variables)
 
 We will produce 5-year dynamic predictions of transplant (`w`). Landmark
 time points (`lms`) are set as every year between 0 and 5 years to train
-the model. This means we are only interested in prediction up to 5
-years.
+the model. This means we are only interested in prediction up to 5 year
+survival.
 
 ``` r
 w <- 5                    # Predict the 5-year outcome of transplant
@@ -253,24 +259,23 @@ There are three steps:
 component `data` which contains the dataset itself.*
 
 We illustrate the process in detail by printing the entries at each step
-for one individual.
+for one individual and some example columns.
 
 ``` r
-example_columns <- c("id", "time", "status", "trt",  "age", "albumin", 
-                     "alk.phos", "ascites")
+example_columns <- c("id", "time", "status", "trt",  "age", "albumin", "ascites")
 pbc_df[pbc_df$id == 1, c("tstart", example_columns)]  
-#>   tstart id time status trt      age albumin alk.phos ascites
-#> 1    0.0  1  1.1      2   1 58.76523    2.60     1718       1
-#> 2    0.5  1  1.1      2   1 58.76523    2.94     1612       1
+#>   tstart id time status trt      age albumin ascites
+#> 1    0.0  1  1.1      2   1 58.76523    2.60       1
+#> 2    0.5  1  1.1      2   1 58.76523    2.94       1
 ```
 
 We first stack the datasets over the landmarks (see the new column ‘LM’)
-and update the treatment covariate. Note that one row is created for
-each landmark that the individual is still alive at. In this row, if
-time is greater time than the landmark time plus the window, it is
-censored at this value (this occurs in the first row, for example,
-censored at 0+5), and the most recent value all covariates is used (in
-our case, only treatment varies).
+and update the treatment covariate. One row is created for each landmark
+that the individual is still alive at. In this row, if time is greater
+time than the landmark time plus the window, it is censored at this
+value (this occurs in the first row, for example, censored at 0+5), and
+the most recent value all covariates is used (in our case, only
+treatment varies).
 
 ``` r
 # Stack landmark datasets
@@ -281,27 +286,28 @@ lmdata <- stack_data(pbc_df, outcome, lms, w, covars, format = "long",
 
 data <- lmdata$data
 print(data[data$id == 4, c("LM", example_columns)])
-#>     LM id time status trt      age albumin alk.phos ascites
-#> 16   0  4  5.0      0   1 54.74059    2.54     6122       0
-#> 18   1  4  5.3      2   1 54.74059    2.80     1157       0
-#> 19   2  4  5.3      2   1 54.74059    2.92     1178       0
-#> 191  3  4  5.3      2   1 54.74059    2.92     1178       0
-#> 21   4  4  5.3      2   1 54.74059    2.59     1035       0
-#> 22   5  4  5.3      2   1 54.74059    1.83      623       1
+#>     LM id time status trt      age albumin ascites
+#> 16   0  4  5.0      0   1 54.74059    2.54       0
+#> 18   1  4  5.3      2   1 54.74059    2.80       0
+#> 19   2  4  5.3      2   1 54.74059    2.92       0
+#> 191  3  4  5.3      2   1 54.74059    2.92       0
+#> 21   4  4  5.3      2   1 54.74059    2.59       0
+#> 22   5  4  5.3      2   1 54.74059    1.83       1
 ```
 
 We then (optionally) update more complex LM-varying covariates. Here we
-create an age covariate, based on age at time 0.
+create update the age covariate, based on age at time 0.
 
 ``` r
 lmdata$data$age <- lmdata$data$age + lmdata$data$LM
 ```
 
-Lastly, we add landmark time-interactions. The `_1` refers to the first
-interaction in `func_covars`, `_2` refers to the second interaction in
-`func_covars`, etc… Similarly, `LM_1` and `LM_2` are created from
-`func_lm`. An optional additional argument is `pred_covars` which can
-limit the covariates that will have landmark time interactions.
+Lastly, we add landmark time-interactions. We use the following naming
+convention: `_1` refers to the first interaction in `func_covars`, `_2`
+refers to the second interaction in `func_covars`, etc… Similarly,
+`LM_1` and `LM_2` are created from `func_lm`. An optional additional
+argument is `pred_covars` which can limit the covariates that will have
+landmark time interactions.
 
 ``` r
 lmdata <- add_interactions(lmdata, 
@@ -310,14 +316,14 @@ lmdata <- add_interactions(lmdata,
 data <- lmdata$data
 print(data[data$id == 1, 
            c("LM", example_columns, 
-             paste0(example_columns[4:8], "_1"),
-             paste0(example_columns[4:8], "_2"))])
-#>   LM id time status trt      age albumin alk.phos ascites trt_1    age_1
-#> 1  0  1  1.1      2   1 58.76523    2.60     1718       1     0  0.00000
-#> 2  1  1  1.1      2   1 59.76523    2.94     1612       1     1 59.76523
-#>   albumin_1 alk.phos_1 ascites_1 trt_2    age_2 albumin_2 alk.phos_2 ascites_2
-#> 1      0.00          0         0     0  0.00000      0.00          0         0
-#> 2      2.94       1612         1     1 59.76523      2.94       1612         1
+             paste0(example_columns[4:7], "_1"),
+             paste0(example_columns[4:7], "_2"))])
+#>   LM id time status trt      age albumin ascites trt_1    age_1 albumin_1
+#> 1  0  1  1.1      2   1 58.76523    2.60       1     0  0.00000      0.00
+#> 2  1  1  1.1      2   1 59.76523    2.94       1     1 59.76523      2.94
+#>   ascites_1 trt_2    age_2 albumin_2 ascites_2
+#> 1         0     0  0.00000      0.00         0
+#> 2         1     1 59.76523      2.94         1
 ```
 
 One can print `lmdata`. The argument `verbose` allows for additional
@@ -328,22 +334,10 @@ print(lmdata, verbose = TRUE)
 ```
 
 Note that `lmdata$all_covs` returns a vector with all the covariates
-that have landmark interactions. Again, the `_1` refers to the first
-interaction in `func_covars`, `_2` refers to the second interaction in
-`func_covars`, etc… `LM_1` and `LM_2` are created from `func_lms`.
+that have landmark interactions.
 
 ``` r
-all_covs <- lmdata$all_covs
-print(all_covs)
-#>  [1] "male"       "stage"      "trt"        "age"        "albumin"   
-#>  [6] "alk.phos"   "ascites"    "ast"        "bili"       "edema"     
-#> [11] "hepato"     "platelet"   "protime"    "spiders"    "male_1"    
-#> [16] "male_2"     "stage_1"    "stage_2"    "trt_1"      "trt_2"     
-#> [21] "age_1"      "age_2"      "albumin_1"  "albumin_2"  "alk.phos_1"
-#> [26] "alk.phos_2" "ascites_1"  "ascites_2"  "ast_1"      "ast_2"     
-#> [31] "bili_1"     "bili_2"     "edema_1"    "edema_2"    "hepato_1"  
-#> [36] "hepato_2"   "platelet_1" "platelet_2" "protime_1"  "protime_2" 
-#> [41] "spiders_1"  "spiders_2"  "LM_1"       "LM_2"
+print(lmdata$all_covs)
 ```
 
 ## 3.2 Model fitting
@@ -361,7 +355,7 @@ and [here](https://stackoverflow.com/a/19370173)).
 ### 3.2.1 Traditional (unpenalized) landmark supermodel
 
 To fit a supermodel, a stacked data set, formula, and method need to be
-provided. The input to `dynamic_lm()` varies slightly depending on if
+provided. The input to `dynamic_lm` varies slightly depending on if
 standard survival data or competing events are being considered.
 
 In the case of **standard survival data**:
@@ -471,10 +465,11 @@ $\lambda$ is chosen via cross-validation.
 To fit a penalized landmark supermodel, the lmdata is the only required
 input. First, either a coefficient path (using `pen_lm`) or a
 cross-validated model (using `cv.pen_lm`) is created for multiple
-penalties (lambdas $\lambdas$). Then, a specific penalty can be chosen
-to fit a model via `dynamic_lm`.
+penalties (lambdas $\lambda$). Then, a specific penalty can be chosen to
+fit a model via `dynamic_lm`.
 
-The code largely makes calls to the `glmnet` library.
+The code largely makes calls to the
+[glmnet](https://glmnet.stanford.edu/articles/glmnet.html) library.
 
 #### 3.2.2.1 Coefficient path
 
@@ -584,9 +579,9 @@ plot(supermodel_pen, HR = TRUE, covars = c("bili", "stage", "edema"))
 
 ## 3.3 Prediction
 
-Once `dynamic_lm()` has been run, the same prediction procedures and
-model evaluation, etc., can be performed regardless of how the model has
-been fit.
+Once `dynamic_lm` has been run, the same prediction procedures and model
+evaluation, etc., can be performed regardless of how the model has been
+fit.
 
 ### 3.3.1 Training data
 
@@ -636,12 +631,12 @@ entry from the very original data frame.
 example_test <- pbc_df[1:5, ]
 example_test$age <- example_test$age + example_test$tstart
 print(example_test[, c("tstart", example_columns)])
-#>   tstart id time status trt      age albumin alk.phos ascites
-#> 1    0.0  1  1.1      2   1 58.76523    2.60     1718       1
-#> 2    0.5  1  1.1      2   1 59.26523    2.94     1612       1
-#> 3    0.0  2 12.3      0   1 56.44627    4.14     7395       0
-#> 4    0.5  2 12.3      0   1 56.94627    3.60     2107       0
-#> 5    1.0  2 12.3      0   1 57.44627    3.55     1711       0
+#>   tstart id time status trt      age albumin ascites
+#> 1    0.0  1  1.1      2   1 58.76523    2.60       1
+#> 2    0.5  1  1.1      2   1 59.26523    2.94       1
+#> 3    0.0  2 12.3      0   1 56.44627    4.14       0
+#> 4    0.5  2 12.3      0   1 56.94627    3.60       0
+#> 5    1.0  2 12.3      0   1 57.44627    3.55       0
 ```
 
 ``` r

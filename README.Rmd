@@ -27,7 +27,7 @@ The goal of dynamicLM is to provide a simple framework to make dynamic w-year ri
 
 If you use our library, please reference it:
 
-| Anya H Fries\*, Eunji Choi\*, Julie T Wu, Justin H Lee, Victoria Y Ding, Robert J Huang, Su-Ying Liang, Heather A Wakelee, Lynne R Wilkens, Iona Cheng, Summer S Han, Software Application Profile: *dynamicLM*—a tool for performing dynamic risk prediction using a landmark supermodel for survival data under competing risks, *International Journal of Epidemiology*, Volume 52, Issue 6, December 2023, Pages 1984–1989, https://doi.org/10.1093/ije/dyad122
+> Anya H Fries\*, Eunji Choi\*, Julie T Wu, Justin H Lee, Victoria Y Ding, Robert J Huang, Su-Ying Liang, Heather A Wakelee, Lynne R Wilkens, Iona Cheng, Summer S Han, Software Application Profile: *dynamicLM*—a tool for performing dynamic risk prediction using a landmark supermodel for survival data under competing risks, *International Journal of Epidemiology*, Volume 52, Issue 6, December 2023, Pages 1984–1989, https://doi.org/10.1093/ije/dyad122
 
 
 # Introduction
@@ -46,16 +46,20 @@ current covariates *Z*(*s*) (e.g., 30+*s* years old, off treatment).
 Note that here the predictions make use of the most recent covariate
 value of the patient.
 
-The landmark model for survival data is a simple and powerful approach to dynamic prediction for many reasons:
+The landmark model for survival data is is a simple and powerful approach to dynamic prediction for many reasons:
 
 -   **Time-varying effects** are captured by considering interaction terms between the prediction (“landmark”) time and covariates
 -   **Time-dependent covariates** can be used, in which case, for prediction at landmark time *s*, the most updated value *Z*(*s*) will be used. Note that covariates do not have to be time-dependent because time-varying effects will be captured regardless.
 -   Both **standard survival data** and **competing risks** can be handled. In standard survival analysis only one event (e.g., recurrence) is considered, with possible censoring. Competing risks consider the time-to-first-event (‘time’) and the event type (‘cause’), for example analyzing recurrence with the competing risk of death. 
 -   **Penalization** enables effective handling of high-dimensional data by penalizing model coefficients to either select covariates or shrink coefficients. 
 
+It is built on hazards, like a (cause-specific) Cox model. From a landmark time $s\in[s_0,s_L ]$, the hazard for $j$ th event (“cause”)  ($j=1,2,…,C$) at time $t$ ($s \le t \le s+w$) is:  
+$$h_j (t│Z(s), s)=h_{j0} (t)  exp⁡(\alpha_j (s)+ \beta_j (s)^T Z(s))$$
+where $Z(s)$ are the most up-to-date values of an individual’s covariates at time (landmark) $s$ and $\alpha(s)$ models the main effects of the landmark time. The interaction of $s$ with the covariates, modeled by $\beta_j (s)$, captures the time-dependent effects of covariates. For example, $\beta(s)= \beta_0+ \beta_1 s$ models a main and linear time-dependent effect.
+
 In short, the creation of the landmark model for survival data is built on the concept of risk assessment times (i.e., landmarks) that span risk prediction times of interest. In this approach, a training dataset of the study cohort is transformed into multiple censored datasets based on a prediction window of interest and the predefined landmarks. A model is fit on these stacked datasets (i.e., supermodel), and dynamic risk prediction is then performed by using the most up-to-date value of a patient’s covariate values.
 
-| Putter and Houwelingen describe landmarking extensively [here](https://onlinelibrary.wiley.com/doi/10.1111/j.1467-9469.2006.00529.x) and [here](https://onlinelibrary.wiley.com/doi/full/10.1002/sim.5665). 
+> *Further references*: Putter and Houwelingen describe landmarking extensively [here](https://onlinelibrary.wiley.com/doi/10.1111/j.1467-9469.2006.00529.x) and [here](https://onlinelibrary.wiley.com/doi/full/10.1002/sim.5665). 
 
 ## Installation
 
@@ -74,7 +78,7 @@ This is a basic example which shows you how to use `dynamicLM` to make dynamic 5
 
 First, load the library:
 
-```{r libs}
+```{r libs, echo=TRUE, warning=FALSE, message=FALSE, results='hide'}
 library(dynamicLM)
 ```
 
@@ -131,7 +135,7 @@ head(pbc_df)
 
 ### Build a super data set
 
-We first specify which variables are fixed or longitudinal (time-varying). When there are no landmark-varying variables, set `varying = NULL`.
+We first specify which variables are fixed or longitudinal (time-varying).
 
 ```{r}
 outcome <- list(time = "time", status = "status")
@@ -142,7 +146,7 @@ varying_variables <- c("albumin", "alk.phos", "ascites", "ast", "bili",
 covars <- list(fixed = fixed_variables, varying = varying_variables)
 ```
 
-We will produce 5-year dynamic predictions of transplant (`w`). Landmark time points (`lms`) are set as every year between 0 and 5 years to train the model. This means we are only interested in prediction up to 5 years.
+We will produce 5-year dynamic predictions of transplant (`w`). Landmark time points (`lms`) are set as every year between 0 and 5 years to train the model. This means we are only interested in prediction up to 5 year survival.
 
 ```{r}
 w <- 5                    # Predict the 5-year outcome of transplant
@@ -159,15 +163,14 @@ There are three steps:
 
 *Note that these return an object of class `LMdataframe`. This has a component `data` which contains the dataset itself.* 
 
-We illustrate the process in detail by printing the entries at each step for one individual. 
+We illustrate the process in detail by printing the entries at each step for one individual and some example columns. 
 
 ```{r}
-example_columns <- c("id", "time", "status", "trt",  "age", "albumin", 
-                     "alk.phos", "ascites")
+example_columns <- c("id", "time", "status", "trt",  "age", "albumin", "ascites")
 pbc_df[pbc_df$id == 1, c("tstart", example_columns)]  
 ```
 
-We first stack the datasets over the landmarks (see the new column ‘LM’) and update the treatment covariate. Note that one row is created for each landmark that the individual is still alive at. In this row, if time is greater time than the landmark time plus the window, it is censored at this value (this occurs in the first row, for example, censored at 0+5), and the most recent value all covariates is used (in our case, only treatment varies).
+We first stack the datasets over the landmarks (see the new column ‘LM’) and update the treatment covariate. One row is created for each landmark that the individual is still alive at. In this row, if time is greater time than the landmark time plus the window, it is censored at this value (this occurs in the first row, for example, censored at 0+5), and the most recent value all covariates is used (in our case, only treatment varies).
 
 ```{r stack}
 # Stack landmark datasets
@@ -180,13 +183,13 @@ data <- lmdata$data
 print(data[data$id == 4, c("LM", example_columns)])
 ```
 
-We then (optionally) update more complex LM-varying covariates. Here we create an age covariate, based on age at time 0.
+We then (optionally) update more complex LM-varying covariates. Here we create update the age covariate, based on age at time 0.
 
 ```{r}
 lmdata$data$age <- lmdata$data$age + lmdata$data$LM
 ```
 
-Lastly, we add landmark time-interactions. The `_1` refers to the first interaction in `func_covars`, `_2` refers to the second interaction in `func_covars`, etc… Similarly, `LM_1` and `LM_2` are created from `func_lm`. An optional additional argument is `pred_covars` which can limit the covariates that will have landmark time interactions. 
+Lastly, we add landmark time-interactions. We use the following naming convention: `_1` refers to the first interaction in `func_covars`, `_2` refers to the second interaction in `func_covars`, etc… Similarly, `LM_1` and `LM_2` are created from `func_lm`. An optional additional argument is `pred_covars` which can limit the covariates that will have landmark time interactions. 
 
 ```{r add}
 lmdata <- add_interactions(lmdata, 
@@ -195,8 +198,8 @@ lmdata <- add_interactions(lmdata,
 data <- lmdata$data
 print(data[data$id == 1, 
            c("LM", example_columns, 
-             paste0(example_columns[4:8], "_1"),
-             paste0(example_columns[4:8], "_2"))])
+             paste0(example_columns[4:7], "_1"),
+             paste0(example_columns[4:7], "_2"))])
 ```
 
 One can print `lmdata`. The argument `verbose` allows for additional stored objects to be printed (default is FALSE).
@@ -205,11 +208,10 @@ One can print `lmdata`. The argument `verbose` allows for additional stored obje
 print(lmdata, verbose = TRUE)
 ```
 
-Note that `lmdata$all_covs` returns a vector with all the covariates that have landmark interactions. Again, the `_1` refers to the first interaction in `func_covars`, `_2` refers to the second interaction in `func_covars`, etc… `LM_1` and `LM_2` are created from `func_lms`.
+Note that `lmdata$all_covs` returns a vector with all the covariates that have landmark interactions.
 
-```{r}
-all_covs <- lmdata$all_covs
-print(all_covs)
+```{r, eval=FALSE}
+print(lmdata$all_covs)
 ```
 
 ## Model fitting
@@ -220,7 +222,7 @@ Please note that convergence warnings in `cox.fit` are common throughout but can
 
 ### Traditional (unpenalized) landmark supermodel
 
-To fit a supermodel, a stacked data set, formula, and method need to be provided. The input to `dynamic_lm()` varies slightly depending on if standard survival data or competing events are being considered.
+To fit a supermodel, a stacked data set, formula, and method need to be provided. The input to `dynamic_lm` varies slightly depending on if standard survival data or competing events are being considered.
 
 In the case of **standard survival data**:
 
@@ -276,9 +278,9 @@ With a large dataset and time-dependent effects, the supermodel has numerous par
 $$\log l(\beta, \alpha) - \lambda p(\beta, \alpha)$$
 Penalization balances model complexity and goodness-of-fit, where the optimal weight $\lambda$ is chosen via cross-validation.
 
-To fit a penalized landmark supermodel, the lmdata is the only required input. First, either a coefficient path (using `pen_lm`) or a cross-validated model (using `cv.pen_lm`) is created for multiple penalties (lambdas $\lambdas$). Then, a specific penalty can be chosen to fit a model via `dynamic_lm`.
+To fit a penalized landmark supermodel, the lmdata is the only required input. First, either a coefficient path (using `pen_lm`) or a cross-validated model (using `cv.pen_lm`) is created for multiple penalties (lambdas $\lambda$). Then, a specific penalty can be chosen to fit a model via `dynamic_lm`.
 
-The code largely makes calls to the `glmnet` library.
+The code largely makes calls to the [glmnet](https://glmnet.stanford.edu/articles/glmnet.html) library.
 
 #### Coefficient path 
 
@@ -367,7 +369,7 @@ plot(supermodel_pen, HR = TRUE, covars = c("bili", "stage", "edema"))
 
 ## Prediction
 
-Once `dynamic_lm()` has been run, the same prediction procedures and model evaluation, etc., can be performed regardless of how the model has been fit.
+Once `dynamic_lm` has been run, the same prediction procedures and model evaluation, etc., can be performed regardless of how the model has been fit.
 
 ### Training data
 
