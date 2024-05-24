@@ -201,6 +201,7 @@ print.LMCSC <- function(x, verbose = FALSE, cause, ...) {
       cat(paste0("----------> Cause: ", i, "\n"))
       cox_model <- x$model$models[[i]]
       cox_model$call <- NULL
+      cox_model$loglik <- NA
       print(cox_model)
       cat("\n\n")
     }
@@ -208,6 +209,7 @@ print.LMCSC <- function(x, verbose = FALSE, cause, ...) {
     cat(paste0("----------> Cause: ", cause, "\n"))
     cox_model <- x$model$models[[cause]]
     cox_model$call <- NULL
+    cox_model$loglik <- NA
     print(cox_model)
     cat("\n\n")
   }
@@ -264,6 +266,7 @@ print.LMcoxph <- function(x, verbose = FALSE, ...) {
 
   cox_model <- x$model
   cox_model$call <- NULL
+  cox_model$loglik <- NA
   print(cox_model)
 
   if (verbose) {
