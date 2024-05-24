@@ -75,7 +75,7 @@ You can install the development version of `dynamicLM` from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("thehanlab/dynamicLM", ref="updates/bug-fixes")
+devtools::install_github("thehanlab/dynamicLM")
 #> Skipping install of 'dynamicLM' from a github remote, the SHA1 (eed8c2cb) has not changed since last install.
 #>   Use `force = TRUE` to force installation
 ```
