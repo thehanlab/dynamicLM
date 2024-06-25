@@ -126,8 +126,10 @@ print.LMdataframe <- function(x, verbose = FALSE, ...) {
 #'
 #' @param x Object of class LMScore
 #' @param digits Number of significant digits to include
-#' @param landmarks TODO
-#' @param summary = TODO
+#' @param landmarks Print the time-dependent metrics at individual landmarks.
+#'   Default is TRUE.
+#' @param summary Print the summary metrics of the models if they have been
+#'   calculated. Default is TRUE.
 #' @param ... Arguments passed to print.
 #'
 #' @importFrom data.table :=
@@ -138,6 +140,7 @@ print.LMScore <- function(x, digits = 3, landmarks = TRUE, summary = TRUE, ...) 
   if (landmarks) {
     if (!is.null(x$AUC)) {
       cat(paste0("\nMetric: Time-dependent AUC (w = ", x$w, ")\n"))
+      if (!is.null(x$B)) cat("        Bootstrapped over", x$B, "iterations\n")
       obj <- x$AUC
       if (!is.null(obj$score$times)) obj$score$times <- NULL
       if (!is.null(obj$contrasts$times)) obj$contrasts$times <- NULL
@@ -147,6 +150,7 @@ print.LMScore <- function(x, digits = 3, landmarks = TRUE, summary = TRUE, ...) 
     }
     if (!is.null(x$Brier)) {
       cat(paste0("\nMetric: Time-dependent Brier Score (w = ", x$w, ")\n"))
+      if (!is.null(x$B)) cat("        Bootstrapped over", x$B, "iterations\n")
       obj <- x$Brier
       if (!is.null(obj$score$times)) obj$score$times <- NULL
       if (!is.null(obj$contrasts$times)) obj$contrasts$times <- NULL
@@ -161,6 +165,7 @@ print.LMScore <- function(x, digits = 3, landmarks = TRUE, summary = TRUE, ...) 
         cat(paste0("\nMetric: Averaged time-dependent AUC (w = ", x$w, ")\n"))
       # else
       #   cat(paste0("\nMetric: Weighted average time-dependent AUC (w = ", x$w, ")\n"))
+      if (!is.null(x$B)) cat("        Bootstrapped over", x$B, "iterations\n")
       obj <- x$AUC_summary
       class(obj) <- "scoreAUC"
       print(obj, digits = digits)
@@ -170,6 +175,7 @@ print.LMScore <- function(x, digits = 3, landmarks = TRUE, summary = TRUE, ...) 
         cat(paste0("\nMetric: Averaged time-dependent Brier Score (w = ", x$w, ")\n"))
       # else
       #   cat(paste0("\nMetric: Weighted average time-dependent Brier Score (w = ", x$w, ")\n"))
+      if (!is.null(x$B)) cat("        Bootstrapped over", x$B, "iterations\n")
       obj <- x$Brier_summary
       class(obj) <- "scoreBrier"
       print(obj, digits = digits)

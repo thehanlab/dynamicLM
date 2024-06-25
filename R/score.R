@@ -376,6 +376,10 @@ score <-
     if (get.bs) {
       outlist$Brier <- list(score = briert_out, contrasts = b_contrasts_out)
     }
+    if (B > 1) {
+      outlist$B <- B
+      outlist$split.method <- split.method
+    }
 
     ###{
     # TODO: add as an argument

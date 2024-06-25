@@ -11,9 +11,11 @@
 
 \item{digits}{Number of significant digits to include}
 
-\item{landmarks}{TODO}
+\item{landmarks}{Print the time-dependent metrics at individual landmarks.
+Default is TRUE.}
 
-\item{summary}{= TODO}
+\item{summary}{Print the summary metrics of the models if they have been
+calculated. Default is TRUE.}
 
 \item{...}{Arguments passed to print.}
 }
