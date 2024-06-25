@@ -5,7 +5,15 @@
 \title{Plot coefficients from an object created by calling \code{\link[=pen_lm]{pen_lm()}}, analogous to
 plotting from \code{\link[=glmnet]{glmnet()}}}
 \usage{
-\method{plot}{pen_lm}(x, xvar = "norm", all_causes = FALSE, silent = FALSE, label = FALSE, ...)
+\method{plot}{pen_lm}(
+  x,
+  xvar = "norm",
+  all_causes = FALSE,
+  silent = FALSE,
+  label = FALSE,
+  all_causes_title = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{a fitted \code{\link[=pen_lm]{pen_lm()}} object}
@@ -20,6 +28,9 @@ coefficient profile plots for each model.}
 \item{silent}{Set TRUE to hide messages.}
 
 \item{label}{Set TRUE to label the curves by variable index numbers.}
+
+\item{all_causes_title}{If \code{all_causes} is set to TRUE, includes a title with
+the cause. Defaults to TRUE.}
 
 \item{\dots}{additional graphical parameters}
 }

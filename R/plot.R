@@ -521,13 +521,16 @@ plot.LMcalibrationPlot <- function(x, main, ...) {
 #'   coefficient profile plots for each model.
 #' @param silent Set TRUE to hide messages.
 #' @param label Set TRUE to label the curves by variable index numbers.
+#' @param all_causes_title If `all_causes` is set to TRUE, includes a title with
+#'   the cause. Defaults to TRUE.
 #' @param \dots additional graphical parameters
 #' @export
 plot.pen_lm <- function(x, xvar = "norm", all_causes = FALSE, silent = FALSE,
-                       label = FALSE, ...) {
+                       label = FALSE, all_causes_title = TRUE, ...) {
   if (all_causes) {
     for (i in seq_along(x)){
       plot(x[[i]], xvar, label, ...)
+      if (all_causes_title) graphics::title(paste("Cause", i), line = 2.5)
     }
   } else {
     plot(x[[1]], xvar, label, ...)
@@ -561,15 +564,14 @@ plot.pen_lm <- function(x, xvar = "norm", all_causes = FALSE, silent = FALSE,
 #' @param se.bands Logical. If TRUE, shading is produced to show stand-error
 #'   bands. Defaults to TRUE.
 #' @param all_causes_title If `all_causes` is set to TRUE, includes a title with
-#'   the cause. Defaults to TRUE
+#'   the cause. Defaults to TRUE.
 #' @param \dots additional graphical parameters
 #' @export
 plot.cv.pen_lm <- function(x, all_causes = FALSE, silent = FALSE, label = FALSE,
                           sign.lambda = 1, se.bands = TRUE,
                           all_causes_title = TRUE, ...) {
-  num_causes <- length(x)
   if (all_causes) {
-    for (i in 1:num_causes){
+    for (i in seq_along(x)){
       plot(x[[i]], sign.lambda, se.bands, ...)
       if (all_causes_title) graphics::title(paste("Cause", i), line = 2.5)
     }

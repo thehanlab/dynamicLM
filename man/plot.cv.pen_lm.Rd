@@ -33,7 +33,7 @@ if set to -1.}
 bands. Defaults to TRUE.}
 
 \item{all_causes_title}{If \code{all_causes} is set to TRUE, includes a title with
-the cause. Defaults to TRUE}
+the cause. Defaults to TRUE.}
 
 \item{\dots}{additional graphical parameters}
 }
