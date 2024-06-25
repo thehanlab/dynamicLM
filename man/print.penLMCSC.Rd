@@ -4,10 +4,13 @@
 \alias{print.penLMCSC}
 \title{Print function for object of class penLMCSC}
 \usage{
-\method{print}{penLMCSC}(x, verbose = FALSE, ...)
+\method{print}{penLMCSC}(x, cause, verbose = FALSE, ...)
 }
 \arguments{
 \item{x}{Object of class penLMCSC}
+
+\item{cause}{Print the model for a given cause.
+If left out, all models are printed.}
 
 \item{verbose}{Logical, if verbose print func_covars, func_lms, w, end_time
 and type.}

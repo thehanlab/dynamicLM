@@ -262,7 +262,7 @@ print.LMcoxph <- function(x, verbose = FALSE, ...) {
   cat(paste0(
     "\nLandmark cox super model fit for dynamic prediction of window size ",
     x$w, ":\n\n"))
-  cat("$model\n")
+  if (verbose) cat("$model\n")
 
   cox_model <- x$model
   cox_model$call <- NULL
@@ -410,6 +410,8 @@ print.cv.pen_lm <- function(x, all_causes = FALSE, silent = FALSE,
 #' Print function for object of class penLMCSC
 #'
 #' @param x Object of class penLMCSC
+#' @param cause Print the model for a given cause.
+#'   If left out, all models are printed.
 #' @param verbose Logical, if verbose print func_covars, func_lms, w, end_time
 #'   and type.
 #' @param ... Arguments passed to print.
@@ -417,17 +419,28 @@ print.cv.pen_lm <- function(x, all_causes = FALSE, silent = FALSE,
 #' @return Printed output.
 #' @export
 #'
-print.penLMCSC <- function(x, verbose = FALSE, ...) {
+print.penLMCSC <- function(x, cause, verbose = FALSE, ...) {
   cat(paste0("\nPenalized landmark cause-specific Cox super model fit for dynamic prediction of window size ",
              x$w, "\n"))
   cat("(Note that zero-valued coefficients are not printed)\n\n")
 
   if (verbose) cat("$model\n")
-  num_causes <- length(x$model$causes)
-  for (i in 1:num_causes){
-    cat(paste0("----------> Cause: ", i, "\n"))
-    cat(paste0("            (lambda = ", x$lambda[[i]], ")\n"))
-    coefs = x$model$models[[i]]$coefficients
+  if (missing(cause)) {
+    num_causes <- length(x$model$causes)
+    for (i in 1:num_causes){
+      cat(paste0("----------> Cause: ", i, "\n"))
+      cat(paste0("            (lambda = ", x$lambda[[i]], ")\n"))
+      coefs = x$model$models[[i]]$coefficients
+      non_zero_coefs = coefs[coefs != 0]
+      non_zero_coefs = cbind(non_zero_coefs, exp(non_zero_coefs))
+      colnames(non_zero_coefs) = c("coef", "exp(coef)")
+      print(non_zero_coefs)
+      cat("\n\n")
+    }
+  } else {
+    cat(paste0("----------> Cause: ", cause, "\n"))
+    cat(paste0("            (lambda = ", x$lambda[[cause]], ")\n"))
+    coefs = x$model$models[[cause]]$coefficients
     non_zero_coefs = coefs[coefs != 0]
     non_zero_coefs = cbind(non_zero_coefs, exp(non_zero_coefs))
     colnames(non_zero_coefs) = c("coef", "exp(coef)")
