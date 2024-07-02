@@ -39,28 +39,39 @@
 #' @import glmnet riskRegression
 #' @export
 cv.pen_lm <- function(x, y,
-                     id_col,
-                     alpha = 1,
-                     nfolds = 10,
-                     type.measure = "deviance",
-                     seed = NULL,
-                     foldid = NULL,
-                     ...
+                      id_col,
+                      alpha = 1,
+                      nfolds = 10,
+                      type.measure = "deviance",
+                      seed = NULL,
+                      foldid = NULL,
+                      ...
 ) {
   if (!requireNamespace("glmnet", quietly = TRUE)) {
     stop("Package \"glmnet\" must be installed to use function cv.pen_lm.",
          call. = FALSE)
   }
 
-  checked_input <- match.call()
+  args <- match.call()    # store call
+  checked_input <- args   # to be cleaned
+
+  # Save the arguments in 'evaluated' form, so we don't have to find them later
+  # & remove further arguments we will not lead in later functions
+  args$x <- args$id_col <- args$nfolds<- NULL
+  args$seed <- args$foldid <- args$type.measure <- NULL
+  evaluated_args <- as.list(args)
+  function_name <- evaluated_args[[1]]
+  evaluated_args <- lapply(evaluated_args[-1], eval)
+  evaluated_args <- c(list(function_name), evaluated_args)
+  args <- as.call(evaluated_args)
+
+  # Clean input
   m <- match(c("x", "y", "id_col", "alpha"), names(checked_input), 0L)
   checked_input <- as.list(checked_input[m])
   checked_input$CV <- TRUE
   checked_input <- do.call(check_penlm_inputs, checked_input,
                            envir = parent.frame())
-
   if (inherits(checked_input, "cv.pen_lm")) return(checked_input)
-
   x <- checked_input$x
   y <- checked_input$y
   lmdata <- checked_input$lmdata
@@ -80,6 +91,7 @@ cv.pen_lm <- function(x, y,
     foldid <- split.idx[match(IDs, unique.IDs)]
   }
 
+  # Get the cross-validations
   # TODO: add parallelization!
   # models <- parallel::mclapply(y, function(yi) {
   models <- lapply(y, function(yi) {
@@ -90,17 +102,19 @@ cv.pen_lm <- function(x, y,
                       foldid = foldid, ...)
   })
   # }, mc.cores = 4)
+
+  # Additional information for output
   if (length(models) > 1){
     attr(models, "survival.type") <- "competing.risk"
   } else {
     attr(models, "survival.type") <- "survival"
   }
-  if (!is.null(lmdata)) {
-    lmdata$id_col <- id_col
-    attr(models, "lmdata") <- lmdata
-  }
-  if (!is.null(xcols)) attr(models, "xcols") <- xcols
+  lmdata$id_col <- id_col
+  attr(models, "lmdata") <- lmdata
+  attr(models, "xcols") <- xcols
   attr(models, "alpha") <- alpha
+  attr(models, "args") <- args
   class(models) <- "cv.pen_lm"
+
   return(models)
 }

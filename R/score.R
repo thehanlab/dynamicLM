@@ -292,11 +292,11 @@ score <-
       }
 
       auct_out <- clean_if(get.auc, auct, "AUC")
-      a_contrasts_out <- clean_if(contrasts, a_contrasts, "delta.AUC",
-                                  contrasts = TRUE)
+      a_contrasts_out <- clean_if(contrasts && get.auc, a_contrasts,
+                                  "delta.AUC", contrasts = TRUE)
       briert_out <- clean_if(get.bs, briert, "Brier")
-      b_contrasts_out <- clean_if(contrasts, b_contrasts, "delta.Brier",
-                                  contrasts = TRUE)
+      b_contrasts_out <- clean_if(contrasts && get.bs, b_contrasts,
+                                  "delta.Brier", contrasts = TRUE)
 
       if (!silent) {
         b_na <- auct$bootstrap[is.na(auct$AUC)]

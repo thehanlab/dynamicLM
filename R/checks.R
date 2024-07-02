@@ -98,11 +98,9 @@ check_evaluation_inputs <- function(
                           from dynamic_lm) or LMpred (i.e., output from
                           predict.dynamicLM), but", name, "is of class",
                           class(object[[i]]))))
-    } else { # We know it is of class LMCSC, LMcoxph, LMCSC, LMcoxph
+
+    } else { # We know it is of class LMCSC, LMcoxph, penLMCSC, penLMcoxph
       if (split.method == "bootcv") {
-        if (inherits(object[[i]], c("penLMcoxph", "penLMCSC")))
-          stop(tidymess("Bootstrapping for penalized risk predictions is not
-                        yet implemented."))
         lmdata <- object[[i]]$data
         if (is.null(lmdata)) {
           model.class <- class(object[[i]])
@@ -122,7 +120,7 @@ check_evaluation_inputs <- function(
     # only need the dataframe
     if (inherits(data, "LMdataframe")) {
       if (!missing(lms))
-        warning("LMdataframe objects have LM columns, argument lms is ignored.")
+        warning("Input is an LMdataframe, argument lms is ignored.")
 
       lms <- data$data[[data$lm_col]]
       data <- data$data
@@ -215,10 +213,10 @@ check_evaluation_inputs <- function(
 
   ### Create data we need: preds, preds_LM, data ###
 
-  first_model_type <- setdiff(class(object[[1]]), "dynamicLM")
+  model_type <- if (inherits(object[[1]], "LMpred")) "LMpred" else "dynamicLM"
   if (NF > 1) {
     for (i in 2:NF) {
-      if (!inherits(object[[i]], first_model_type))
+      if (!inherits(object[[i]], model_type))
         stop("All prediction models must be supermodels or of type LMpred")
     }
   }
@@ -290,14 +288,39 @@ check_evaluation_inputs <- function(
 
       preds.b <- do.call("cbind", lapply(1:NF, function(f) {
         # Fit a model with the new data by altering the function call
-        original_model <- object[[f]]
-        args <- original_model$args
-        args[[1]] <- as.name("dynamic_lm")
-        args <- c(as.name("dynamic_lm"),
-                  list(lmdata = data_train_b),
-                  as.list(args)[-1])
-        args <- as.call(args)
-        model.b <- eval(args, envir = globalenv())
+        # a) Unpenalized model
+        if (inherits(object[[f]], c("LMCSC", "LMcoxph"))) {
+          original_model <- object[[f]]
+          args <- as.list(original_model$args)
+
+          args <- c(as.name("dynamic_lm"),
+                    list(lmdata = data_train_b),
+                    as.list(args)[-1])
+          args <- as.call(args)
+          model.b <- eval(args)
+
+        # b) penalized model
+        } else {
+          original_model <- object[[f]]
+
+          # b.1. Get a new coefficient path
+          pen_args <- original_model$pen_args
+          pen_args <- c(as.name("pen_lm"),
+                    list(x = data_train_b),
+                    as.list(pen_args)[-1])
+          pen_args <- as.call(pen_args)
+          pen.model.b <- eval(pen_args)
+
+          # b.2. Get a new dynamic_lm
+          args <- original_model$args
+          args[2] <- NULL
+          args <- c(as.name("dynamic_lm"),
+                    list(object = pen.model.b),
+                    as.list(args)[-1])
+          args <- as.call(args)
+          model.b <- eval(args)
+        }
+
 
         # Make predictions
         pred.b <- try(

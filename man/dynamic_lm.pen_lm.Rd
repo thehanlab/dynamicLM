@@ -4,7 +4,7 @@
 \alias{dynamic_lm.pen_lm}
 \title{Fit a penalized coxph or CSC supermodel for a specific coefficient}
 \usage{
-\method{dynamic_lm}{pen_lm}(object, lambda, ...)
+\method{dynamic_lm}{pen_lm}(object, lambda, x = FALSE, ...)
 }
 \arguments{
 \item{object}{A fitted object of class "pen_lm". This can be created by
@@ -13,6 +13,9 @@ calling \code{\link[=pen_lm]{pen_lm()}} using arguments \code{lmdata} and \code{
 \item{lambda}{Value of the penalty parameter \code{lambda} at which to fit a
 model. For cause-specific Cox super models, this must be a list or vector
 of values: one for each cause.}
+
+\item{x}{Logical value. If set to true, \code{lmdata} is stored in the returned
+object. This is required for internal validation.}
 
 \item{...}{Additional arguments to pass to \code{\link[survival:coxph]{survival::coxph()}} or
 \code{\link[riskRegression:CSC]{riskRegression::CSC()}}}
@@ -23,10 +26,15 @@ An object of class "penLMcoxph" or "penLMCSC" with components:
 \item model: fitted model
 \item type: as input
 \item w, func_covars, func_lms, lm_covs, all_covs, outcome: as in lmdata.
-\item LHS: the LHS of the input formula
+\item LHS: the survival outcome
 \item linear.predictors: the vector of linear predictors, one per subject. Note
 that this vector has not been centered.
 \item lambda: the values of lambda for which this model has been fit.
+\item LHS: the survival outcome
+\item args: arguments used to call model fitting
+\item pen_args: arguments used to call the penalized model
+\item id_col: the cluster argument, often specifies the column with patient ID
+\item lm_col: column name that indicates the landmark time point for a row.
 }
 }
 \description{

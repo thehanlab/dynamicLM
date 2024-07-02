@@ -4,7 +4,7 @@
 \alias{dynamic_lm.cv.pen_lm}
 \title{Fit a penalized cross-validated coxph or CSC super model}
 \usage{
-\method{dynamic_lm}{cv.pen_lm}(object, lambda = "lambda.min", ...)
+\method{dynamic_lm}{cv.pen_lm}(object, lambda = "lambda.min", x = FALSE, ...)
 }
 \arguments{
 \item{object}{A fitted object of class "cv.pen_lm". This can be created by
@@ -14,6 +14,9 @@ calling \code{cv.pen_lm} using arguments \code{lmdata} and \code{xcols}.}
 Default is "lambda.min"; "lambda.1se" can also be used or a specific value
 can be input. For cause-specific Cox super models,
 this must be a list or vector of values: one for each cause.}
+
+\item{x}{Logical value. If set to true, \code{lmdata} is stored in the returned
+object. This is required for internal validation.}
 
 \item{...}{Additional arguments to pass to \code{\link[survival:coxph]{survival::coxph()}} or
 \code{\link[riskRegression:CSC]{riskRegression::CSC()}}}

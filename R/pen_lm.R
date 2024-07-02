@@ -35,21 +35,34 @@ pen_lm <- function(x, y, alpha = 1, ...) {
          call. = FALSE)
   }
 
-  checked_input <- match.call()
+  args <- match.call()    # store call
+  checked_input <- args   # to be cleaned
+
+  # Save the arguments in 'evaluated' form, so we don't have to find them later
+  args$x <- NULL          # remove lmdata (heavy)
+  evaluated_args <- as.list(args)
+  function_name <- evaluated_args[[1]]
+  evaluated_args <- lapply(evaluated_args[-1], eval)
+  evaluated_args <- c(list(function_name), evaluated_args)
+  args <- as.call(evaluated_args)
+
+  # Clean input
   m <- match(c("x", "y", "alpha"), names(checked_input), 0L)
   checked_input <- as.list(checked_input[m])
   checked_input <- do.call(check_penlm_inputs, checked_input,
                            envir = parent.frame())
-
   x <- checked_input$x
   y <- checked_input$y
   lmdata <- checked_input$lmdata
   xcols <- checked_input$xcols
   alpha <- checked_input$alpha
 
+  # Get the coefficient path
   models <- lapply(y, function(yi) {
     glmnet::glmnet(x = x, y = yi, family = "cox", alpha = alpha, ...)
   })
+
+  # Additional information for output
   if (length(models) > 1){
     attr(models, "survival.type") <- "competing.risk"
   } else {
@@ -58,7 +71,9 @@ pen_lm <- function(x, y, alpha = 1, ...) {
   if (!is.null(lmdata)) attr(models, "lmdata") <- lmdata
   if (!is.null(xcols)) attr(models, "xcols") <- xcols
   attr(models, "alpha") <- alpha
+  attr(models, "args") <- args
   class(models) <- "pen_lm"
+
   return(models)
 }
 

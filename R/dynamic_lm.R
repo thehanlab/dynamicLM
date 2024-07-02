@@ -151,9 +151,14 @@ dynamic_lm.LMdataframe <-  function(lmdata,
                                     cluster,
                                     x = FALSE,
                                     ...) {
-  # store arguments but not the data (heavy)
+  # Save the arguments in 'evaluated' form, so we don't have to find them later
   args <- match.call()
-  args$lmdata <- NULL
+  args$lmdata <- NULL # don't need
+  evaluated_args <- as.list(args)
+  function_name <- evaluated_args[[1]]
+  evaluated_args <- lapply(evaluated_args[-1], eval)
+  evaluated_args <- c(list(function_name), evaluated_args)
+  args <- as.call(evaluated_args)
 
   # Obtain other inputs
   data <- lmdata$data
@@ -249,9 +254,14 @@ dynamic_lm.data.frame <- function(lmdata,
                                   x = FALSE,
                                   ...) {
 
-  # store arguments but not the data (heavy)
+  # Save the arguments in 'evaluated' form, so we don't have to find them later
   args <- match.call()
-  args$lmdata <- NULL
+  args$lmdata <- NULL # do not need (heavy)
+  evaluated_args <- as.list(args)
+  function_name <- evaluated_args[[1]]
+  evaluated_args <- lapply(evaluated_args[-1], eval)
+  evaluated_args <- c(list(function_name), evaluated_args)
+  args <- as.call(evaluated_args)
 
   # Check arguments are given
   if (missing(func_covars))
@@ -303,6 +313,8 @@ dynamic_lm.data.frame <- function(lmdata,
 #' @param lambda Value of the penalty parameter `lambda` at which to fit a
 #'   model. For cause-specific Cox super models, this must be a list or vector
 #'   of values: one for each cause.
+#' @param x Logical value. If set to true, `lmdata` is stored in the returned
+#'   object. This is required for internal validation.
 #' @param ... Additional arguments to pass to [survival::coxph()] or
 #'   [riskRegression::CSC()]
 #'
@@ -310,16 +322,37 @@ dynamic_lm.data.frame <- function(lmdata,
 #'   - model: fitted model
 #'   - type: as input
 #'   - w, func_covars, func_lms, lm_covs, all_covs, outcome: as in lmdata.
-#'   - LHS: the LHS of the input formula
+#'   - LHS: the survival outcome
 #'   - linear.predictors: the vector of linear predictors, one per subject. Note
 #'     that this vector has not been centered.
 #'   - lambda: the values of lambda for which this model has been fit.
+#'   - LHS: the survival outcome
+#'   - args: arguments used to call model fitting
+#'   - pen_args: arguments used to call the penalized model
+#'   - id_col: the cluster argument, often specifies the column with patient ID
+#'   - lm_col: column name that indicates the landmark time point for a row.
 #' @examples
 #' \dontrun{
 #' }
 #' @import survival glmnet
 #' @export
-dynamic_lm.pen_lm <- function(object, lambda, ...) {
+dynamic_lm.pen_lm <- function(object, lambda, x = FALSE, ...) {
+  # Save the arguments in 'evaluated' form, so we don't have to find them later
+  args <- match.call()
+  evaluated_args <- as.list(args)
+  evaluated_args <- lapply(seq_along(evaluated_args), function(i) {
+    if (i == 1) {
+      return(evaluated_args[[1]])  # Do not evaluate the function name
+    } else {
+      tryCatch(
+        eval(evaluated_args[[i]], envir = environment()),
+        error = function(e) eval(evaluated_args[[i]], envir = parent.frame())
+      )
+    }
+  })
+  args <- as.call(evaluated_args)
+
+  # Get variables, run error checks
   survival.type <- attr(object, "survival.type")
   lmdata <- attr(object, "lmdata")
 
@@ -356,7 +389,10 @@ dynamic_lm.pen_lm <- function(object, lambda, ...) {
   all_covs <- lmdata$all_covs
   id_col <- lmdata$id_col
   lm_col <- lmdata$lm_col
+  alpha <- attr(object, "alpha")
+  pen_args <- attr(object, "args")
 
+  # Fit the model
   if (survival.type == "survival") {
     if (inherits(lambda, "list")) lambda <- lambda[[1]]
     glmnet_coefs <- as.vector(stats::coef(object[[1]], s = lambda))
@@ -431,9 +467,12 @@ dynamic_lm.pen_lm <- function(object, lambda, ...) {
               lm_col = lm_col,
               linear.predictors = linear.predictors,
               original.landmarks = original.landmarks,
-              # args = args
-              lambda = lambda
+              args = args,
+              alpha = alpha,
+              lambda = lambda,
+              pen_args = pen_args
   )
+  if (x == TRUE) out$data <- lmdata
   class(out) <- c(cl, "dynamicLM")
   return(out)
 }
@@ -452,6 +491,8 @@ dynamic_lm.pen_lm <- function(object, lambda, ...) {
 #'   Default is "lambda.min"; "lambda.1se" can also be used or a specific value
 #'   can be input. For cause-specific Cox super models,
 #'   this must be a list or vector of values: one for each cause.
+#' @param x Logical value. If set to true, `lmdata` is stored in the returned
+#'   object. This is required for internal validation.
 #' @param ... Additional arguments to pass to [survival::coxph()] or
 #'   [riskRegression::CSC()]
 #'
@@ -468,7 +509,8 @@ dynamic_lm.pen_lm <- function(object, lambda, ...) {
 #' }
 #' @import survival glmnet
 #' @export
-dynamic_lm.cv.pen_lm <- function(object, lambda = "lambda.min", ...) {
+dynamic_lm.cv.pen_lm <- function(object, lambda = "lambda.min", x = FALSE,
+                                 ...) {
   if (!requireNamespace("glmnet", quietly = TRUE)) {
     stop(tidymess("Package \"glmnet\" must be installed to use function
                   dynamic_lm on an object created from cv.pen_lm",
@@ -481,5 +523,5 @@ dynamic_lm.cv.pen_lm <- function(object, lambda = "lambda.min", ...) {
     else if (lambda == "lambda.min")
       lambda <- lapply(object, function(o) o$lambda.min)
   }
-  return(dynamic_lm.pen_lm(object, lambda = lambda, ...))
+  return(dynamic_lm.pen_lm(object, lambda = lambda, x = x, ...))
 }
