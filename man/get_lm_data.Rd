@@ -62,6 +62,14 @@ This function is based from \code{\link[dynpred:cutLM]{dynpred::cutLM()}} with m
 The original function was authored by Hein Putter.
 }
 \references{
-van Houwelingen HC, Putter H (2012). Dynamic Prediction in
+\itemize{
+\item van Houwelingen HC, Putter H (2012). Dynamic Prediction in
 Clinical Survival Analysis. Chapman & Hall.
+\item The dynpred package
+(https://cran.r-project.org/web/packages/dynpred/index.html),
+in particular, the code for cutLM.
+}
+}
+\seealso{
+\code{\link[=stack_data]{stack_data()}}
 }

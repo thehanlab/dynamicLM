@@ -26,13 +26,15 @@
 #'
 #' @details This function is based from [dynpred::cutLM()] with minor changes.
 #'   The original function was authored by Hein Putter.
-#' @references van Houwelingen HC, Putter H (2012). Dynamic Prediction in
-#'   Clinical Survival Analysis. Chapman & Hall.
+#' @references
+#'   - van Houwelingen HC, Putter H (2012). Dynamic Prediction in
+#'     Clinical Survival Analysis. Chapman & Hall.
+#'   - The dynpred package
+#'     (https://cran.r-project.org/web/packages/dynpred/index.html),
+#'     in particular, the code for cutLM.
 #' @return A landmark dataset.
+#' @seealso [dynamicLM::stack_data()]
 #' @export
-#'
-# TODO: add examples
-# TODO: add references
 get_lm_data <- function(data, outcome, lm, horizon, covs,
                         format = c("wide", "long"), id, rtime,
                         left.open = FALSE, split.data) {
