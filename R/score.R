@@ -248,10 +248,11 @@ score <-
           a_iid <- initialize_df("IF.AUC")
           b_iid <- initialize_df("IF.Brier")
         } else {
-          auct_b <- score_t$AUC$score
-          briert_b <- score_t$Brier$score
-          auc_contrasts_b <- score_t$AUC$contrasts
-          brier_contrasts_b <- score_t$Brier$contrasts
+          auct_b <- cbind(tLM, score_t$AUC$score, bootstrap = b)
+          briert_b <- cbind(tLM, score_t$Brier$score, bootstrap = b)
+          auc_contrasts_b <- cbind(tLM, score_t$AUC$contrasts, bootstrap = b)
+          brier_contrasts_b <- cbind(tLM, score_t$Brier$contrasts,
+                                     bootstrap = b)
           if (get.a.iid)
             a_iid <- cbind(tLM, score_t$AUC$iid.decomp, bootstrap = b)
           if (get.b.iid)
@@ -259,12 +260,10 @@ score <-
         }
 
         list(
-          AUC = if (get.auc) cbind(tLM, auct_b, bootstrap = b) else NULL,
-          Brier = if (get.bs) cbind(tLM, briert_b, bootstrap = b) else NULL,
-          a_contrasts = if (contrasts && get.auc)
-            cbind(tLM, auc_contrasts_b, bootstrap = b) else NULL,
-          b_contrasts = if (contrasts && get.bs)
-            cbind(tLM, brier_contrasts_b, bootstrap = b) else NULL,
+          AUC = if (get.auc) auct_b else NULL,
+          Brier = if (get.bs) briert_b else NULL,
+          a_contrasts = if (contrasts && get.auc) auc_contrasts_b else NULL,
+          b_contrasts = if (contrasts && get.bs) brier_contrasts_b else NULL,
           a_iid = if (get.a.iid) a_iid else NULL,
           b_iid = if (get.b.iid) b_iid else NULL
         )
@@ -343,7 +342,7 @@ score <-
     if (summary) {
       if (get.a.iid) {
         outlist$AUC_summary <- summary_metric(
-          "AUC", auct, a_contrasts, a_iid, conf.int, object, id_col,  B, se.fit)
+          "AUC", auct, a_contrasts, a_iid, conf.int, object, id_col, B, se.fit)
       }
       if (get.b.iid) {
         outlist$Brier_summary <- summary_metric(
