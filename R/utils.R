@@ -131,8 +131,8 @@ update_hist_formula <- function(formula, type) {
 
 
 # ----------------------------------------------------------
-# clean_bootstraps
-# TODO
+# clean_bootstraps: given the outcome from multiple bootstrap replicates,
+# clean the table for user readability & to obtain results.
 # ----------------------------------------------------------
 clean_bootstraps <- function(table, column, alpha, contrasts = FALSE,
                              se.fit = TRUE, summary = FALSE) {
@@ -162,12 +162,46 @@ clean_bootstraps <- function(table, column, alpha, contrasts = FALSE,
   return(out)
 }
 
+
 # ----------------------------------------------------------
-# CSC.extended: cause-specific Cox proportional hazard regression
-# extended to accomodate specific arguments to each cause-specific
-# Cox model
-# TODO: licensing / referencing
+# initialize_df: initializes a data frame with the specified column names and
+# one row filled with NA.
 # ----------------------------------------------------------
+initialize_df <- function(metric) {
+  if (metric == "AUC")
+    cols <- c("model", "times", "AUC", "se", "lower", "upper")
+  if (metric == "Brier")
+    cols <- c("model", "times", "Brier", "se", "lower", "upper")
+  if (metric == "delta.AUC")
+    cols <- c("times", "model", "reference", "delta.AUC",
+              "lower", "upper", "p")
+  if (metric == "delta.Brier")
+    cols <- c("times", "model", "reference", "delta.Brier",
+              "lower", "upper", "p")
+  if (metric == "IF.AUC")
+    cols <- c("tLM", "ID", "model", "cause", "times", "IF.AUC", "bootstrap")
+  if (metric == "IF.Brier")
+    cols <- c("tLM", "ID", "model", "cause", "times", "IF.Brier", "bootstrap")
+
+  df <- data.frame(matrix(NA, nrow = 1, ncol = length(cols)))
+  colnames(df) <- cols
+  df
+}
+
+
+#' Altered code from `riskRegression` of the cause-specific Cox model
+#' to fit a CSC model with given coefficients.
+#'
+#' @param formula Formula to fit the model
+#' @param data Data on which to which
+#' @param cause Main cause of interest
+#' @param cause.specific.coefs Coefficients that each model should be fit with
+#' @param ...
+#'
+#' @return CSC model
+#' @references
+#'   - `riskRegression` package:
+#'     <https://cran.r-project.org/web/packages/riskRegression/index.html>
 CSC.fixed.coefs <- function(formula, data, cause,
                             cause.specific.coefs, ...) {
   fitter <- "coxph"
