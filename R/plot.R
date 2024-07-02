@@ -156,6 +156,7 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
 
 #' Plot an object output from [score()]: plot the landmark and time-dependent
 #' Brier and/or AUC of dynamic landmark supermodels.
+#'   supermodel or the dynamic log-hazard ratios
 #'
 #' @param x An object of class "LMScore" output from [score()]
 #' @param metrics One or both of "AUC" and "Brier"
