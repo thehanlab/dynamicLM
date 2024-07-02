@@ -1,22 +1,14 @@
-- [1 Basic Example](#basic-example)
-  - [1.1 Installation](#installation)
-  - [1.2 Data](#data)
-  - [1.3 Build a super data set](#build-a-super-data-set)
-  - [1.4 Fit the super model](#fit-the-super-model)
-  - [1.5 Obtain predictions](#obtain-predictions)
-  - [1.6 Model evaluation/validation](#model-evaluationvalidation)
-
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 <!-- badges: start -->
 <!-- badges: end -->
 
-# 1 Basic Example
+# Basic Example 2
 
 This is a basic example which shows you how to use `dynamicLM` to make
 dynamic 5-year predictions and check calibration and discrimination
 metrics.
 
-## 1.1 Installation
+## Installation
 
 You can install the development version of `dynamicLM` from
 [GitHub](https://github.com/) with:
@@ -24,16 +16,17 @@ You can install the development version of `dynamicLM` from
 ``` r
 # install.packages("devtools")
 devtools::install_github("thehanlab/dynamicLM", ref = "extension/summary-metric")
-#> Skipping install of 'dynamicLM' from a github remote, the SHA1 (938bbd48) has not changed since last install.
+#> Using github PAT from envvar GITHUB_PAT. Use `gitcreds::gitcreds_set()` and unset GITHUB_PAT in .Renviron (or elsewhere) if you want to use the more secure git credential store instead.
+#> Skipping install of 'dynamicLM' from a github remote, the SHA1 (96b19ed9) has not changed since last install.
 #>   Use `force = TRUE` to force installation
 ```
 
 Package documentation can be found in [this
-pdf](https://github.com/thehanlab/dynamicLM/blob/main/man/dynamicLM_0.3.0.pdf)
+pdf](https://github.com/thehanlab/dynamicLM/blob/extension/summary-metric/tutorials/dynamicLM_1.0.0.pdf)
 and more information about any function can be obtained by running
 `?function_name`.
 
-## 1.2 Data
+## Data
 
 We illustrate the package using the long-form example data set given in
 the package. This gives the time-to-event of cancer relapse under two
@@ -46,9 +39,13 @@ and `T_txgiven` gives the time at which this patient entry was created.
 library(dynamicLM)
 #> Loading required package: dynpred
 #> Loading required package: survival
+#> Warning: package 'survival' was built under R version 4.2.3
 #> Loading required package: prodlim
 #> Loading required package: riskRegression
-#> riskRegression version 2024.04.25
+#> Registered S3 method overwritten by 'riskRegression':
+#>   method     from    
+#>   nobs.coxph survival
+#> riskRegression version 2024.06.13
 ```
 
 ``` r
@@ -62,7 +59,7 @@ length(unique(relapse$ID)) # There are 171 patients with two entries, i.e., one 
 #> [1] 818
 ```
 
-## 1.3 Build a super data set
+## Build a super data set
 
 We first note the outcome variables we are interested in, as well as
 which variables are fixed or landmark-varying. When there are no
@@ -209,7 +206,7 @@ stored objects to be printed (default is FALSE).
 print(lmdata, verbose = TRUE)
 ```
 
-## 1.4 Fit the super model
+## Fit the super model
 
 Now we can fit the model. We fit a model with all the covariates
 created. Note that `lmdata$all_covs` returns a vector with all the
@@ -323,9 +320,9 @@ plot(supermodel)
 plot(supermodel, covars = c("age", "male"))
 ```
 
-## 1.5 Obtain predictions
+## Obtain predictions
 
-### 1.5.1 For the training data
+### For the training data
 
 Predictions for the training data can easily be obtained. This provides
 *w*-year risk estimates for each individual at each of the training
@@ -352,7 +349,7 @@ additional stored objects to be printed (default is FALSE).
 print(p1, verbose = TRUE)
 ```
 
-### 1.5.2 For new data
+### For new data
 
 A prediction is made for an individual at a specific prediction time.
 Thus both a prediction (“landmark”) time (e.g., at baseline, at 2 years,
@@ -384,7 +381,7 @@ p0$preds
 #> 2  0 0.04641678
 ```
 
-## 1.6 Model evaluation/validation
+## Model evaluation/validation
 
 Calibration plots, which assess the agreement between predictions and
 observations in different percentiles of the predicted values, can be
@@ -420,77 +417,21 @@ Brier score (BSt).
 ``` r
 scores <- score(list("LM supermodel" = p1),
                      times = c(6, 12, 18, 24)) # landmarks at which to assess
-scores
-#> 
-#> Metric: Time-dependent AUC (w = 60)
-#> 
-#> Results by model:
-#> 
-#>      tLM         model    AUC  lower  upper
-#>    <num>        <fctr> <char> <char> <char>
-#> 1:     6 LM supermodel 61.808 51.891 71.726
-#> 2:    12 LM supermodel 60.855 50.447 71.262
-#> 3:    18 LM supermodel 61.374 51.034 71.714
-#> 4:    24 LM supermodel 55.188 43.949 66.427
-#> 
-#> NOTE: Values are multiplied by 100 and given in %.
-#> NOTE: The higher AUC the better.
-#> NOTE: Predictions are made at time tLM for time tLM + 60
-#> 
-#> Metric: Time-dependent Brier Score (w = 60)
-#> 
-#> Results by model:
-#> 
-#>      tLM         model  Brier  lower  upper
-#>    <num>        <fctr> <char> <char> <char>
-#> 1:     6    Null model  8.493  6.288 10.698
-#> 2:     6 LM supermodel  8.141  6.017 10.266
-#> 3:    12    Null model 11.152  8.420 13.883
-#> 4:    12 LM supermodel 10.639  7.945 13.333
-#> 5:    18    Null model 11.582  8.591 14.574
-#> 6:    18 LM supermodel 11.163  8.246 14.081
-#> 7:    24    Null model 11.494  8.231 14.758
-#> 8:    24 LM supermodel 11.467  8.247 14.687
-#> 
-#> NOTE: Values are multiplied by 100 and given in %.
-#> NOTE: The lower Brier the better.
-#> NOTE: Predictions are made at time tLM for time tLM + 60
-#> 
-#> Metric: Averaged time-dependent AUC (w = 60)
-#> 
-#> Results by model:
-#> 
-#>            model    AUC  lower  upper
-#>           <fctr> <char> <char> <char>
-#> 1: LM supermodel 59.806 54.505 65.107
-#> 
-#> NOTE: Values are multiplied by 100 and given in %.
-#> NOTE: The higher AUC the better.
-#> NOTE: Predictions are made at time tLM for time tLM + 60
-#> 
-#> Metric: Averaged time-dependent Brier Score (w = 60)
-#> 
-#> Results by model:
-#> 
-#>            model  Brier  lower  upper
-#>           <fctr> <char> <char> <char>
-#> 1:    Null model 10.680  9.235 12.126
-#> 2: LM supermodel 10.353  8.963 11.742
-#> 
-#> NOTE: Values are multiplied by 100 and given in %.
-#> NOTE: The lower Brier the better.
-#> NOTE: Predictions are made at time tLM for time tLM + 60
 ```
 
-These results can also be plot with point wise confidence intervals.
-Setting `se = FALSE` in plot excludes the intervals.
+These results can also be print or plot with point wise confidence
+intervals. Setting `se = FALSE` in plot excludes the intervals.
 
 ``` r
-par(mfrow = c(1, 2))
+print(scores)
+```
+
+``` r
+par(mfrow = c(1, 4))
 plot(scores)
 ```
 
-<img src="man/figures/README-unnamed-chunk-22-1.png" width="100%" /><img src="man/figures/README-unnamed-chunk-22-2.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-23-1.png" width="100%" />
 
 **Bootstrapping** can be performed by calling `calplot()` or `score()`
 and setting the arguments `split.method = "bootcv"` and `B = 10` (or
@@ -534,7 +475,7 @@ cal <- calplot(list("CSC" = supermodel), cause = 1, data = newdata, lms = "LM",
 score(list("CSC" = supermodel), cause = 1, data = newdata, lms = "LM")
 ```
 
-### 1.6.1 Visualize individual dynamic risk trajectories
+### Visualize individual dynamic risk trajectories
 
 Individual risk score trajectories can be plotted. As with `predict()`,
 the data input is in the form of the original data. For example, we can

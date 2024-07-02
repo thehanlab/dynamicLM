@@ -57,7 +57,7 @@ It is built on hazards, like a (cause-specific) Cox model. From a landmark time 
 $$h_j (t│Z(s), s)=h_{j0} (t)  exp⁡(\alpha_j (s)+ \beta_j (s)^T Z(s))$$
 where $Z(s)$ are the most up-to-date values of an individual’s covariates at time (landmark) $s$ and $\alpha(s)$ models the main effects of the landmark time. The interaction of $s$ with the covariates, modeled by $\beta_j (s)$, captures the time-dependent effects of covariates. For example, $\beta(s)= \beta_0+ \beta_1 s$ models a main and linear time-dependent effect.
 
-> A more detailed mathematical explanation of the landmark supermodel is detailed in [a separate file](https://github.com/thehanlab/dynamicLM/blob/extension/summary-metric/tutorials/theory-landmark-supermodel.md).
+> We offer a [short introduction to the theory behind the landmark supermodel](https://github.com/thehanlab/dynamicLM/blob/extension/summary-metric/tutorials/theory-landmark-supermodel.md).
 
 In short, the creation of the landmark model for survival data is built on the concept of risk assessment times (i.e., landmarks) that span risk prediction times of interest. In this approach, a training dataset of the study cohort is transformed into multiple censored datasets based on a prediction window of interest and the predefined landmarks. A model is fit on these stacked datasets (i.e., supermodel), and dynamic risk prediction is then performed by using the most up-to-date value of a patient’s covariate values.
 
@@ -72,13 +72,13 @@ You can install the development version of `dynamicLM` from [GitHub](https://git
 devtools::install_github("thehanlab/dynamicLM", ref = "extension/summary-metric")
 ```
 
-Package documentation can be found in [this pdf](https://github.com/thehanlab/dynamicLM/blob/main/man/dynamicLM_1.0.0.pdf) and more information about any function can be obtained by running `?function_name`.
+Package documentation can be found in [this pdf](https://github.com/thehanlab/dynamicLM/blob/extension/summary-metric/tutorials/dynamicLM_1.0.0.pdf) and more information about any function can be obtained by running `?function_name`.
 
 # Tutorial: basic example
 
 This is a basic example which shows you how to use `dynamicLM` to make dynamic 5-year predictions and check calibration and discrimination metrics.
 
-> We have [an alternative tutorial]((https://github.com/thehanlab/dynamicLM/blob/extension/summary-metric/tutorials/tutorial2-recurrence-data.md) which uses cancer relapse data. This is the example first used at the time of publishing the [Software Application Profile in IJE](https://academic.oup.com/ije/article/52/6/1984/7260912), and only includes an unpenalized landmark supermodel.
+> We have [an alternative tutorial](https://github.com/thehanlab/dynamicLM/blob/extension/summary-metric/tutorials/tutorial2-recurrence-data.md) which uses cancer relapse data. This is the example first used at the time of publishing the [Software Application Profile in IJE](https://academic.oup.com/ije/article/52/6/1984/7260912), and only includes an unpenalized landmark supermodel.
 
 First, load the library:
 
@@ -452,9 +452,8 @@ Predictive performance can also be assessed using **time-dependent dynamic AUC**
 Predictive performance can also be assessed using the **summary (average)** time-dependent dynamic area under the receiving operator curve or time-dependent dynamic Brier score. This enables one score per model or one comparison for a pair of models.
     
 ```{r}
-# scores <- score(list("LM" = p1, "penLM" = p2),
-#                 times = c(0, 2, 4), # landmarks at which to assess
-#                 summary = TRUE)     # also include the summary metrics
+scores <- score(list("LM" = p1, "penLM" = p2),
+                times = c(0, 2, 4)) # landmarks at which to assess
 ```
 
 These results can be printed:
@@ -473,34 +472,34 @@ palette(c("cornflowerblue", "darkcyan", "darkorange2"))
 ```
 
 ```{r score, fig.height = 3, fig.width = 8.6}
-# par(mfrow = c(1, 4))
-# plot(scores, summary = TRUE)
+par(mfrow = c(1, 4))
+plot(scores, summary = TRUE)
 ```
 
 Additional parameters control which plots to include and additional information, for example, one can remove confidence intervals (first plot), plot the time-dependent contrasts (first example). One can also plot if model summary metrics are significantly different or not, either plotting the p-values of the significant comparisons to a plot (second example), or by plotting the contrasts directly (third example). See `?plot.LMScore` for more information.
 
 ```{r scoreextra, fig.height = 4, fig.width = 9}
-# # Three plots and make extra space below for the x-labels
-# par(mfrow = c(1, 3), mar = c(9, 4, 4, 3)) 
-# 
-# # E.g., plot only the time-dependent AUC contrasts without CIs
-# plot(scores, brier = FALSE, landmarks = TRUE, 
-#      summary = FALSE, contrasts = TRUE, se = FALSE)
-# 
-# # E.g., plot only summary BS and add p-value comparisons
-# plot(scores, auc = FALSE, landmarks = FALSE, summary = TRUE,
-#      ylim = c(0, 0.15), 
-#      las = 2,                                # Rotate x-axis labels
-#      add_pairwise_contrasts = TRUE,          # Include the contrasts
-#      cutoff_contrasts = 0.05,                # Significance cutoff, default 0.05
-#      pairwise_heights = c(0.1, 0.13),        # Height of the contrast labels 
-#                                              #  (only 2/3 are significant so 
-#                                              #  only need to specify 2 heights)
-#      width = 0.01)                           # Width of ends of bars
-# 
-# # E.g., plot summary BS contrasts
-# plot(scores, auc = FALSE, landmarks = FALSE, summary = TRUE, 
-#      contrasts = TRUE, las = 2)
+# Three plots and make extra space below for the x-labels
+par(mfrow = c(1, 3), mar = c(9, 4, 4, 3))
+
+# E.g., plot only the time-dependent AUC contrasts without CIs
+plot(scores, brier = FALSE, landmarks = TRUE,
+     summary = FALSE, contrasts = TRUE, se = FALSE)
+
+# E.g., plot only summary BS and add p-value comparisons
+plot(scores, auc = FALSE, landmarks = FALSE, summary = TRUE,
+     ylim = c(0, 0.15),
+     las = 2,                                # Rotate x-axis labels
+     add_pairwise_contrasts = TRUE,          # Include the contrasts
+     cutoff_contrasts = 0.05,                # Significance cutoff, default 0.05
+     pairwise_heights = c(0.1, 0.13),        # Height of the contrast labels
+                                             #  (only 2/3 are significant so
+                                             #  only need to specify 2 heights)
+     width = 0.01)                           # Width of ends of bars
+
+# E.g., plot summary BS contrasts
+plot(scores, auc = FALSE, landmarks = FALSE, summary = TRUE,
+     contrasts = TRUE, las = 2)
 ```
 
 ### Bootstrapping
@@ -516,7 +515,10 @@ supermodel_pen <- dynamic_lm(cv_model, lambda = "lambda.1se", x = TRUE)
 scores <- score(list("LM" = supermodel, "penLM" = supermodel_pen),
               times = c(0, 2, 4),
               split.method = "bootcv", B = 10)       # 10 bootstraps
+```
 
+```{r, include = FALSE, eval = FALSE}
+# TODO! is bugging
 par(mfrow = c(1, 3))
 outlist <- calplot(list("LM" = supermodel, "penLM" = supermodel_pen), 
                     times = c(0, 2, 4),               # landmarks to plot at
@@ -527,6 +529,7 @@ outlist <- calplot(list("LM" = supermodel, "penLM" = supermodel_pen),
                     lwd = 1, xlab = "Predicted Risk", ylab = "Observed Risk", 
                     legend = FALSE)
 ```
+
 
 ### External validation
 

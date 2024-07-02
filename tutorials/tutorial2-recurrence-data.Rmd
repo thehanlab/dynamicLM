@@ -1,11 +1,7 @@
-@ -1,385 +0,0 @@
 ---
 output: 
   md_document:
     variant: gfm
-    toc: yes
-    toc_depth: 2
-    number_sections: yes
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -23,7 +19,7 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-# Basic Example
+# Basic Example 2
 
 This is a basic example which shows you how to use `dynamicLM` to make
 dynamic 5-year predictions and check calibration and discrimination
@@ -36,10 +32,10 @@ You can install the development version of `dynamicLM` from
 
 ```{r}
 # install.packages("devtools")
-devtools::install_github("thehanlab/dynamicLM", ref = "temp-checkout-2b5dd19")
+devtools::install_github("thehanlab/dynamicLM", ref = "extension/summary-metric")
 ```
 
-Package documentation can be found in [this pdf](https://github.com/thehanlab/dynamicLM/blob/main/man/dynamicLM_0.3.0.pdf) and more information about any function can be obtained by running `?function_name`.
+Package documentation can be found in [this pdf](https://github.com/thehanlab/dynamicLM/blob/extension/summary-metric/tutorials/dynamicLM_1.0.0.pdf) and more information about any function can be obtained by running `?function_name`.
 
 ## Data
 
@@ -287,14 +283,18 @@ Brier score (BSt).
 ```{r}
 scores <- score(list("LM supermodel" = p1),
                      times = c(6, 12, 18, 24)) # landmarks at which to assess
-scores
 ```
 
-These results can also be plot with point wise confidence intervals. Setting
+These results can also be print or plot with point wise confidence intervals. Setting
 `se = FALSE` in plot excludes the intervals.
 
-```{r, fig.height = 4, fig.width = 9}
-par(mfrow = c(1, 2))
+```{r, eval = FALSE}
+print(scores)
+```
+
+
+```{r, fig.height = 3.5, fig.width = 12}
+par(mfrow = c(1, 4))
 plot(scores)
 ```
 
