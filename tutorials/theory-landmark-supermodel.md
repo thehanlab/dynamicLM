@@ -1,14 +1,16 @@
-# The Landmark Supermodel
+# A short introduction to the theory behind the landmark supermodel
 
 ## 1. Overview
 
-The landmark model for survival data is built on the concept of risk assessment times (i.e., landmarks) that span risk prediction times of interest, using the information on the individuals who survived up to that given time point. In this approach, the dataset of the study cohort is transformed into multiple censored datasets based on a prediction window of interest and the predefined landmark times. A model is fit on the stacked super dataset (i.e., supermodel), and dynamic $w$-year risk prediction is then performed by using the most up-to-date value of a patient's covariate values. Specifically, risk prediction for the next w years is made at baseline (e.g., diagnosis) as well as at a later set of risk assessment times (“landmark prediction times”) after baseline (e.g., at 1, 2, and 3 years after diagnosis), where w is a fixed prediction window.
+The landmark model for survival data is built on the concept of risk assessment times (i.e., landmarks) that span risk prediction times of interest, using the information on the individuals who survived up to that given time point. In this approach, the dataset of the study cohort is transformed into multiple censored datasets based on a prediction window of interest and the predefined landmark times. A model is fit on the stacked super dataset (i.e., supermodel), and dynamic w-year risk prediction is then performed by using the most up-to-date value of a patient's covariate values. Specifically, risk prediction for the next w years is made at baseline (e.g., diagnosis) as well as at a later set of risk assessment times (“landmark prediction times”) after baseline (e.g., at 1, 2, and 3 years after diagnosis), where w is a fixed prediction window.
+
+![](man/figures/README-descrip.png)
 
 ## 2. Landmarking
 
-Landmarking for risk prediction on survival data is a method for w-year dynamic risk prediction where an individual has a personalized risk prediction which is updated as new information is collected among those who survived at a given time for risk assessment. Traditionally, a separate Cox proportional hazards (PH) model is applied to each landmark dataset.$^1$ Predictions can then be made at each landmark time point. The landmark supermodel combines these models by introducing smoothing to permit risk prediction at any landmark.$^2$
+Landmarking for risk prediction on survival data is a method for w-year dynamic risk prediction where an individual has a personalized risk prediction which is updated as new information is collected among those who survived at a given time for risk assessment. Traditionally, a separate Cox proportional hazards (PH) model is applied to each landmark dataset [1]. Predictions can then be made at each landmark time point. The landmark supermodel combines these models by introducing smoothing to permit risk prediction at any landmark [2].
 
-Landmarking was first introduced as a concept by Anderson et al. (1983)$^3$, was adapted to dynamic prediction for survival by van Houwelingen (2007)$^4$, and then used in the context of time-dependent covariates by van Houwelingen and Putter (2008)$^5$. It was then conceptualized for competing risks by Nicolaie and van Houwelingen (2012)$^2$. The following framework is explained in further detail in van Houwelingen (2007)$^4$ and Nicolaie and van Houwelingen (2012)$^2$.
+Landmarking was first introduced as a concept by Anderson et al. (1983) [3], was adapted to dynamic prediction for survival by van Houwelingen (2007) [4], and then used in the context of time-dependent covariates by van Houwelingen and Putter (2008) [5]. It was then conceptualized for competing risks by Nicolaie and van Houwelingen (2012) [2]. The following framework is explained in further detail in van Houwelingen (2007) [4] and Nicolaie and van Houwelingen (2012) [2].
 
 
 ## 3. Sliding Landmark Model and Extension to Competing Risks
@@ -17,7 +19,7 @@ Let $w$ be the prediction window of interest. We aim to create a model to estima
 
 Suppose that individuals can experience one of $C$ types of failure ('causes'). Competing risk analysis accounts for the probability of other causes of failure, by estimating the probability of a specific event while considering the presence of competing events. Each event (‘cause’) is modelled through a cause-specific hazard.
 
-To create the sliding landmark model, a separate cox model is fit to each dataset by maximizing the Cox partial likelihood to find the parameters $\beta(s)$: leading to a conditional hazard of the following form: 
+To create the sliding landmark model, a separate cox model is fit to each dataset by maximizing the Cox partial likelihood to find the parameters $\beta(s)$ - leading to a conditional hazard of the following form: 
 
 
 For a time $s \leq t \leq s+w$:
@@ -32,10 +34,10 @@ At a high-level, the landmark supermodel introduces smoothing between the separa
 
 A super dataset is built to create the landmark supermodel: 
 1. Fix $w$, a prediction horizon/window, and partition risk prediction times of interest into different landmarks ${s_0,…,s_L}$.
-2. Build a landmark data set for each $s_i$ as before (i.e., with left truncation at $s_i$, right administrative censoring after $s_i+w$, and using the covariate values $Z(s_i)$)
+2. Build a landmark data set for each $s_i$ as before - i.e., with left truncation at $s_i$, right administrative censoring after $s_i+w$, and using the covariate values $Z(s_i)$.
 3. Stack these data sets to create a “super prediction data set.”
 
-A Cox (or cause-specific Cox) model is trained on the super dataset. To account for covariate landmark-varying effects, the regression coefficients depend smoothly on $t_LM=s$ (modelled linearly), i.e., $\beta(s) = \sum_k \beta_k f_k(s)$ for some functions $f_k (s)$. The default in our implementation is: 
+A Cox (or cause-specific Cox) model is trained on the super dataset. To account for covariate landmark-varying effects, the regression coefficients depend smoothly on $t_{LM}=s$ (modelled linearly), i.e., $\beta(s) = \sum_k \beta_k f_k(s)$ for some functions $f_k (s)$. The default in our implementation is: 
 $$\beta(s)= \beta_0+ \beta_1 s+ \beta_2 s^2$$
 
 Note that the regression parameters depend on prediction time, not the risk horizon! The baseline hazard also depends on the prediction time $s$, and this can be modelled by: $h_0 (t│s)=h_0 (t)\exp(\alpha(s))$. The default in our implementation is 
@@ -53,7 +55,7 @@ Prediction uses the most up-to-date patient covariates. The cumulative hazard is
 $$S(s+w \mid Z(s), s) = \exp\left(-\int_s^{s+w} h(t \mid Z(s), s) \, dt \right)$$
 $$F(s+w \mid Z(s), s) = 1 - S(s+w \mid Z(s), s)$$
 
-Under competing risks, all cause-specific hazards are considered, with coefficients from each of the cause-specific Cox models, $\beta_j (s)= \beta_{j0}+ \beta_{j1} s+ \beta_{j2} s^2$ and $\alpha_j (s)= \alpha_{j0}+\alpha_{j1} s. To compute survival, the cumulative cause-specific hazards are summed:
+Under competing risks, all cause-specific hazards are considered, with coefficients from each of the cause-specific Cox models, $\beta_j (s)= \beta_{j0}+ \beta_{j1} s+ \beta_{j2} s^2$ and $\alpha_j (s)= \alpha_{j0}+\alpha_{j1} s$. To compute survival, the cumulative cause-specific hazards are summed:
 
 $$S(s+w \mid Z(s), s) = \exp\left(\int_s^{s+w} \sum_{j=1}^C h_j(t \mid Z(s), s) dt \right) $$
 
@@ -65,13 +67,13 @@ Note that for the sliding landmark model, $h_j (t│Z(s),s)=h_{j0} (t│s)  \exp
 
 ## 6. Penalization (penLM)
 
-With a large dataset and time-dependent effects, the supermodel has many parameters. We introduce penalization to ensure better generalization while handling much higher dimensionality. A model is fit by maximizing the penalized pseudo-partial likelihood (PPL) of the supermodel $\textrm{ipl}_\lambda^* (\beta,\alpha)$. For a single-cause model the penalized $\log \textrm{ipl}_\lambda^* (\beta,\alpha)$ is given by:
+With a large dataset and time-dependent effects, the supermodel has many parameters. We introduce penalization to ensure better generalization while handling much higher dimensionality. A model is fit by maximizing the penalized pseudo-partial likelihood (PPL) of the supermodel $\textrm{ipl}^*_{\lambda} (\beta,\alpha)$. For a single-cause model the penalized $\log \textrm{ipl}^*_{\lambda}$ is given by:
 
 $$\sum_{i=1}^n \log \left( \prod_{s: s \leq T_i \leq s+w} \frac{\exp(Z_i(s)^T \beta(s) + \alpha(s))}{\sum_{s: s \leq T_i \leq s+w} \sum_{j \in R(T_i)} \exp(Z_j(s)^T \beta(s) + \alpha(s)) }^{\eta_i} \right) - \lambda p(\beta, \alpha)$$
 
-Where $R(T)$ is the risk set of patients alive at $T$ and $\eta_i,T_i$  are respectively if the event occurred and time-to-event for patient $i$. The penalty $p(\cdot)$ can be a LASSO (the L1 norm)$^6$, Ridge (the L2 norm)$^7$, or an elastic net (a combination of the two)$^8$.
+Where $R(T)$ is the risk set of patients alive at $T$ and $\eta_i,T_i$  are respectively if the event occurred and time-to-event for patient $i$. The penalty $p(\cdot)$ can be a LASSO (the L1 norm) [6], Ridge (the L2 norm) [7], or an elastic net (a combination of the two) [8].
 
-When multiple causes/competing risks are present, the PPL factors over the competing events 𝐶 assuming an independent censoring mechanism.$^9$
+When multiple causes/competing risks are present, the PPL factors over the competing events $C$ assuming an independent censoring mechanism [9].
 
 $$\textrm{ipl}^* = \prod_{j \in C} \textrm{ipl}^* (\beta_j,\alpha_j)$$
 
@@ -79,7 +81,7 @@ It is thus maximized by maximizing individual cause-specific Cox models. Penaliz
 
 $$\sum_{j \in C} \log \left( \textrm{ipl}^* (\beta_j,\alpha_j) \right) - \lambda_j p(\beta_j, \alpha_j)$$
 
-Penalization leads to a trade-off between the model complexity and goodness-of-fit, where the optimal weights $\lambda_j$ are chosen via the cross-validated penalized log PPLs.$^10$ The methods used for prediction remain the same using the values for $\beta_j, \alpha_j$ obtained. 
+Penalization leads to a trade-off between the model complexity and goodness-of-fit, where the optimal weights $\lambda_j$ are chosen via the cross-validated penalized log PPLs [10]. The methods used for prediction remain the same using the values for $\beta_j, \alpha_j$ obtained. 
 
 ## 7. References
 

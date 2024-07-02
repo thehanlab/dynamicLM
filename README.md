@@ -1,24 +1,28 @@
-- [1 dynamicLM](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#1-dynamiclm)
-- [2 Introduction](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#2-introduction)
-  - [2.1 What is landmarking and when is it used?](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#21-what-is-landmarking-and-when-is-it-used)
-  - [2.2 Installation](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#22-installation)
-- [3 Tutorial: basic example](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#3-tutorial-basic-example)
-  - [3.1 Data preparation](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#31-data-preparation)
-    - [3.1.1 Data](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#311-data)
-    - [3.1.2 Build a super data set](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#312-build-a-super-data-set)
-  - [3.2 Model fitting](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#32-model-fitting)
-    - [3.2.1 Traditional (unpenalized) landmark supermodel](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#321-traditional-unpenalized-landmark-supermodel)
-    - [3.2.2 Penalized landmark supermodel](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#322-penalized-landmark-supermodel)
-  - [3.3 Prediction](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#33-prediction)
-    - [3.3.1 Training data](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#331-training-data)
-    - [3.3.2 Testing data](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#332-testing-data)
-  - [3.4 Model evaluation](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#34-model-evaluation)
-    - [3.4.1 Calibration plots](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#341-calibration-plots)
-    - [3.4.2 Predictive performance](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#342-predictive-performance)
-    - [3.4.3 Bootstrapping](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#343-bootstrapping)
-    - [3.4.4 External validation](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#344-external-validation)
-    - [3.4.5 Visualize individual dynamic risk trajectories](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#345-visualize-individual-dynamic-risk-trajectories)
-- [4 References](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#4-references)
+- [1 dynamicLM](#dynamiclm)
+- [2 Introduction](#introduction)
+  - [2.1 What is landmarking and when is it
+    used?](#what-is-landmarking-and-when-is-it-used)
+  - [2.2 Installation](#installation)
+- [3 Tutorial: basic example](#tutorial-basic-example)
+  - [3.1 Data preparation](#data-preparation)
+    - [3.1.1 Data](#data)
+    - [3.1.2 Build a super data set](#build-a-super-data-set)
+  - [3.2 Model fitting](#model-fitting)
+    - [3.2.1 Traditional (unpenalized) landmark
+      supermodel](#traditional-unpenalized-landmark-supermodel)
+    - [3.2.2 Penalized landmark
+      supermodel](#penalized-landmark-supermodel)
+  - [3.3 Prediction](#prediction)
+    - [3.3.1 Training data](#training-data)
+    - [3.3.2 Testing data](#testing-data)
+  - [3.4 Model evaluation](#model-evaluation)
+    - [3.4.1 Calibration plots](#calibration-plots)
+    - [3.4.2 Predictive performance](#predictive-performance)
+    - [3.4.3 Bootstrapping](#bootstrapping)
+    - [3.4.4 External validation](#external-validation)
+    - [3.4.5 Visualize individual dynamic risk
+      trajectories](#visualize-individual-dynamic-risk-trajectories)
+- [4 References](#references)
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
@@ -92,8 +96,8 @@ effects of covariates. For example, $\beta(s)= \beta_0+ \beta_1 s$
 models a main and linear time-dependent effect.
 
 > A more detailed mathematical explanation of the landmark supermodel is
-> detailed in a separate file,
-> [here](https://github.com/thehanlab/dynamicLM/extension/summary-metric/tutorials/theory-landmark-supermodel.md).
+> detailed in [a separate
+> file](https://github.com/thehanlab/dynamicLM/blob/extension/summary-metric/tutorials/theory-landmark-supermodel.md).
 
 In short, the creation of the landmark model for survival data is built
 on the concept of risk assessment times (i.e., landmarks) that span risk
@@ -120,7 +124,7 @@ devtools::install_github("thehanlab/dynamicLM", ref = "extension/summary-metric"
 ```
 
 Package documentation can be found in [this
-pdf](https://github.com/thehanlab/dynamicLM/blob/main/man/dynamicLM_0.3.0.pdf)
+pdf](https://github.com/thehanlab/dynamicLM/blob/main/man/dynamicLM_1.0.0.pdf)
 and more information about any function can be obtained by running
 `?function_name`.
 
@@ -130,10 +134,10 @@ This is a basic example which shows you how to use `dynamicLM` to make
 dynamic 5-year predictions and check calibration and discrimination
 metrics.
 
-> An alternative tutorial which uses cancer relapse data can be found
-> [here](https://github.com/thehanlab/dynamicLM/extension/summary-metric/tutorials/tutorial2-recurrence-data.md).
-> This is the example first used at the time of publishing the [Software
-> Application Profile in
+> We have \[an alternative
+> tutorial\]((<https://github.com/thehanlab/dynamicLM/blob/extension/summary-metric/tutorials/tutorial2-recurrence-data.md>)
+> which uses cancer relapse data. This is the example first used at the
+> time of publishing the [Software Application Profile in
 > IJE](https://academic.oup.com/ije/article/52/6/1984/7260912), and only
 > includes an unpenalized landmark supermodel.
 
@@ -582,7 +586,8 @@ setting `HR = TRUE`.
 
 ``` r
 par(mfrow=c(1,3))
-plot(supermodel_pen, HR = TRUE, covars = c("bili", "stage", "edema"))
+plot(supermodel_pen, covars = c("bili", "stage", "edema"), 
+     HR = TRUE, ylim = c(0, 0.25))
 ```
 
 <img src="man/figures/README-hr2-1.png" width="100%" />
@@ -696,9 +701,9 @@ curve or time-dependent dynamic Brier score. This enables one score per
 model or one comparison for a pair of models.
 
 ``` r
-scores <- score(list("LM" = p1, "penLM" = p2),
-                times = c(0, 2, 4), # landmarks at which to assess
-                summary = TRUE)     # also include the summary metrics
+# scores <- score(list("LM" = p1, "penLM" = p2),
+#                 times = c(0, 2, 4), # landmarks at which to assess
+#                 summary = TRUE)     # also include the summary metrics
 ```
 
 These results can be printed:
@@ -712,11 +717,9 @@ print(scores, landmarks = FALSE)    # only print summary metrics
 These results can also be plot with point wise confidence intervals.
 
 ``` r
-par(mfrow = c(1, 4))
-plot(scores, summary = TRUE)
+# par(mfrow = c(1, 4))
+# plot(scores, summary = TRUE)
 ```
-
-<img src="man/figures/README-score-1.png" width="100%" />
 
 Additional parameters control which plots to include and additional
 information, for example, one can remove confidence intervals (first
@@ -727,30 +730,28 @@ example), or by plotting the contrasts directly (third example). See
 `?plot.LMScore` for more information.
 
 ``` r
-# Three plots and make extra space below for the x-labels
-par(mfrow = c(1, 3), mar = c(9, 4, 4, 3)) 
-
-# E.g., plot only the time-dependent AUC contrasts without CIs
-plot(scores, brier = FALSE, landmarks = TRUE, 
-     summary = FALSE, contrasts = TRUE, se = FALSE)
-
-# E.g., plot only summary BS and add p-value comparisons
-plot(scores, auc = FALSE, landmarks = FALSE, summary = TRUE,
-     ylim = c(0, 0.15), 
-     las = 2,                                # Rotate x-axis labels
-     add_pairwise_contrasts = TRUE,          # Include the contrasts
-     cutoff_contrasts = 0.05,                # Significance cutoff, default 0.05
-     pairwise_heights = c(0.1, 0.13),        # Height of the contrast labels 
-                                             #  (only 2/3 are significant so 
-                                             #  only need to specify 2 heights)
-     width = 0.01)                           # Width of ends of bars
-
-# E.g., plot summary BS contrasts
-plot(scores, auc = FALSE, landmarks = FALSE, summary = TRUE, 
-     contrasts = TRUE, las = 2)
+# # Three plots and make extra space below for the x-labels
+# par(mfrow = c(1, 3), mar = c(9, 4, 4, 3)) 
+# 
+# # E.g., plot only the time-dependent AUC contrasts without CIs
+# plot(scores, brier = FALSE, landmarks = TRUE, 
+#      summary = FALSE, contrasts = TRUE, se = FALSE)
+# 
+# # E.g., plot only summary BS and add p-value comparisons
+# plot(scores, auc = FALSE, landmarks = FALSE, summary = TRUE,
+#      ylim = c(0, 0.15), 
+#      las = 2,                                # Rotate x-axis labels
+#      add_pairwise_contrasts = TRUE,          # Include the contrasts
+#      cutoff_contrasts = 0.05,                # Significance cutoff, default 0.05
+#      pairwise_heights = c(0.1, 0.13),        # Height of the contrast labels 
+#                                              #  (only 2/3 are significant so 
+#                                              #  only need to specify 2 heights)
+#      width = 0.01)                           # Width of ends of bars
+# 
+# # E.g., plot summary BS contrasts
+# plot(scores, auc = FALSE, landmarks = FALSE, summary = TRUE, 
+#      contrasts = TRUE, las = 2)
 ```
-
-<img src="man/figures/README-scoreextra-1.png" width="100%" />
 
 ### 3.4.3 Bootstrapping
 
@@ -767,7 +768,7 @@ scores <- score(list("LM" = supermodel, "penLM" = supermodel_pen),
 par(mfrow = c(1, 3))
 outlist <- calplot(list("LM" = supermodel, "penLM" = supermodel_pen), 
                     times = c(0, 2, 4),               # landmarks to plot at
-                    method = "quantile", q = 10,      # calibration plot method
+                    method = "quantile", q = 5,       # calibration plot method
                     split.method = "bootcv", B = 10,  # 10 bootstraps
                     # Optional plotting parameters to alter
                     ylim = c(0, 0.4), xlim = c(0, 0.4), 
@@ -794,7 +795,8 @@ outlist <- calplot(list("LM" = supermodel, "penLM" = supermodel_pen),
                    method = "quantile", q = 10, 
                    ylim = c(0, 0.25), xlim = c(0, 0.25))
 
-score(list("LM" = p1, "penLM" = p2), cause = 1, data = newdata, lms = 0)
+score(list("LM" = supermodel, "penLM" = supermodel_pen), 
+      cause = 1, data = newdata, lms = 0)
 ```
 
 ### 3.4.5 Visualize individual dynamic risk trajectories
