@@ -131,6 +131,9 @@
 #' @importFrom data.table .SD
 #' @export
 # TODO: add null.model argument
+# TODO: handle na.rm
+# TODO: add checks for left-censoring for summary = TRUE
+# TODO: add bootstrapping option for summary metric
 score <-
   function(object,
            times,
@@ -153,26 +156,11 @@ score <-
            ...) {
 
     if (!requireNamespace("data.table", quietly = TRUE)) {
-      stop("Package \"data.table\" must be installed to use function score()",
+      stop("Package 'data.table' must be installed to use function score()",
            call. = FALSE)
     }
 
-    get.auc <- FALSE
-    get.bs <- FALSE
-    if ("auc" %in% tolower(metrics)) get.auc <- TRUE
-    if ("brier" %in% tolower(metrics)) get.bs <- TRUE
-    if (!get.auc && !get.bs)
-      stop(tidymess("At least one of the following metrics must be specified:
-                    \"auc\", \"brier\"."))
-
-    get.a.iid <- FALSE
-    get.b.iid <- FALSE
-    if ("auc" %in% tolower(metrics) && summary) get.a.iid <- TRUE
-    if ("brier" %in% tolower(metrics) && summary) get.b.iid <- TRUE
-
-    # TODO: check if other arguments make sense with summary = TRUE
-    # TODO: add bootstrapping option for summary metric
-
+    # Get cleaned input
     checked_input <- match.call()
     m <- match(c("object", "times", "formula", "data", "lms", "id_col",
                  "split.method", "B", "M", "cores", "seed", "cause"),
@@ -180,7 +168,6 @@ score <-
     checked_input <- as.list(checked_input[m])
     checked_input <- do.call(check_evaluation_inputs, checked_input,
                              envir = parent.frame())
-
     object <- checked_input$object
     times <- checked_input$times
     preds <- checked_input$preds
@@ -192,16 +179,26 @@ score <-
     cause <- checked_input$cause
     id_col <- checked_input$id_col
 
+    # Determine which metrics to calculate
+    get.auc <- "auc" %in% tolower(metrics)
+    get.bs <- "brier" %in% tolower(metrics)
+    if (!get.auc && !get.bs)
+      stop(tidymess("At least one of the following metrics must be specified:
+                    \"auc\", \"brier\"."))
+    get.a.iid <- get.auc && summary
+    get.b.iid <- get.bs && summary
+
     if (!all("bootstrap" %in% colnames(data))) data$bootstrap <- 1
     if (length(object) == 1) contrasts <- FALSE
 
     num_B <- length(unique(data$bootstrap))
-    se.fit.b <- se.fit
-    if (num_B > 1) se.fit.b <- FALSE
+    se.fit.b <- if (num_B > 1) FALSE else se.fit
 
     # TODO: parallelize?
+    # Get the metrics for each bootstrap (if not bootstrapping then for the
+    # single iteration)
     metrics <- lapply(unique(data$bootstrap), function(b) {
-      m_b <- lapply(seq_along(times), function(t) {
+      lapply(seq_along(times), function(t) {
         tLM <- times[t]
         idx <- (pred_LMs == tLM) & (data$bootstrap == b)
         data_to_test <- data[idx, ]
@@ -212,14 +209,11 @@ score <-
         # data_to_test[[time]] <- data_to_test[[time]] - tLM
         # data_to_test[["LM"]] <- data_to_test[["LM"]] - tLM
 
-        risks_to_test <- lapply(1:NF, function(i) {
-          preds[idx, i]
-        })
+        risks_to_test <- lapply(1:NF, function(i) preds[idx, i])
         names(risks_to_test) <- names(object)
 
-        if (nrow(data_to_test) != length(risks_to_test[[1]])) {
+        if (nrow(data_to_test) != length(risks_to_test[[1]]))
           stop("nrow(data_to_test)!=length(risks_to_test)")
-        }
 
         if (nrow(data_to_test) == 0) {
           warning(tidymess(paste0(
@@ -244,99 +238,65 @@ score <-
         ))
         # print(score_t)
 
+        # Error handing & get what we need from the output
         if (inherits(score_t, "try-error")) {
-          auct_b <- data.frame(model = names(object), times = NA, AUC = NA,
-                               se = NA, lower = NA, upper = NA)
-          briert_b <- data.frame(model = names(object), times = NA, Brier = NA,
-                                 se = NA, lower = NA, upper = NA)
-          if (contrasts) {
-            auc_contrasts_b <- data.frame(times = NA, model = NA,
-                                          reference = NA, delta.AUC = NA,
-                                          lower = NA, upper = NA, p = NA)
-            brier_contrasts_b <- data.frame(times = NA, model = NA,
-                                            reference = NA, delta.AUC = NA,
-                                            lower = NA, upper = NA, p = NA)
-          }
-
-          # TODO: should be NAs as above so we can catch them
-          if (get.a.iid) a_iid <- data.frame()
-          if (get.b.iid) b_iid <- data.frame()
-
+          # If error: df with one row of NAs of the relevant column names
+          auct_b <- initialize_df("AUC")
+          briert_b <- initialize_df("Brier")
+          auc_contrasts_b <- initialize_df("delta.AUC")
+          brier_contrasts_b <- initialize_df("delta.Brier")
+          a_iid <- initialize_df("IF.AUC")
+          b_iid <- initialize_df("IF.Brier")
         } else {
           auct_b <- score_t$AUC$score
           briert_b <- score_t$Brier$score
-          if (contrasts) {
-            auc_contrasts_b <- score_t$AUC$contrasts
-            brier_contrasts_b <- score_t$Brier$contrasts
-          }
-
-          ###{
+          auc_contrasts_b <- score_t$AUC$contrasts
+          brier_contrasts_b <- score_t$Brier$contrasts
           if (get.a.iid)
             a_iid <- cbind(tLM, score_t$AUC$iid.decomp, bootstrap = b)
           if (get.b.iid)
             b_iid <- cbind(tLM, score_t$Brier$iid.decomp, bootstrap = b)
-          ###}
         }
-        metrics_b_t <- list()
-        if (get.auc) {
-          metrics_b_t$AUC <- cbind(tLM, auct_b, bootstrap = b)
-          if (contrasts) {
-            metrics_b_t$a_contrasts <- cbind(tLM, auc_contrasts_b,
-                                             bootstrap = b)
-          }
-          if (get.a.iid) metrics_b_t$a_iid <- a_iid
-        }
-        if (get.bs) {
-          metrics_b_t$Brier <- cbind(tLM, briert_b, bootstrap = b)
-          if (contrasts) {
-            metrics_b_t$b_contrasts <- cbind(tLM, brier_contrasts_b,
-                                             bootstrap = b)
-          }
-          if (get.b.iid) metrics_b_t$b_iid <- b_iid
-        }
-        metrics_b_t
-      })
 
-      # print(m_b)
-      list(
-        AUC = do.call("rbind", lapply(m_b, function(m) m$AUC)),
-        Brier = do.call("rbind", lapply(m_b, function(m) m$Brier)),
-        a_contrasts = do.call("rbind", lapply(m_b, function(m) m$a_contrasts)),
-        b_contrasts = do.call("rbind", lapply(m_b, function(m) m$b_contrasts)),
-        a_iid = do.call("rbind", lapply(m_b, function(m) m$a_iid)),
-        b_iid = do.call("rbind", lapply(m_b, function(m) m$b_iid))
-      )
+        list(
+          AUC = if (get.auc) cbind(tLM, auct_b, bootstrap = b) else NULL,
+          Brier = if (get.bs) cbind(tLM, briert_b, bootstrap = b) else NULL,
+          a_contrasts = if (contrasts && get.auc)
+            cbind(tLM, auc_contrasts_b, bootstrap = b) else NULL,
+          b_contrasts = if (contrasts && get.bs)
+            cbind(tLM, brier_contrasts_b, bootstrap = b) else NULL,
+          a_iid = if (get.a.iid) a_iid else NULL,
+          b_iid = if (get.b.iid) b_iid else NULL
+        )
+      })
     })
 
-    auct <- do.call("rbind", lapply(metrics, function(m) m$AUC))
-    briert <- do.call("rbind", lapply(metrics, function(m) m$Brier))
-    a_contrasts <- do.call("rbind", lapply(metrics, function(m) m$a_contrasts))
-    b_contrasts <- do.call("rbind", lapply(metrics, function(m) m$b_contrasts))
-    a_iid <- do.call("rbind", lapply(metrics, function(m) m$a_iid))
-    b_iid <- do.call("rbind", lapply(metrics, function(m) m$b_iid))
+    # Convert to dataframe
+    get_metrics <- function(metrics, metric_name) {
+      do.call("rbind", lapply(metrics, function(mb)
+        do.call("rbind", lapply(mb, function(mi) mi[[metric_name]]))))
+    }
+    auct <- get_metrics(metrics, "AUC")
+    briert <- get_metrics(metrics, "Brier")
+    a_contrasts <- get_metrics(metrics, "a_contrasts")
+    b_contrasts <- get_metrics(metrics, "b_contrasts")
+    a_iid <- get_metrics(metrics, "a_iid")
+    b_iid <- get_metrics(metrics, "b_iid")
 
-
+    # Clean output and handle bootstrapping results
     if (B > 1) {
-      a_contrasts_out <- NULL
-      b_contrasts_out <- NULL
-
       alpha <- 1 - conf.int
-      if (get.auc) {
-        auct_out <- clean_bootstraps(auct, "AUC", alpha, se.fit = se.fit)
-        if (contrasts) {
-          a_contrasts_out <- clean_bootstraps(
-            a_contrasts, "delta.AUC", alpha, contrasts = TRUE, se.fit = se.fit
-          )
-        }
+      clean_if <- function(condition, df, metric, ...) {
+        if (condition) clean_bootstraps(df, metric, alpha, se.fit = se.fit, ...)
+        else NULL
       }
-      if (get.bs) {
-        briert_out <- clean_bootstraps(briert, "Brier", alpha, se.fit = se.fit)
-        if (contrasts) {
-          b_contrasts_out <- clean_bootstraps(
-            b_contrasts, "delta.Brier", alpha, contrasts = TRUE, se.fit = se.fit
-          )
-        }
-      }
+
+      auct_out <- clean_if(get.auc, auct, "AUC")
+      a_contrasts_out <- clean_if(contrasts, a_contrasts, "delta.AUC",
+                                  contrasts = TRUE)
+      briert_out <- clean_if(get.bs, briert, "Brier")
+      b_contrasts_out <- clean_if(contrasts, b_contrasts, "delta.Brier",
+                                  contrasts = TRUE)
 
       if (!silent) {
         b_na <- auct$bootstrap[is.na(auct$AUC)]
@@ -370,38 +330,27 @@ score <-
     }
 
     outlist <- list()
-    if (get.auc) {
+    if (get.auc)
       outlist$AUC <- list(score = auct_out, contrasts = a_contrasts_out)
-    }
-    if (get.bs) {
+    if (get.bs)
       outlist$Brier <- list(score = briert_out, contrasts = b_contrasts_out)
-    }
     if (B > 1) {
       outlist$B <- B
       outlist$split.method <- split.method
     }
 
-    ###{
-    # TODO: add as an argument
-    # TODO: add checks for left-censoring
-
+    # Get summary metrics
     if (summary) {
       if (get.a.iid) {
-        model_levels <- levels(outlist$AUC$score$model)
-        if (!all(model_levels == levels(outlist$AUC$contrasts$model))) stop()
         outlist$AUC_summary <- summary_metric(
-          "AUC", auct, a_contrasts, a_iid, conf.int, object,
-          id_col, model_levels, B, se.fit)
+          "AUC", auct, a_contrasts, a_iid, conf.int, object, id_col,  B, se.fit)
       }
       if (get.b.iid) {
-        model_levels <- levels(outlist$Brier$score$model)
-        if (!all(model_levels == levels(outlist$Brier$contrasts$model))) stop()
         outlist$Brier_summary <- summary_metric(
           "Brier", briert, b_contrasts, b_iid, conf.int, object,
-          id_col, model_levels, B, se.fit)
+          id_col, B, se.fit)
       }
     }
-    ###}
 
     outlist$w <- w
     class(outlist) <- "LMScore"
