@@ -3,16 +3,17 @@
 \name{plot.penLMCSC}
 \alias{plot.penLMCSC}
 \title{Plot the non-zero coefficients of a penalized cause-specific Cox landmark
-supermodel}
+supermodel or the dynamic log-hazard ratios}
 \usage{
 \method{plot}{penLMCSC}(
   x,
   single_plot = TRUE,
   max_coefs = NULL,
+  all_causes = FALSE,
+  HR = FALSE,
+  covars = NULL,
   col = "blue",
   xlab = "Coefficient value",
-  HR = FALSE,
-  all_causes = FALSE,
   ...
 )
 }
@@ -26,19 +27,28 @@ positive and negative coefficients, or two separate plots.}
 \item{max_coefs}{Default is to plot all coefficients. If specified, gives the
 maximum number of coefficients to plot.}
 
-\item{col}{Fill color for the barplot.}
-
-\item{xlab}{x-axis Label}
+\item{all_causes}{Logical, default is FALSE. Plot coefficients for all
+cause-specific models.}
 
 \item{HR}{Plot the hazard ratio? Default is FALSE. See \code{\link[=plot.dynamicLM]{plot.dynamicLM()}}
 for additional arguments.}
 
-\item{all_causes}{Logical, default is FALSE. Plot coefficients for all
-cause-specific models.}
+\item{covars}{If HR is TRUE, a vector or list of strings indicating the
+variables to plot (note these must be given without time interaction).
+Defaults to all variables.}
+
+\item{col}{Fill color for the barplot.}
+
+\item{xlab}{x-axis Label}
 
 \item{...}{Additional arguments to barplot or to \code{\link[=plot.dynamicLM]{plot.dynamicLM()}}.}
 }
 \description{
 Can plot positive and negative coefficients in two separate plots or the
-same. X-axes are the same if separate plots are used.
+same. X-axes are the same if separate plots are used. If plotting the log
+hazard ratios, check \code{\link[=plot.dynamicLM]{plot.dynamicLM()}} to see further arguments.
+}
+\details{
+If plotting the log hazard ratios, check \code{\link[=plot.dynamicLM]{plot.dynamicLM()}} to
+see further arguments.
 }

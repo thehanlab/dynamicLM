@@ -12,6 +12,7 @@ the dynamic log-hazard ratios}
   col = "blue",
   xlab = "Coefficient value",
   HR = FALSE,
+  covars = NULL,
   ...
 )
 }
@@ -32,10 +33,17 @@ maximum number of coefficients to plot.}
 \item{HR}{Plot the hazard ratio? Default is FALSE. See \code{\link[=plot.dynamicLM]{plot.dynamicLM()}}
 for additional arguments.}
 
+\item{covars}{If HR is TRUE, a vector or list of strings indicating the
+variables to plot (note these must be given without time interaction).
+Defaults to all non-zero variables.}
+
 \item{...}{Additional arguments to barplot or to \code{\link[=plot.dynamicLM]{plot.dynamicLM()}}.}
 }
 \description{
 Can plot positive and negative coefficients in two separate plots or the
-same. X-axes are the same if separate plots are used. If plotting the log
-hazard ratios, check \code{\link[=plot.dynamicLM]{plot.dynamicLM()}} to see further arguments.
+same. X-axes are the same if separate plots are used.
+}
+\details{
+If plotting the log hazard ratios, check \code{\link[=plot.dynamicLM]{plot.dynamicLM()}} to
+see further arguments.
 }

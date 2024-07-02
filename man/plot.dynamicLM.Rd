@@ -21,12 +21,10 @@
 )
 }
 \arguments{
-\item{x}{An object of class "LMcoxph" or "LMCSC", i.e. a fitted
-supermodel}
+\item{x}{A fitted supermodel}
 
 \item{covars}{Vector or list of strings indicating the variables to plot
-(note these must be given without time interaction label, for e.g., as in
-the argument \code{lm_covs} in \code{\link[=add_interactions]{add_interactions()}}).}
+(note these must be given without time interaction).}
 
 \item{conf_int}{Include confidence intervals or not, default is TRUE}
 

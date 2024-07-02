@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.R
 \name{plot.pen_lm}
 \alias{plot.pen_lm}
-\title{Plot coefficients from an object created by calling \code{\link[=pen_lm]{pen_lm()}}, analogous to
+\title{Plot the coefficient path created by calling \code{\link[=pen_lm]{pen_lm()}}, analogous to
 plotting from \code{\link[=glmnet]{glmnet()}}}
 \usage{
 \method{plot}{pen_lm}(
