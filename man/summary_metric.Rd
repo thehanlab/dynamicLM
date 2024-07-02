@@ -4,18 +4,7 @@
 \alias{summary_metric}
 \title{Obtain the summary metric from landmark-specific estimates}
 \usage{
-summary_metric(
-  metric,
-  df_t,
-  df_c,
-  df_iid,
-  conf_int,
-  object,
-  id_col,
-  model_levels,
-  B,
-  se.fit
-)
+summary_metric(metric, df_t, df_c, df_iid, conf_int, object, id_col, B, se.fit)
 }
 \arguments{
 \item{metric}{"AUC" or "Brier"}
@@ -54,16 +43,16 @@ tLM ID model   times      IF.Brier b
 
 \item{object}{Either fitted supermodel or risk predictions.}
 
-\item{id_col}{TODO}
+\item{id_col}{Column name of the ID (only needed if we incorporate
+weighted metrics)}
 
-\item{model_levels}{TODO}
+\item{B}{Number of bootstrap replicates}
 
-\item{B}{TODO}
-
-\item{se.fit}{TODO}
+\item{se.fit}{If FALSE or 0, no standard errors are calculated.}
 }
 \value{
-TODO
+An list with entries \code{score} and optionally \code{contrasts} if
+contrasts were calculated.
 }
 \description{
 Obtain the summary metric from landmark-specific estimates

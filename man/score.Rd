@@ -19,7 +19,7 @@ score(
   split.method = "none",
   B = 1,
   M,
-  summary = FALSE,
+  summary = TRUE,
   cores = 1,
   seed,
   cause,

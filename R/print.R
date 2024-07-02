@@ -137,48 +137,30 @@ print.LMdataframe <- function(x, verbose = FALSE, ...) {
 #' @return Printed output.
 #' @export
 print.LMScore <- function(x, digits = 3, landmarks = TRUE, summary = TRUE, ...) {
-  if (landmarks) {
-    if (!is.null(x$AUC)) {
-      cat(paste0("\nMetric: Time-dependent AUC (w = ", x$w, ")\n"))
-      if (!is.null(x$B)) cat("        Bootstrapped over", x$B, "iterations\n")
-      obj <- x$AUC
+  list_indexes <- c("AUC", "Brier", "AUC_summary", "Brier_summary")
+  out_class <- c("scoreAUC", "scoreBrier", "scoreAUC", "scoreBrier")
+  names <- c("AUC", "Brier Score", "AUC", "Brier Score")
+
+  metrics_to_print <- c()
+  if (landmarks) metrics_to_print <- 1:2
+  if (summary) metrics_to_print <- c(metrics_to_print, 3:4)
+
+  for (i in metrics_to_print) {
+    if (!is.null(x[[list_indexes[i]]])) {
+      if (i <=2 )
+        cat(paste0("\nMetric: Time-dependent ", names[i], " (w = ", x$w, ")\n"))
+      else
+        cat(paste0("\nMetric: Averaged time-dependent ", names[i], " (w = ", x$w, ")\n"))
+
+      if (!is.null(x[["B"]]))
+        cat("        Bootstrapped over", x[["B"]], "iterations\n")
+
+      obj <- x[[list_indexes[i]]]
       if (!is.null(obj$score$times)) obj$score$times <- NULL
       if (!is.null(obj$contrasts$times)) obj$contrasts$times <- NULL
-      class(obj) <- "scoreAUC"
+      class(obj) <- out_class[i]
       print(obj)
       message(paste("NOTE: Predictions are made at time tLM for time tLM +", x$w))
-    }
-    if (!is.null(x$Brier)) {
-      cat(paste0("\nMetric: Time-dependent Brier Score (w = ", x$w, ")\n"))
-      if (!is.null(x$B)) cat("        Bootstrapped over", x$B, "iterations\n")
-      obj <- x$Brier
-      if (!is.null(obj$score$times)) obj$score$times <- NULL
-      if (!is.null(obj$contrasts$times)) obj$contrasts$times <- NULL
-      class(obj) <- "scoreBrier"
-      print(obj, digits = digits)
-      message(paste("NOTE: Predictions are made at time tLM for time tLM +", x$w))
-    }
-  }
-  if (summary) {
-    if (!is.null(x$AUC_summary)) {
-      # if (x$AUC_summary$weighted == FALSE)
-        cat(paste0("\nMetric: Averaged time-dependent AUC (w = ", x$w, ")\n"))
-      # else
-      #   cat(paste0("\nMetric: Weighted average time-dependent AUC (w = ", x$w, ")\n"))
-      if (!is.null(x$B)) cat("        Bootstrapped over", x$B, "iterations\n")
-      obj <- x$AUC_summary
-      class(obj) <- "scoreAUC"
-      print(obj, digits = digits)
-    }
-    if (!is.null(x$Brier_summary)) {
-      # if (x$Brier_summary$weighted == FALSE)
-        cat(paste0("\nMetric: Averaged time-dependent Brier Score (w = ", x$w, ")\n"))
-      # else
-      #   cat(paste0("\nMetric: Weighted average time-dependent Brier Score (w = ", x$w, ")\n"))
-      if (!is.null(x$B)) cat("        Bootstrapped over", x$B, "iterations\n")
-      obj <- x$Brier_summary
-      class(obj) <- "scoreBrier"
-      print(obj, digits = digits)
     }
   }
 }

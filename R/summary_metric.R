@@ -33,12 +33,13 @@
 #'
 #' @param conf_int Coverage level of the confidence interval.
 #' @param object Either fitted supermodel or risk predictions.
-#' @param id_col TODO
-#' @param model_levels TODO
-#' @param B TODO
-#' @param se.fit TODO
+#' @param id_col Column name of the ID (only needed if we incorporate
+#'   weighted metrics)
+#' @param B Number of bootstrap replicates
+#' @param se.fit If FALSE or 0, no standard errors are calculated.
 #'
-#' @return TODO
+#' @return An list with entries `score` and optionally `contrasts` if
+#'   contrasts were calculated.
 summary_metric <- function(metric,
                            df_t,
                            df_c,
@@ -46,31 +47,23 @@ summary_metric <- function(metric,
                            conf_int,
                            object,
                            id_col,
-                           model_levels,
                            B,
                            se.fit
                            ) {
   if (!metric %in% c("Brier", "AUC"))
     stop("Only Brier and AUC are handled.")
 
-  # TODO: add this to score and pass here
-  # if (!is.null(nullobject)) {
-  #   mlevs <- 0:NF
-  #   mlabels <- c(names(nullobject),names(object))
-  # } else{
-  #   mlevs <- 1:NF
-  #   mlabels <- names(object)
-  # }
-
-  # TODO: if any entries in df_t (that we would use!) are NA then return
-  #       NA immediately
-  # TODO: add these checks and all checks below to check_evaluation_inputs
-
   if_col <- paste0("IF.", metric)
   delta_col <- paste0("delta.", metric)
   lms <- unique(df_t$tLM)
   num_lms <- length(lms)
   sample_size <- length(unique(df_iid$ID))
+
+  if (any(is.na(df_t[[if_col]]))) {
+    stop(tidymess(paste0(
+      "There are missing values in the calculated time-dependent ", metric, ",
+       the summary metric cannot be calculated.")))
+  }
 
   get_contrasts <- TRUE
   if (is.null(df_c)) get_contrasts <- FALSE
@@ -103,15 +96,13 @@ summary_metric <- function(metric,
     #{{{ 2. get the se/CIs
     if (se.fit == TRUE) {
       #{{{{ 2.1. get the covariance of the iid decomp by model across times
-      # print("cov score (a)")
-      # print(model_levels)
-      # print(class(model_levels))
-      # print(unique(df_iid$model))
-      # print(match(unique(df_iid$model), model_levels)-1)
       cov_score <- lapply(unique(df_iid$model), function(m) {
         df <- df_iid[df_iid$model == m, c("ID", "tLM", if_col), with = FALSE]
+
         subsample_sizes <- table(df$tLM)
-        if (subsample_sizes[1] != sample_size) stop("Something went wrong.") # TODO
+        if (subsample_sizes[1] != sample_size)
+          stop("Subsample size mismatch.")
+
         adjustment <- subsample_sizes / sample_size
         df <- data.table::dcast(df, ID ~ tLM, value.var = if_col)
         df[, "ID" := NULL]
@@ -120,12 +111,8 @@ summary_metric <- function(metric,
         cov(df)
       })
 
-      # print(sapply(cov_score, function(c) sqrt(diag(c) / sample_size)))
       if (get_contrasts) {
         cov_score_contrasts <- lapply(1:nrow(contrasts), function(i) {
-          # TODO
-          # m1 <- match(contrasts[i, ]$reference, model_levels)-1
-          # m2 <- match(contrasts[i, ]$model, model_levels)-1
           m1 <- contrasts[i, ]$reference
           m2 <- contrasts[i, ]$model
           df1 <- df_iid[df_iid$model == m1,
@@ -139,7 +126,9 @@ summary_metric <- function(metric,
           df <- df[, c("ID", "tLM", if_col), with = FALSE]
 
           subsample_sizes <- table(df$tLM)
-          if (subsample_sizes[1] != sample_size) stop("Something went wrong.") # TODO
+          if (subsample_sizes[1] != sample_size)
+            stop("Subsample size mismatch.")
+
           df <- data.table::dcast(df, ID ~ tLM, value.var = if_col)
           df[, ID := NULL]
           df[is.na(df),] <- 0
@@ -211,7 +200,6 @@ summary_metric <- function(metric,
   else
     return(list(score = summary_score))
 }
-
 
 
 ### Code to add alternative weights ###
