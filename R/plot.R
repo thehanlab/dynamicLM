@@ -356,6 +356,7 @@ plot_summary <- function(df, col_name, col, ylim, xlab, ylab, main,
     graphics::arrows(mid, df[["lower"]], mid, df[["upper"]], col = "black",
                      length = length, angle = 90, code = 3)
   }
+  return(mid)
 }
 
 #' Plot an object output from [score()]: plot the time-dependent and/or summary
@@ -462,8 +463,8 @@ plot.LMScore <- function(x,
           col_name <- paste0("delta.", metric)
         }
 
-        plot_summary(df, col_name, col, ylim, xlab, ylab, main,
-                     cex, font.main, length, se, contrasts = contrasts)
+        mid <- plot_summary(df, col_name, col, ylim, xlab, ylab, main, cex,
+                            font.main, length, se, contrasts = contrasts)
 
         # add significant contrasts
         if (add_pairwise_contrasts && contrasts) {
