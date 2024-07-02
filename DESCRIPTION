@@ -10,12 +10,12 @@ Description: The goal of dynamicLM is to provide a simple framework to make dyna
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.1
+RoxygenNote: 7.3.1
 Depends: 
     dynpred (>= 0.1.2),
     prodlim (>= 2019.11.13),
     R (>= 2.10),
-    riskRegression (>= 2024.03.26),
+    riskRegression (>= 2024.6.13),
     survival (>= 2.44.1)
 Imports: 
     data.table,

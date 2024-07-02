@@ -53,6 +53,9 @@ summary_metric <- function(metric,
   if (!metric %in% c("Brier", "AUC"))
     stop("Only Brier and AUC are handled.")
 
+  if ("riskRegression_ID" %in% colnames(df_iid))
+    data.table::setnames(df_iid, old = "riskRegression_ID", new = "ID")
+
   if_col <- paste0("IF.", metric)
   delta_col <- paste0("delta.", metric)
   lms <- unique(df_t$tLM)
