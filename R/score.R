@@ -56,7 +56,8 @@
 #' @param B Number of times bootstrapping is performed.
 #' @param M Subsample size for training in cross-validation. Entries not sampled
 #'   in the M subsamples are used for validation.
-#' @param summary TODO
+#' @param summary Compute the summary metrics (average of the time-dependent
+#'   metrics). By default is TRUE.
 #' @param cores To perform parallel computing, specifies the number of cores.
 #'   (Not yet implemented)
 #' @param seed Optional, integer passed to set.seed. If not given or NA, no seed
@@ -133,7 +134,6 @@
 # TODO: add null.model argument
 # TODO: handle na.rm
 # TODO: add checks for left-censoring for summary = TRUE
-# TODO: add bootstrapping option for summary metric
 score <-
   function(object,
            times,
@@ -241,12 +241,12 @@ score <-
         # Error handing & get what we need from the output
         if (inherits(score_t, "try-error")) {
           # If error: df with one row of NAs of the relevant column names
-          auct_b <- initialize_df("AUC")
-          briert_b <- initialize_df("Brier")
-          auc_contrasts_b <- initialize_df("delta.AUC")
-          brier_contrasts_b <- initialize_df("delta.Brier")
-          a_iid <- initialize_df("IF.AUC")
-          b_iid <- initialize_df("IF.Brier")
+          auct_b <- initialize_df("AUC", bootstrap = b)
+          briert_b <- initialize_df("Brier", bootstrap = b)
+          auc_contrasts_b <- initialize_df("delta.AUC", bootstrap = b)
+          brier_contrasts_b <- initialize_df("delta.Brier", bootstrap = b)
+          a_iid <- initialize_df("IF.AUC", bootstrap = b)
+          b_iid <- initialize_df("IF.Brier", bootstrap = b)
         } else {
           auct_b <- cbind(tLM, score_t$AUC$score, bootstrap = b)
           briert_b <- cbind(tLM, score_t$Brier$score, bootstrap = b)

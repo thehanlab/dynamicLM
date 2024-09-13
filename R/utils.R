@@ -167,24 +167,25 @@ clean_bootstraps <- function(table, column, alpha, contrasts = FALSE,
 # initialize_df: initializes a data frame with the specified column names and
 # one row filled with NA.
 # ----------------------------------------------------------
-initialize_df <- function(metric) {
+initialize_df <- function(metric, bootstrap) {
   if (metric == "AUC")
-    cols <- c("model", "times", "AUC", "se", "lower", "upper")
+    cols <- c("tLM", "model", "times", "AUC", "se", "lower", "upper")
   if (metric == "Brier")
-    cols <- c("model", "times", "Brier", "se", "lower", "upper")
+    cols <- c("tLM", "model", "times", "Brier", "se", "lower", "upper")
   if (metric == "delta.AUC")
-    cols <- c("times", "model", "reference", "delta.AUC",
+    cols <- c("tLM", "times", "model", "reference", "delta.AUC", "se",
               "lower", "upper", "p")
   if (metric == "delta.Brier")
-    cols <- c("times", "model", "reference", "delta.Brier",
+    cols <- c("tLM", "times", "model", "reference", "delta.Brier", "se",
               "lower", "upper", "p")
   if (metric == "IF.AUC")
-    cols <- c("tLM", "ID", "model", "cause", "times", "IF.AUC", "bootstrap")
+    cols <- c("tLM", "riskRegression_ID", "model", "cause", "times", "IF.AUC")
   if (metric == "IF.Brier")
-    cols <- c("tLM", "ID", "model", "cause", "times", "IF.Brier", "bootstrap")
+    cols <- c("tLM", "riskRegression_ID", "model", "cause", "times", "IF.Brier")
 
   df <- data.frame(matrix(NA, nrow = 1, ncol = length(cols)))
   colnames(df) <- cols
+  df$bootstrap <- bootstrap
   df
 }
 
@@ -196,7 +197,7 @@ initialize_df <- function(metric) {
 #' @param data Data on which to which
 #' @param cause Main cause of interest
 #' @param cause.specific.coefs Coefficients that each model should be fit with
-#' @param ...
+#' @param ... Additional arguments to coxph.
 #'
 #' @return CSC model
 #' @references
