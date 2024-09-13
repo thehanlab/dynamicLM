@@ -16,8 +16,7 @@ You can install the development version of `dynamicLM` from
 ``` r
 # install.packages("devtools")
 devtools::install_github("thehanlab/dynamicLM", ref = "extension/summary-metric")
-#> Using github PAT from envvar GITHUB_PAT. Use `gitcreds::gitcreds_set()` and unset GITHUB_PAT in .Renviron (or elsewhere) if you want to use the more secure git credential store instead.
-#> Skipping install of 'dynamicLM' from a github remote, the SHA1 (96b19ed9) has not changed since last install.
+#> Skipping install of 'dynamicLM' from a github remote, the SHA1 (c8eb8ae4) has not changed since last install.
 #>   Use `force = TRUE` to force installation
 ```
 
@@ -236,9 +235,6 @@ formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment + age_1
 supermodel <- dynamic_lm(lmdata, as.formula(formula), "CSC") 
 #> Warning in agreg.fit(X, Y, istrat, offset, init, control, weights = weights, :
 #> Loglik converged before variable 8,9 ; beta may be infinite.
-```
-
-``` r
 print(supermodel)
 #> 
 #> Landmark cause-specific cox super model fit for dynamic prediction of window size 60:
