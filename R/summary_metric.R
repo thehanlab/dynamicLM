@@ -111,7 +111,7 @@ summary_metric <- function(metric,
         df[, "ID" := NULL]
         df[is.na(df),] <- 0
         df <- sweep(df, MARGIN = 2, STATS = adjustment, FUN = "/")
-        cov(df)
+        stats::cov(df)
       })
 
       if (get_contrasts) {
@@ -137,7 +137,7 @@ summary_metric <- function(metric,
           df[is.na(df),] <- 0
           adjustment <- subsample_sizes / sample_size
           df <- sweep(df, MARGIN = 2, STATS = adjustment, FUN = "/")
-          cov(df)
+          stats::cov(df)
         })
       }
       #}}}}

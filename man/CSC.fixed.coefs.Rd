@@ -16,7 +16,7 @@ CSC.fixed.coefs(formula, data, cause, cause.specific.coefs, ...)
 
 \item{cause.specific.coefs}{Coefficients that each model should be fit with}
 
-\item{...}{}
+\item{...}{Additional arguments to coxph.}
 }
 \value{
 CSC model

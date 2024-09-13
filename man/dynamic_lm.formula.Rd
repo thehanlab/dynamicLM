@@ -4,7 +4,7 @@
 \alias{dynamic_lm.formula}
 \title{Fit a dynamic Cox or cause-specific Cox landmark supermodel}
 \usage{
-\method{dynamic_lm}{formula}(formula, lmdata, ...)
+\method{dynamic_lm}{formula}(formula, lmdata, type, ...)
 }
 \arguments{
 \item{formula}{The formula to be used, remember to include \code{+cluster(ID)} for
@@ -16,9 +16,9 @@ factors/categorical variables must first be made into dummy variables.}
 \item{lmdata}{An object of class "LMdataframe", this can be created by
 running \code{\link[=stack_data]{stack_data()}} and \code{\link[=add_interactions]{add_interactions()}}}
 
-\item{...}{Arguments given to coxph or CSC.}
-
 \item{type}{"coxph" or "CSC"/"CauseSpecificCox"}
+
+\item{...}{Arguments given to coxph or CSC.}
 }
 \value{
 An object of class "LMcoxph" or "LMCSC" with components:

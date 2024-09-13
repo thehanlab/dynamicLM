@@ -78,7 +78,8 @@ of size \code{M}. Models are then assessed in observations not in the sample.}
 \item{M}{Subsample size for training in cross-validation. Entries not sampled
 in the M subsamples are used for validation.}
 
-\item{summary}{TODO}
+\item{summary}{Compute the summary metrics (average of the time-dependent
+metrics). By default is TRUE.}
 
 \item{cores}{To perform parallel computing, specifies the number of cores.
 (Not yet implemented)}

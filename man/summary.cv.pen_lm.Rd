@@ -9,7 +9,7 @@
 \arguments{
 \item{object}{cv.pen_lm object}
 
-\item{...}{}
+\item{...}{Additional arguments}
 }
 \description{
 Summarize cv.pen_lm objects: not yet implemented

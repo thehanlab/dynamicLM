@@ -9,7 +9,7 @@
 \arguments{
 \item{object}{dynamicLM object}
 
-\item{...}{}
+\item{...}{Additional arguments}
 }
 \description{
 Summarize dynamic_lm objects: not yet implemented

@@ -22,7 +22,7 @@
 #'   "deviance" which is the partial-likelihood for the Cox model. If using
 #'   cause-specific Cox models, this is evaluated on each model separately.
 #' @param seed Set a seed.
-#' @param foldid TODO
+#' @param foldid Optional, specify which fold each individual is in.
 #' @param ... Additional arguments to `cv.glmnet()`.
 #'
 #' @return An object of class cv.pen_lm. This is a list of cv.glmnet objects
@@ -93,7 +93,6 @@ cv.pen_lm <- function(x, y,
 
   # Get the cross-validations
   # TODO: add parallelization!
-  # models <- parallel::mclapply(y, function(yi) {
   models <- lapply(y, function(yi) {
     glmnet::cv.glmnet(x = x, y = yi,
                       family = "cox",
@@ -101,7 +100,6 @@ cv.pen_lm <- function(x, y,
                       type.measure = type.measure,
                       foldid = foldid, ...)
   })
-  # }, mc.cores = 4)
 
   # Additional information for output
   if (length(models) > 1){

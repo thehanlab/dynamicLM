@@ -201,7 +201,7 @@ plot.penLMcoxph <- function(x, single_plot = TRUE, max_coefs = NULL,
 #' hazard ratios, check [plot.dynamicLM()] to see further arguments.
 #'
 #' @param x a penalized cause-specific Cox supermodel - created by calling
-#'   [dynamic_lm()] on an object created from [penlm()] or [cv.pen_lm()].
+#'   [dynamic_lm()] on an object created from [pen_lm()] or [cv.pen_lm()].
 #' @param single_plot Logical, defaults to TRUE. A single plot for both
 #'   positive and negative coefficients, or two separate plots.
 #' @param max_coefs Default is to plot all coefficients. If specified, gives the
@@ -384,6 +384,7 @@ plot_summary <- function(df, col_name, col, ylim, xlab, ylab, main,
 #' @param xlab,ylab,pch,ylim,xlim,main,font.main,col,cex graphical parameters
 #' @param length The width of the ends of the error bars.
 #' @param legend Include a legend or not. Default is TRUE.
+#' @param legend.title Title of the legend. No title by default.
 #' @param auc Plot the AUC or not (if available). Default is TRUE.
 #' @param brier Plot the Brier Score or not (if available). Default is TRUE.
 #' @param ... Additional arguments to `plot()`

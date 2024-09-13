@@ -70,8 +70,8 @@ dynamic_lm <- function(...) {
 #'   - id_col: the cluster argument, often specifies the column with patient ID
 #'   - lm_col: column name that indicates the landmark time point for a row.
 #' @export
-dynamic_lm.formula <-  function(formula, lmdata, ...) {
-  dynamic_lm(lmdata=lmdata, formula=formula, ...)
+dynamic_lm.formula <-  function(formula, lmdata, type, ...) {
+  dynamic_lm(lmdata=lmdata, formula=formula, type, ...)
 }
 
 #' Fit a dynamic Cox or cause-specific Cox landmark supermodel to a stacked
@@ -519,9 +519,9 @@ dynamic_lm.cv.pen_lm <- function(object, lambda = "lambda.min", x = FALSE,
 
   if (inherits(lambda, "character")) {
     if (lambda == "lambda.1se")
-      lambda <- lapply(object, function(o) o$lambda.1se)
+      lambda <- sapply(object, function(o) o$lambda.1se)
     else if (lambda == "lambda.min")
-      lambda <- lapply(object, function(o) o$lambda.min)
+      lambda <- sapply(object, function(o) o$lambda.min)
   }
   return(dynamic_lm.pen_lm(object, lambda = lambda, x = x, ...))
 }

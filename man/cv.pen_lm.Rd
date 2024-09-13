@@ -40,7 +40,7 @@ cause-specific Cox models, this is evaluated on each model separately.}
 
 \item{seed}{Set a seed.}
 
-\item{foldid}{TODO}
+\item{foldid}{Optional, specify which fold each individual is in.}
 
 \item{...}{Additional arguments to \code{cv.glmnet()}.}
 }

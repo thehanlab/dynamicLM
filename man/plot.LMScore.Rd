@@ -71,6 +71,8 @@ contrast bars as a numeric value.}
 
 \item{legend}{Include a legend or not. Default is TRUE.}
 
+\item{legend.title}{Title of the legend. No title by default.}
+
 \item{auc}{Plot the AUC or not (if available). Default is TRUE.}
 
 \item{brier}{Plot the Brier Score or not (if available). Default is TRUE.}

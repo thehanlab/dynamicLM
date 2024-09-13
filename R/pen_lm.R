@@ -58,6 +58,7 @@ pen_lm <- function(x, y, alpha = 1, ...) {
   alpha <- checked_input$alpha
 
   # Get the coefficient path
+  # TODO: add parallelization
   models <- lapply(y, function(yi) {
     glmnet::glmnet(x = x, y = yi, family = "cox", alpha = alpha, ...)
   })

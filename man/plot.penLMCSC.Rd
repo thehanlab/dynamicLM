@@ -19,7 +19,7 @@ supermodel or the dynamic log-hazard ratios}
 }
 \arguments{
 \item{x}{a penalized cause-specific Cox supermodel - created by calling
-\code{\link[=dynamic_lm]{dynamic_lm()}} on an object created from \code{\link[=penlm]{penlm()}} or \code{\link[=cv.pen_lm]{cv.pen_lm()}}.}
+\code{\link[=dynamic_lm]{dynamic_lm()}} on an object created from \code{\link[=pen_lm]{pen_lm()}} or \code{\link[=cv.pen_lm]{cv.pen_lm()}}.}
 
 \item{single_plot}{Logical, defaults to TRUE. A single plot for both
 positive and negative coefficients, or two separate plots.}

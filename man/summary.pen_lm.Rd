@@ -9,7 +9,7 @@
 \arguments{
 \item{object}{pen_lm object}
 
-\item{...}{}
+\item{...}{Additional arguments}
 }
 \description{
 Summarize pen_lm objects: not yet implemented

@@ -1,7 +1,7 @@
 #' Summarize dynamic_lm objects: not yet implemented
 #'
 #' @param object dynamicLM object
-#' @param ...
+#' @param ... Additional arguments
 #'
 #' @export
 summary.dynamicLM <- function(object, ...) {
@@ -13,7 +13,7 @@ summary.dynamicLM <- function(object, ...) {
 #' Summarize pen_lm objects: not yet implemented
 #'
 #' @param object pen_lm object
-#' @param ...
+#' @param ... Additional arguments
 #'
 #' @export
 summary.pen_lm <- function(object, ...) {
@@ -25,7 +25,7 @@ summary.pen_lm <- function(object, ...) {
 #' Summarize cv.pen_lm objects: not yet implemented
 #'
 #' @param object cv.pen_lm object
-#' @param ...
+#' @param ... Additional arguments
 #'
 #' @export
 summary.cv.pen_lm <- function(object, ...) {

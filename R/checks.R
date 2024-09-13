@@ -304,6 +304,10 @@ check_evaluation_inputs <- function(
           original_model <- object[[f]]
 
           # b.1. Get a new coefficient path
+          #      pen_args has the arguments given to pen_lm (or cv.pen_lm)
+          #      only storing the relevant arguments, and already evaluated,
+          #      so, for e.g., the lambda used is static as the one chosen from
+          #      cross-validation
           pen_args <- original_model$pen_args
           pen_args <- c(as.name("pen_lm"),
                     list(x = data_train_b),
@@ -312,6 +316,7 @@ check_evaluation_inputs <- function(
           pen.model.b <- eval(pen_args)
 
           # b.2. Get a new dynamic_lm
+          #      args has the arguments given when fitting the model
           args <- original_model$args
           args[2] <- NULL
           args <- c(as.name("dynamic_lm"),
@@ -320,7 +325,6 @@ check_evaluation_inputs <- function(
           args <- as.call(args)
           model.b <- eval(args)
         }
-
 
         # Make predictions
         pred.b <- try(
