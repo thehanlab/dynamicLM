@@ -170,9 +170,6 @@ library(survival)
 data(pbc, package="survival")     # baseline data
 data(pbcseq, package="survival")  # longitudinal data
 #> Warning in data(pbcseq, package = "survival"): data set 'pbcseq' not found
-```
-
-``` r
 
 # only the first 312 patients are in both datasets
 pbc1 <- subset(pbc, id <= 312, select=c(id:sex, stage)) 
@@ -464,9 +461,7 @@ likelihood $l$ of the model with a penalty $p$, which can be a LASSO
 (the L1-norm), Ridge (the L2-norm), or an elastic net (a combination of
 the two).
 
-$$\log l(\beta, \alpha) - \lambda p(\beta, \alpha)$$ 
-
-Penalization
+$$\log l(\beta, \alpha) - \lambda p(\beta, \alpha)$$ Penalization
 balances model complexity and goodness-of-fit, where the optimal weight
 $\lambda$ is chosen via cross-validation.
 
@@ -649,9 +644,6 @@ print(example_test[, c("tstart", example_columns)])
 #> 3    0.0  2 12.3      0   1 56.44627    4.14       0
 #> 4    0.5  2 12.3      0   1 56.94627    3.60       0
 #> 5    1.0  2 12.3      0   1 57.44627    3.55       0
-```
-
-``` r
 
 p_test <- predict(supermodel, example_test, lms = "tstart", cause = 1)
 ```
@@ -762,18 +754,8 @@ specified when fitting the model (i.e., when calling `dynamic_lm()`).
 
 ``` r
 scores <- score(list("LM" = supermodel, "penLM" = supermodel_pen),
-              times = c(0, 2, 4),
+              times = c(0, 2, 4), metrics = "auc",
               split.method = "bootcv", B = 10)       # 10 bootstraps
-
-par(mfrow = c(1, 3))
-outlist <- calplot(list("LM" = supermodel, "penLM" = supermodel_pen), 
-                    times = c(0, 2, 4),               # landmarks to plot at
-                    method = "quantile", q = 5,       # calibration plot method
-                    split.method = "bootcv", B = 10,  # 10 bootstraps
-                    # Optional plotting parameters to alter
-                    ylim = c(0, 0.4), xlim = c(0, 0.4), 
-                    lwd = 1, xlab = "Predicted Risk", ylab = "Observed Risk", 
-                    legend = FALSE)
 ```
 
 ### 3.4.4 External validation

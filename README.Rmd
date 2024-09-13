@@ -510,15 +510,24 @@ Bootstrapping can be performed by calling `calplot()` or `score()` and setting t
 supermodel_pen <- dynamic_lm(cv_model, lambda = "lambda.1se", x = TRUE)
 ```
 
+```{r, include = FALSE, eval = FALSE, warning = FALSE}
+# TODO: BS is greater than 1 here...
+# -> 1: In Score.list(risks_to_test, formula = stats::as.formula(formula),  :
+#   Predicted values off the probability scale (negative or above 100%). 
+#   See `off.predictions' in output list.
+#   Only a problem for the Brier score, 
+#   You can stop this warning by setting metrics='auc'.
+```
 
-```{r boot, eval = FALSE}
+```{r boot, warning = FALSE}
 scores <- score(list("LM" = supermodel, "penLM" = supermodel_pen),
-              times = c(0, 2, 4),
+              times = c(0, 2, 4), metrics = "auc",
               split.method = "bootcv", B = 10)       # 10 bootstraps
 ```
 
-```{r, include = FALSE, eval = FALSE}
+```{r, include = FALSE, eval = FALSE, warning = FALSE}
 # TODO! is bugging
+# basically no unique breaks... works for only penLM
 par(mfrow = c(1, 3))
 outlist <- calplot(list("LM" = supermodel, "penLM" = supermodel_pen), 
                     times = c(0, 2, 4),               # landmarks to plot at
