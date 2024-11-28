@@ -19,6 +19,7 @@
 #' @param ylim y limit for the plots
 #' @param main Vector of strings indicating the title of each plot. Must be in
 #'   the same order as covars.
+#' @param discrete_grid Defaults to 0.1, how to discretize the grid for plotting
 #' @param ... Additional arguments passed to plot
 #'
 #' @return Plots for each variable in covars showing the dynamic hazard ratio
@@ -108,8 +109,8 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
     bet_var <- bet[idx]
     HR <- sapply(t, function(x) { # eval HR over times x in t
       sum(sapply(seq_along(bet_var), function(j) {
-        var = bet_var[j]
-        name = names(bet_var)[j]
+        var <- bet_var[j]
+        name <- names(bet_var)[j]
         if (name == covars[i]) {
           return(var)
         } else {
@@ -120,21 +121,24 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
       })) # bet0 + bet1*x + bet2*x^2 + ...
     })
 
-    if (!logHR) HR <- exp(HR)
-    if (set_ylim) ylim <- c(min(HR), max(HR))
-
     if (conf_int) {
-      if (logHR) {
-        se <- sapply(t, find_se_log, bet_var, sig[idx, idx], func_covars)
-      } else {
-        se <- sapply(t, find_se, bet_var, sig[idx, idx], func_covars)
-      }
+      se <- sapply(t, find_se_log, bet_var, sig[idx, idx], func_covars)
+
       lower <- HR - 1.96 * se
       upper <- HR + 1.96 * se
+      if (!logHR) {
+        HR <- exp(HR)
+        lower <- exp(lower)
+        upper <- exp(upper)
+      }
       if (set_ylim) {
+        ylim <- c(min(HR), max(HR))
         ylim[1] <- min(min(lower), ylim[1])
         ylim[2] <- max(max(upper), ylim[1])
       }
+    } else {
+      if (!logHR) HR <- exp(HR)
+      if (set_ylim) ylim <- c(min(HR), max(HR))
     }
 
     plot(t, HR, xlab = xlab, ylab = ylab, main = main[i], type = "l",
