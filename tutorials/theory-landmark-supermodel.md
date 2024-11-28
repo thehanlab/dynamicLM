@@ -82,9 +82,7 @@ $$ipl^*(\beta,\alpha) := \prod_{i=1}^n \prod_{s:s\le T_i\le s+w} \left( \frac{\e
 
 Where $R(T)$ is the risk set of patients alive at $T$ and $\eta_i, T_i$  are respectively if the event occurred and time-to-event for patient i. When multiple causes/competing risks are present, the PPL factors over the J competing events, assuming an independent censoring mechanism.9 This allows for the PPL to be maximized by maximizing individual cause-specific Cox models. The PPL for J competing events is given by:
 
-$$
-ipl^*(\beta, \alpha) = \prod_{j=1}^J ipl^*(\beta_j, \alpha_j)
-$$
+$$ipl^*(B, A) = \prod_{j=1}^J ipl^*(beta_j, alpha_j)$$
 
 where $B = (\beta_1,...,\beta_j)$ and $A = (\alpha_1,...,\alpha_j)$ are the cause-specific coefficients.
 
