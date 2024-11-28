@@ -88,11 +88,11 @@ where $B = (\beta_1,...,\beta_j)$ and $A = (\alpha_1,...,\alpha_j)$ are the caus
 
 The penalized log PPL for a single-cause model is given by the following equation where the penalty $p(\cdot)$ can be a LASSO (the L1 norm) [6], Ridge (the L2 norm) [7], or an elastic net (a combination of the two) [8].
 
-$$\textrm{log}ipl^* (\beta,\alpha) - \lambda p(\beta,\alpha)$$
+$$\log ipl^* (\beta,\alpha) - \lambda p(\beta,\alpha)$$
 
 For competing events, as the PPL factors over the J competing events assuming an independent censoring mechanism, the penalized log PPL factors, too:
 
-$$\sum_{j=1}^J \left\{ \textrm{log}ipl^* (\beta_j,\alpha_j) - \lambda_j p(\beta_j,\alpha_j) \right\}$$
+$$\sum_{j=1}^J \left\{ \log ipl^* (\beta_j,\alpha_j) - \lambda_j p(\beta_j,\alpha_j) \right\}$$
 
 Where $\lambda_j$ is a cause-specific penalty. Penalization is thus essentially performed on each cause-specific Cox model separately, in line with the unpenalized method. 
 
