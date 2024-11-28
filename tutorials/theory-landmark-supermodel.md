@@ -4,7 +4,7 @@
 
 The landmark model for survival data is built on the concept of risk assessment times (i.e., landmarks) that span risk prediction times of interest, using the information on the individuals who survived up to that given time point. In this approach, the dataset of the study cohort is transformed into multiple censored datasets based on a prediction window of interest and the predefined landmark times. A model is fit on the stacked super dataset (i.e., supermodel), and dynamic w-year risk prediction is then performed by using the most up-to-date value of a patient's covariate values. Specifically, risk prediction for the next w years is made at baseline (e.g., diagnosis) as well as at a later set of risk assessment times (“landmark prediction times”) after baseline (e.g., at 1, 2, and 3 years after diagnosis), where w is a fixed prediction window.
 
-![](./man/figures/README-descrip.png)
+![](man/figures/README-descrip.png)
 
 ## 2. Landmarking
 
@@ -92,7 +92,7 @@ $$\log ipl^* (\beta,\alpha) - \lambda p(\beta,\alpha)$$
 
 For competing events, as the PPL factors over the J competing events assuming an independent censoring mechanism, the penalized log PPL factors, too:
 
-$$\sum_{j=1}^J \left\{ \log ipl^* (\beta_j,\alpha_j) - \lambda_j p(\beta_j,\alpha_j) \right\}$$
+$$\sum_{j=1}^J \left\( \log ipl^* (\beta_j,\alpha_j) - \lambda_j p(\beta_j,\alpha_j) \right\)$$
 
 Where $\lambda_j$ is a cause-specific penalty. Penalization is thus essentially performed on each cause-specific Cox model separately, in line with the unpenalized method. 
 
