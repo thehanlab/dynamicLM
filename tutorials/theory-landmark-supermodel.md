@@ -15,18 +15,19 @@ Landmarking was first introduced as a concept by Anderson et al. (1983) [3], was
 
 ## 3. Sliding Landmark Model and Extension to Competing Risks
 
-Let $w$ be the prediction window of interest. We aim to create a model to estimate $w$-year risk at a landmark time $s$, knowing an individual’s covariates at $s$, $Z(s)$, and conditional on being alive at $s$. To create the landmark model, risk prediction times of interest are first partitioned into different landmarks ${s_0,…,s_L}$. The sliding landmark dataset is created for each landmark s, using only the data of individuals at risk (i.e., not censored or having experienced an event) with administrative censoring applied after $s+w$. For a time-dependent covariate, the dataset contains the most recent covariate value of the patient $Z(s)$, which is considered as a fixed variable. 
+Let $w$ be the prediction window of interest. We aim to create a model to estimate $w$-year risk at a landmark time $s$, knowing an individual’s covariates at $s$, $Z(s)$, and conditional on being alive at $s$. To create the landmark model, risk prediction times of interest are first partitioned into different landmarks ${s_0,…,s_L}$. The *sliding landmark dataset* is created for each landmark s, using only the data of individuals at risk (i.e., not censored or having experienced an event) with administrative censoring applied after $s+w$. For a time-dependent covariate, the dataset contains the most recent covariate value of the patient $Z(s)$, which is considered as a fixed variable. 
 
 Suppose that individuals can experience one of $C$ types of failure ('causes'). Competing risk analysis accounts for the probability of other causes of failure, by estimating the probability of a specific event while considering the presence of competing events. Each event (‘cause’) is modelled through a cause-specific hazard.
 
 To create the sliding landmark model, a separate cox model is fit to each dataset by maximizing the Cox partial likelihood to find the parameters $\beta(s)$ - leading to a conditional hazard of the following form: 
 
-
-For a time $s \leq t \leq s+w$:
+For a time $t$ such that $s \leq t \leq s+w$:
 - Standard survival analysis:
 $$h(t \mid Z(s), s) = h_0(t \mid s) \exp(Z(s) \beta(s))$$
 - Under competing risks for cause $j \in C$:
 $$h_j(t \mid Z(s), s) = h_{j0}(t \mid s) \exp(Z(s) \beta_j(s))$$
+
+In summary, the sliding landmark model consists of different models for each landmark, and predictions can only be made at these predefined landmarks. 
 
 ## 4. The Landmark Supermodel
 
@@ -40,7 +41,7 @@ A super dataset is built to create the landmark supermodel:
 A Cox (or cause-specific Cox) model is trained on the super dataset. To account for covariate landmark-varying effects, the regression coefficients depend smoothly on $t_{LM}=s$ (modelled linearly), i.e., $\beta(s) = \sum_k \beta_k f_k(s)$ for some functions $f_k (s)$. The default in our implementation is: 
 $$\beta(s)= \beta_0+ \beta_1 s+ \beta_2 s^2$$
 
-Note that the regression parameters depend on prediction time, not the risk horizon! The baseline hazard also depends on the prediction time $s$, and this can be modelled by: $h_0 (t│s)=h_0 (t)\exp(\alpha(s))$. The default in our implementation is 
+Note that the regression parameters depend on prediction time, not the event time! The baseline hazard also depends on the prediction time $s$, and this can be modelled by: $h_0 (t│s)=h_0 (t)\exp(\alpha(s))$. The default in our implementation is 
 $$\alpha(s)= \alpha_0+\alpha_1 s$$
 
 Such a model is then fit on the super dataset, which leads to the hazard: 
@@ -67,21 +68,25 @@ Note that for the sliding landmark model, $h_j (t│Z(s),s)=h_{j0} (t│s)  \exp
 
 ## 6. Penalization (penLM)
 
-With a large dataset and time-dependent effects, the supermodel has many parameters. We introduce penalization to ensure better generalization while handling much higher dimensionality. A model is fit by maximizing the penalized pseudo-partial likelihood (PPL) of the supermodel $\textrm{ipl}^*_{\lambda} (\beta,\alpha)$. For a single-cause model the penalized $\log \textrm{ipl}^*_{\lambda}$ is given by:
+With a large dataset and time-dependent effects, the supermodel has many parameters. We introduce penalization to ensure better generalization while handling much higher dimensionality. A model is fit by maximizing the penalized pseudo-partial likelihood (PPL) of the supermodel.
 
-$$\sum_{i=1}^n \log \left( \prod_{s: s \leq T_i \leq s+w} \frac{\exp(Z_i(s)^T \beta(s) + \alpha(s))}{\sum_{s: s \leq T_i \leq s+w} \sum_{j \in R(T_i)} \exp(Z_j(s)^T \beta(s) + \alpha(s)) }^{\eta_i} \right) - \lambda p(\beta, \alpha)$$
+For a single-cause model the unpenalized PPL is given by:
+$$ipl^*(\beta,\alpha) := \prod_{i=1}^n \prod_{s:s\le T_i\le s+w} \left( \frac{\exp(Z_i(s)^T \beta(s) + \alpha(s))}{\sum_{s: s \leq T_i \leq s+w} \sum_{j \in R(T_i)} \exp(Z_j(s)^T \beta(s) + \alpha(s))} \right)^{\eta_i}$$
 
-Where $R(T)$ is the risk set of patients alive at $T$ and $\eta_i,T_i$  are respectively if the event occurred and time-to-event for patient $i$. The penalty $p(\cdot)$ can be a LASSO (the L1 norm) [6], Ridge (the L2 norm) [7], or an elastic net (a combination of the two) [8].
+Where $R(T)$ is the risk set of patients alive at $T$ and $\eta_i, T_i$  are respectively if the event occurred and time-to-event for patient i. When multiple causes/competing risks are present, the PPL factors over the J competing events, assuming an independent censoring mechanism.9 This allows for the PPL to be maximized by maximizing individual cause-specific Cox models. The PPL for J competing events is given by:
+$$ipl^*(B,A) = \prod_{j=1}^J ipl^*(\beta_j,\alpha_j)$$
+where $B = (\beta_1,...,\beta_j)$ and $A = (\alpha_1,...,\alpha_j)$ are the cause-specific coefficients.
 
-When multiple causes/competing risks are present, the PPL factors over the competing events $C$ assuming an independent censoring mechanism [9].
+The penalized log PPL for a single-cause model is given by the following equation where the penalty $p(\cdot)$ can be a LASSO (the L1 norm) [6], Ridge (the L2 norm) [7], or an elastic net (a combination of the two) [8].
+$$\textrm{log}ipl^* (\beta,\alpha) - \lambda p(\beta,\alpha)$$
 
-$$\textrm{ipl}^* = \prod_{j \in C} \textrm{ipl}^* (\beta_j,\alpha_j)$$
+For competing events, as the PPL factors over the J competing events assuming an independent censoring mechanism, the penalized log PPL factors, too:
+$$\sum_{j=1}^J \left\{ \textrm{log}ipl^* (\beta_j,\alpha_j) - \lambda_j p(\beta_j,\alpha_j) \right\}$$
 
-It is thus maximized by maximizing individual cause-specific Cox models. Penalization is then performed on each cause-specific Cox model separately, in line with the unpenalized method. The log penalized PPL is as follows, also factoring over the competing events $C$:
-
-$$\sum_{j \in C} \log \left( \textrm{ipl}^* (\beta_j,\alpha_j) \right) - \lambda_j p(\beta_j, \alpha_j)$$
+Where $\lambda_j$ is a cause-specific penalty. Penalization is thus essentially performed on each cause-specific Cox model separately, in line with the unpenalized method. 
 
 Penalization leads to a trade-off between the model complexity and goodness-of-fit, where the optimal weights $\lambda_j$ are chosen via the cross-validated penalized log PPLs [10]. The methods used for prediction remain the same using the values for $\beta_j, \alpha_j$ obtained. 
+
 
 ## 7. References
 
