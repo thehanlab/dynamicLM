@@ -23,8 +23,11 @@ To create the sliding landmark model, a separate cox model is fit to each datase
 
 For a time $t$ such that $s \leq t \leq s+w$:
 - Standard survival analysis:
+  
 $$h(t \mid Z(s), s) = h_0(t \mid s) \exp(Z(s) \beta(s))$$
+
 - Under competing risks for cause $j \in C$:
+  
 $$h_j(t \mid Z(s), s) = h_{j0}(t \mid s) \exp(Z(s) \beta_j(s))$$
 
 In summary, the sliding landmark model consists of different models for each landmark, and predictions can only be made at these predefined landmarks. 
@@ -39,12 +42,15 @@ A super dataset is built to create the landmark supermodel:
 3. Stack these data sets to create a “super prediction data set.”
 
 A Cox (or cause-specific Cox) model is trained on the super dataset. To account for covariate landmark-varying effects, the regression coefficients depend smoothly on $t_{LM}=s$ (modelled linearly), i.e., $\beta(s) = \sum_k \beta_k f_k(s)$ for some functions $f_k (s)$. The default in our implementation is: 
+
 $$\beta(s)= \beta_0+ \beta_1 s+ \beta_2 s^2$$
 
 Note that the regression parameters depend on prediction time, not the event time! The baseline hazard also depends on the prediction time $s$, and this can be modelled by: $h_0 (t│s)=h_0 (t)\exp(\alpha(s))$. The default in our implementation is 
+
 $$\alpha(s)= \alpha_0+\alpha_1 s$$
 
 Such a model is then fit on the super dataset, which leads to the hazard: 
+
 $$h_j(t \mid Z(s), s) = h_{j0}(t) \exp(\alpha_j(s) + \beta_j(s) Z(s))$$
 
 In summary, the main effects for the landmark time $s$ is modeled by $\alpha(s)$ and the interaction of $s$ with the covariates is modeled by $\beta(s)$. The baseline hazard at time t when predicting from landmark $s$, $h_0 (t│s)=h_0 (t)\exp(\alpha(s))$, is the probability that a person with all zero covariates will experience the event in the instant $t$ if that person survived from $s$. Dependence between entries needs to be accounted for, for example, by using a robust sandwich estimator, as the same patient appears multiple times in the super dataset. 
@@ -71,17 +77,22 @@ Note that for the sliding landmark model, $h_j (t│Z(s),s)=h_{j0} (t│s)  \exp
 With a large dataset and time-dependent effects, the supermodel has many parameters. We introduce penalization to ensure better generalization while handling much higher dimensionality. A model is fit by maximizing the penalized pseudo-partial likelihood (PPL) of the supermodel.
 
 For a single-cause model the unpenalized PPL is given by:
+
 $$ipl^*(\beta,\alpha) := \prod_{i=1}^n \prod_{s:s\le T_i\le s+w} \left( \frac{\exp(Z_i(s)^T \beta(s) + \alpha(s))}{\sum_{s: s \leq T_i \leq s+w} \sum_{j \in R(T_i)} \exp(Z_j(s)^T \beta(s) + \alpha(s))} \right)^{\eta_i}$$
 
 Where $R(T)$ is the risk set of patients alive at $T$ and $\eta_i, T_i$  are respectively if the event occurred and time-to-event for patient i. When multiple causes/competing risks are present, the PPL factors over the J competing events, assuming an independent censoring mechanism.9 This allows for the PPL to be maximized by maximizing individual cause-specific Cox models. The PPL for J competing events is given by:
-$$ipl^*(B,A) = \prod_{j=1}^J ipl^*(\beta_j,\alpha_j)$$
+
+$$ipl^*(B, A) = \prod_{j=1}^J ipl^*(beta_j, alpha_j)$$
+
 where $B = (\beta_1,...,\beta_j)$ and $A = (\alpha_1,...,\alpha_j)$ are the cause-specific coefficients.
 
 The penalized log PPL for a single-cause model is given by the following equation where the penalty $p(\cdot)$ can be a LASSO (the L1 norm) [6], Ridge (the L2 norm) [7], or an elastic net (a combination of the two) [8].
-$$\textrm{log}ipl^* (\beta,\alpha) - \lambda p(\beta,\alpha)$$
+
+$$\log ipl^* (\beta,\alpha) - \lambda p(\beta,\alpha)$$
 
 For competing events, as the PPL factors over the J competing events assuming an independent censoring mechanism, the penalized log PPL factors, too:
-$$\sum_{j=1}^J \left\{ \textrm{log}ipl^* (\beta_j,\alpha_j) - \lambda_j p(\beta_j,\alpha_j) \right\}$$
+
+$$\sum_{j=1}^J \left\( \log ipl^* (\beta_j,\alpha_j) - \lambda_j p(\beta_j,\alpha_j) \right\)$$
 
 Where $\lambda_j$ is a cause-specific penalty. Penalization is thus essentially performed on each cause-specific Cox model separately, in line with the unpenalized method. 
 
