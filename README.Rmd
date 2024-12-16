@@ -65,10 +65,12 @@ In short, the creation of the landmark model for survival data is built on the c
 
 ## Installation
 
-You can install the development version of `dynamicLM` from [GitHub](https://github.com/) with:
+In order to use `dynamicLM`, you need the development version of 
+`riskRegression`. Both are available from [GitHub](https://github.com/) with:
 
-```{r, eval = F}
+```{r}
 # install.packages("devtools")
+devtools::install_github("tagteam/riskRegression")
 devtools::install_github("thehanlab/dynamicLM", ref = "extension/summary-metric")
 ```
 
@@ -193,7 +195,11 @@ We then (optionally) update more complex LM-varying covariates. Here we create u
 lmdata$data$age <- lmdata$data$age + lmdata$data$LM
 ```
 
-Lastly, we add landmark time-interactions. We use the following naming convention: `_1` refers to the first interaction in `func_covars`, `_2` refers to the second interaction in `func_covars`, etc… Similarly, `LM_1` and `LM_2` are created from `func_lm`. An optional additional argument is `pred_covars` which can limit the covariates that will have landmark time interactions. 
+Lastly, we add landmark time-interactions. We use the following naming convention: `_LM1` refers to the first interaction in `func_covars`, `_LM2` refers to the second interaction in `func_covars`, etc. For example, with linear and quadratic terms, `albumin_LM1` refers to `albumin * LM`, `albumin_LM2` is `albumin * LM^2`.
+
+Similarly, `LM1` and `LM2` are created from `func_lm`. Here, `LM1` = `LM` and `LM2` = `LM^2`.
+
+An optional additional argument is `pred_covars` which can limit the covariates that will have landmark time interactions. 
 
 ```{r add}
 lmdata <- add_interactions(lmdata, 
@@ -202,8 +208,8 @@ lmdata <- add_interactions(lmdata,
 data <- lmdata$data
 print(data[data$id == 1, 
            c("LM", example_columns, 
-             paste0(example_columns[4:7], "_1"),
-             paste0(example_columns[4:7], "_2"))])
+             paste0(example_columns[4:7], "_LM1"),
+             paste0(example_columns[4:7], "_LM2"))])
 ```
 
 One can print `lmdata`. The argument `verbose` allows for additional stored objects to be printed (default is FALSE).
@@ -231,18 +237,20 @@ To fit a supermodel, a stacked data set, formula, and method need to be provided
 In the case of **standard survival data**:
 
 ```{r, eval=F}
-formula <- "Surv(LM, time, status) ~
-            stage + bili + bili_1 + bili_2 + albumin +  albumin_1 + albumin_2 +
-            LM_1 + LM_2 + cluster(id)"
+formula <- "Surv(LM, time, status) ~ stage + 
+            bili + bili_LM1 + bili_LM2 + 
+            albumin +  albumin_LM1 + albumin_LM2 +
+            LM1 + LM2 + cluster(id)"
 supermodel <- dynamic_lm(lmdata, as.formula(formula), "coxph", x = TRUE) 
 ```
 
 In the case of **competing risks** (as for this example data):
 
 ```{r}
-formula <- "Hist(time, status, LM) ~ 
-            stage + bili + bili_1 + bili_2 + albumin +  albumin_1 + albumin_2 +
-            LM_1 + LM_2 + cluster(id)"
+formula <- "Hist(time, status, LM) ~ stage + 
+            bili + bili_LM1 + bili_LM2 + 
+            albumin +  albumin_LM1 + albumin_LM2 +
+            LM1 + LM2 + cluster(id)"
 supermodel <- dynamic_lm(lmdata, as.formula(formula), "CSC", x = TRUE) 
 ```
 
@@ -311,8 +319,8 @@ print(path, all_causes = TRUE)
 If you want to specify only a subset of covariates to fit the path to, this is done with the `y` argument:
 
 ```{r, eval = FALSE}
-path1 <- pen_lm(lmdata, y = c("male", "male_1", "male_2", 
-                              "trt", "trt_1", "trt_2"))
+path1 <- pen_lm(lmdata, y = c("male", "male_LM1", "male_LM2", 
+                              "trt", "trt_LM1", "trt_LM2"))
 ```
 
 #### Cross-validated model
@@ -340,8 +348,8 @@ plot(cv_model, all_causes = TRUE)
 To specify only a subset of covariates to fit to
 
 ```{r, eval=F, warning=F}
-cv_model1 <- cv.pen_lm(lmdata, y = c("male", "male_1", "male_2", 
-                                     "trt", "trt_1", "trt_2"))
+cv_model1 <- cv.pen_lm(lmdata, y = c("male", "male_LM1", "male_LM2", 
+                                     "trt", "trt_LM1", "trt_LM2"))
 ```
 
 #### Fitting a penalized landmark supermodel
@@ -476,7 +484,9 @@ par(mfrow = c(1, 4))
 plot(scores, summary = TRUE)
 ```
 
-Additional parameters control which plots to include and additional information, for example, one can remove confidence intervals (first plot), plot the time-dependent contrasts (first example). One can also plot if model summary metrics are significantly different or not, either plotting the p-values of the significant comparisons to a plot (second example), or by plotting the contrasts directly (third example). See `?plot.LMScore` for more information.
+Additional parameters control which plots to include and additional information. The first plot below shows how one can remove confidence intervals and plot the time-dependent contrasts. One can also plot if model summary metrics are significantly different or not. The second plot adds the p-values of the significant comparisons to a plot. The third plots the contrasts directly (third example). 
+
+See `?plot.LMScore` for more information.
 
 ```{r scoreextra, fig.height = 4, fig.width = 9}
 # Three plots and make extra space below for the x-labels
@@ -517,6 +527,10 @@ supermodel_pen <- dynamic_lm(cv_model, lambda = "lambda.1se", x = TRUE)
 #   See `off.predictions' in output list.
 #   Only a problem for the Brier score, 
 #   You can stop this warning by setting metrics='auc'.
+
+# TODO: below sometimes has the error
+# Error in rbindlist(l, use.names, fill, idcol, ignore.attr) : 
+#   Item 3 has 6 columns, inconsistent with item 1 which has 7 columns. To fill missing columns use fill=TRUE
 ```
 
 ```{r boot, warning = FALSE}
@@ -568,10 +582,11 @@ We turn our data into long-form data to plot.
 
 ```{r}
 # Select individuals
-idx <- pbc_df$id %in% c(2, 5)
+idx <- pbc_df$id %in% c(231, 29) #c(26, 130, 231, 290 ) #c(3,7,29) #36:40 #11:20 #3,7, (29,34,35)
+# idx <- pbc_df$id %in% c(235, 242, 120)
 
 # Prediction time points 
-x <- seq(0, 5, by = 0.25)
+x <- seq(0, 4, by = 0.05)
 
 # Stack landmark datasets
 dat <- stack_data(pbc_df[idx, ], outcome, x, w, covars, format = "long", 
@@ -589,8 +604,7 @@ print(dat[dat$LM %in% c(0, 2, 4), c("id", "time", "status", "LM", supermodel$lm_
 plotrisk(supermodel, dat, format = "long", ylim = c(0, 0.35), 
          x.legend = "topleft")
 ```
-
-We can see that the individual with higher bilirunbin levels has a higher and increasing 5-year risk of transplant. This can be explained by the dynamic hazard rate of bilirunbin (seen above). Further, the risk of transplant rapidly increases when the bilirunbin levels rise.
+We can see that the individual (id = 29) with lower stage, low and constant bilirunbin levels, and constant albumin levels generally has a lower and largely unchanged 5-year risk of transplant. The individual (id = 231) with higher stage has a higher initial risk, but an increase in albumin levels at around landmark 2, leads to a much improved (lower) risk of transplant. This can be explained by the dynamic hazard rate of albumin (seen above) which is protective for higher levels and has a larger effect than bilirunbin.
 
 # References
 

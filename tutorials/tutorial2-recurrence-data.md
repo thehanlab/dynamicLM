@@ -16,7 +16,7 @@ You can install the development version of `dynamicLM` from
 ``` r
 # install.packages("devtools")
 devtools::install_github("thehanlab/dynamicLM", ref = "extension/summary-metric")
-#> Skipping install of 'dynamicLM' from a github remote, the SHA1 (c8eb8ae4) has not changed since last install.
+#> Skipping install of 'dynamicLM' from a github remote, the SHA1 (08e0101e) has not changed since last install.
 #>   Use `force = TRUE` to force installation
 ```
 
@@ -36,15 +36,10 @@ and `T_txgiven` gives the time at which this patient entry was created.
 
 ``` r
 library(dynamicLM)
-#> Loading required package: dynpred
-#> Loading required package: survival
-#> Warning: package 'survival' was built under R version 4.2.3
 #> Loading required package: prodlim
 #> Loading required package: riskRegression
-#> Registered S3 method overwritten by 'riskRegression':
-#>   method     from    
-#>   nobs.coxph survival
-#> riskRegression version 2024.06.13
+#> riskRegression version 2024.12.06
+#> Loading required package: survival
 ```
 
 ``` r
@@ -161,11 +156,14 @@ print(data[data$ID == "ID1029", ])
 #> 875 65.25753
 ```
 
-Lastly, we add landmark time-interactions. The `_1` refers to the first
-interaction in `func_covars`, `_2` refers to the second interaction in
-`func_covars`, etc… Similarly, `LM_1` and `LM_2` are created from
-`func_lm`. Note that we use `pred_covars` here, defined earlier as the
-covariates that will have landmark time interactions.
+Lastly, we add landmark time-interactions. We use the following naming
+convention: `_LM1` refers to the first interaction in `func_covars`,
+`_LM2` refers to the second interaction in `func_covars`, etc. For
+example, with linear and quadratic terms, `stage_LM1` refers to
+`stage * LM`, `stage_LM2` is `stage * LM^2`. Similarly, `LM1` and `LM2`
+are created from `func_lm`. Here, `LM1` = `LM` and `LM2` = `LM^2`. Note
+that we use `pred_covars` here, defined earlier as the covariates that
+will have landmark time interactions.
 
 ``` r
 lmdata <- add_interactions(lmdata, pred_covars, func_covars = c("linear", "quadratic"), 
@@ -180,22 +178,22 @@ print(data[data$ID == "ID1029", ])
 #> 851 ID1029 60.03288     0 24      62.25753    0     0 26.8         1     12.96
 #> 855 ID1029 60.03288     0 30      62.25753    0     0 26.8         1     12.96
 #> 875 ID1029 60.03288     0 36      62.25753    0     0 26.8         1     12.96
-#>          age     age_1     age_2 male_1 male_2 stage_1 stage_2 bmi_1   bmi_2
-#> 7   62.25753    0.0000     0.000      0      0       0       0   0.0     0.0
-#> 73  62.75753  376.5452  2259.271      0      0       0       0 160.8   964.8
-#> 751 63.25753  759.0904  9109.085      0      0       0       0 321.6  3859.2
-#> 8   63.75753 1147.6356 20657.441      0      0       0       0 482.4  8683.2
-#> 851 64.25753 1542.1808 37012.340      0      0       0       0 643.2 15436.8
-#> 855 64.75753 1942.7260 58281.781      0      0       0       0 804.0 24120.0
-#> 875 65.25753 2349.2712 84573.764      0      0       0       0 964.8 34732.8
-#>     treatment_1 treatment_2 LM_1 LM_2
-#> 7             0           0    0    0
-#> 73            0           0    6   36
-#> 751           0           0   12  144
-#> 8            18         324   18  324
-#> 851          24         576   24  576
-#> 855          30         900   30  900
-#> 875          36        1296   36 1296
+#>          age   age_LM1   age_LM2 male_LM1 male_LM2 stage_LM1 stage_LM2 bmi_LM1
+#> 7   62.25753    0.0000     0.000        0        0         0         0     0.0
+#> 73  62.75753  376.5452  2259.271        0        0         0         0   160.8
+#> 751 63.25753  759.0904  9109.085        0        0         0         0   321.6
+#> 8   63.75753 1147.6356 20657.441        0        0         0         0   482.4
+#> 851 64.25753 1542.1808 37012.340        0        0         0         0   643.2
+#> 855 64.75753 1942.7260 58281.781        0        0         0         0   804.0
+#> 875 65.25753 2349.2712 84573.764        0        0         0         0   964.8
+#>     bmi_LM2 treatment_LM1 treatment_LM2 LM1  LM2
+#> 7       0.0             0             0   0    0
+#> 73    964.8             0             0   6   36
+#> 751  3859.2             0             0  12  144
+#> 8    8683.2            18           324  18  324
+#> 851 15436.8            24           576  24  576
+#> 855 24120.0            30           900  30  900
+#> 875 34732.8            36          1296  36 1296
 ```
 
 One can print `lmdata`. The argument `verbose` allows for additional
@@ -217,10 +215,11 @@ created from `func_lms`.
 ``` r
 all_covs <- lmdata$all_covs
 print(all_covs)
-#>  [1] "age"         "male"        "stage"       "bmi"         "treatment"  
-#>  [6] "age_1"       "age_2"       "male_1"      "male_2"      "stage_1"    
-#> [11] "stage_2"     "bmi_1"       "bmi_2"       "treatment_1" "treatment_2"
-#> [16] "LM_1"        "LM_2"
+#>  [1] "age"           "male"          "stage"         "bmi"          
+#>  [5] "treatment"     "age_LM1"       "age_LM2"       "male_LM1"     
+#>  [9] "male_LM2"      "stage_LM1"     "stage_LM2"     "bmi_LM1"      
+#> [13] "bmi_LM2"       "treatment_LM1" "treatment_LM2" "LM1"          
+#> [17] "LM2"
 ```
 
 It is then easy to fit a landmark supermodel using `dynamic_lm()`. A
@@ -231,58 +230,64 @@ see the details section of the documentation of `add_interactions()` for
 information on how the landmark interaction terms must be named.
 
 ``` r
-formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment + age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 + bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
-supermodel <- dynamic_lm(lmdata, as.formula(formula), "CSC") 
+formula <- "Hist(Time, event, LM) ~ 
+            age + age_LM1 + age_LM2 +
+            male + male_LM1 + male_LM2 +
+            stage + stage_LM1 + stage_LM2 +
+            bmi + bmi_LM1 + bmi_LM2 + 
+            treatment + treatment_LM1 + treatment_LM2 + 
+            LM1 + LM2 + cluster(ID)"
+supermodel <- dynamic_lm(lmdata, as.formula(formula), "CSC", x = TRUE) 
 #> Warning in agreg.fit(X, Y, istrat, offset, init, control, weights = weights, :
-#> Loglik converged before variable 8,9 ; beta may be infinite.
+#> Loglik converged before variable 5,6 ; beta may be infinite.
 print(supermodel)
 #> 
 #> Landmark cause-specific cox super model fit for dynamic prediction of window size 60:
 #> 
 #> $model
 #> ----------> Cause: 1
-#>                   coef  exp(coef)   se(coef)  robust se       z        p
-#> age          2.896e-02  1.029e+00  3.093e-02  3.433e-02   0.844  0.39893
-#> male         1.632e+00  5.112e+00  5.271e-01  5.254e-01   3.105  0.00190
-#> stage        8.954e-01  2.448e+00  2.685e-01  2.881e-01   3.108  0.00189
-#> bmi          2.262e-03  1.002e+00  2.403e-02  2.511e-02   0.090  0.92821
-#> treatment   -1.472e+00  2.295e-01  1.287e+00  1.345e+00  -1.094  0.27384
-#> age_1        4.573e-04  1.000e+00  4.384e-03  2.606e-03   0.175  0.86071
-#> age_2       -8.016e-05  9.999e-01  1.238e-04  7.297e-05  -1.098  0.27201
-#> male_1       1.453e-01  1.156e+00  1.083e-01  2.397e-02   6.064 1.33e-09
-#> male_2      -8.921e-03  9.911e-01  4.959e-03  8.159e-04 -10.934  < 2e-16
-#> stage_1      1.067e-02  1.011e+00  3.860e-02  2.052e-02   0.520  0.60302
-#> stage_2     -1.056e-03  9.989e-01  1.121e-03  5.840e-04  -1.807  0.07069
-#> bmi_1        1.340e-03  1.001e+00  3.385e-03  1.535e-03   0.873  0.38258
-#> bmi_2       -6.102e-05  9.999e-01  9.713e-05  3.813e-05  -1.600  0.10950
-#> treatment_1  1.503e-01  1.162e+00  1.150e-01  9.866e-02   1.524  0.12760
-#> treatment_2 -2.950e-03  9.971e-01  2.456e-03  1.885e-03  -1.565  0.11759
-#> LM_1        -7.468e-02  9.280e-01  2.784e-01  1.708e-01  -0.437  0.66195
-#> LM_2         6.981e-03  1.007e+00  7.837e-03  4.848e-03   1.440  0.14991
+#>                     coef  exp(coef)   se(coef)  robust se       z        p
+#> age            2.896e-02  1.029e+00  3.093e-02  3.433e-02   0.844  0.39893
+#> age_LM1        4.573e-04  1.000e+00  4.384e-03  2.606e-03   0.175  0.86071
+#> age_LM2       -8.016e-05  9.999e-01  1.238e-04  7.297e-05  -1.098  0.27201
+#> male           1.632e+00  5.112e+00  5.271e-01  5.254e-01   3.105  0.00190
+#> male_LM1       1.453e-01  1.156e+00  1.083e-01  2.397e-02   6.064 1.33e-09
+#> male_LM2      -8.921e-03  9.911e-01  4.959e-03  8.159e-04 -10.934  < 2e-16
+#> stage          8.954e-01  2.448e+00  2.685e-01  2.881e-01   3.108  0.00189
+#> stage_LM1      1.067e-02  1.011e+00  3.860e-02  2.052e-02   0.520  0.60302
+#> stage_LM2     -1.056e-03  9.989e-01  1.121e-03  5.840e-04  -1.807  0.07069
+#> bmi            2.262e-03  1.002e+00  2.403e-02  2.511e-02   0.090  0.92821
+#> bmi_LM1        1.340e-03  1.001e+00  3.385e-03  1.535e-03   0.873  0.38258
+#> bmi_LM2       -6.102e-05  9.999e-01  9.713e-05  3.813e-05  -1.600  0.10950
+#> treatment     -1.472e+00  2.295e-01  1.287e+00  1.345e+00  -1.094  0.27384
+#> treatment_LM1  1.503e-01  1.162e+00  1.150e-01  9.866e-02   1.524  0.12760
+#> treatment_LM2 -2.950e-03  9.971e-01  2.456e-03  1.885e-03  -1.565  0.11759
+#> LM1           -7.468e-02  9.280e-01  2.784e-01  1.708e-01  -0.437  0.66195
+#> LM2            6.981e-03  1.007e+00  7.837e-03  4.848e-03   1.440  0.14991
 #> 
 #> Likelihood ratio test=NA  on 17 df, p=NA
 #> n= 2787, number of events= 251 
 #> 
 #> 
 #> ----------> Cause: 2
-#>                   coef  exp(coef)   se(coef)  robust se      z        p
-#> age          3.047e-02  1.031e+00  9.707e-03  1.053e-02  2.894 0.003799
-#> male        -7.321e-03  9.927e-01  2.926e-01  3.284e-01 -0.022 0.982215
-#> stage       -1.346e-01  8.741e-01  9.742e-02  9.975e-02 -1.349 0.177310
-#> bmi         -4.412e-03  9.956e-01  8.547e-03  9.176e-03 -0.481 0.630639
-#> treatment    6.513e-01  1.918e+00  4.589e-01  4.592e-01  1.418 0.156087
-#> age_1        1.776e-03  1.002e+00  2.051e-03  1.884e-03  0.942 0.345945
-#> age_2       -3.555e-05  1.000e+00  6.811e-05  5.581e-05 -0.637 0.524153
-#> male_1       7.982e-01  2.222e+00  4.063e+01  2.136e-01  3.736 0.000187
-#> male_2      -1.592e-01  8.528e-01  6.771e+00  1.779e-02 -8.949  < 2e-16
-#> stage_1      1.550e-02  1.016e+00  2.038e-02  1.755e-02  0.883 0.377385
-#> stage_2     -9.016e-04  9.991e-01  6.987e-04  6.136e-04 -1.469 0.141745
-#> bmi_1       -1.082e-03  9.989e-01  1.725e-03  1.308e-03 -0.827 0.408164
-#> bmi_2       -1.624e-06  1.000e+00  5.694e-05  3.950e-05 -0.041 0.967194
-#> treatment_1 -5.332e-02  9.481e-01  4.928e-02  4.293e-02 -1.242 0.214307
-#> treatment_2  1.182e-03  1.001e+00  1.174e-03  9.039e-04  1.307 0.191124
-#> LM_1        -8.247e-02  9.208e-01  1.342e-01  1.175e-01 -0.702 0.482726
-#> LM_2         2.226e-03  1.002e+00  4.466e-03  3.534e-03  0.630 0.528756
+#>                     coef  exp(coef)   se(coef)  robust se      z        p
+#> age            3.047e-02  1.031e+00  9.707e-03  1.053e-02  2.894 0.003799
+#> age_LM1        1.776e-03  1.002e+00  2.051e-03  1.884e-03  0.942 0.345945
+#> age_LM2       -3.555e-05  1.000e+00  6.811e-05  5.581e-05 -0.637 0.524153
+#> male          -7.321e-03  9.927e-01  2.926e-01  3.284e-01 -0.022 0.982215
+#> male_LM1       7.982e-01  2.222e+00  4.063e+01  2.136e-01  3.736 0.000187
+#> male_LM2      -1.592e-01  8.528e-01  6.771e+00  1.779e-02 -8.949  < 2e-16
+#> stage         -1.346e-01  8.741e-01  9.742e-02  9.975e-02 -1.349 0.177310
+#> stage_LM1      1.550e-02  1.016e+00  2.038e-02  1.755e-02  0.883 0.377385
+#> stage_LM2     -9.016e-04  9.991e-01  6.987e-04  6.136e-04 -1.469 0.141745
+#> bmi           -4.412e-03  9.956e-01  8.547e-03  9.176e-03 -0.481 0.630639
+#> bmi_LM1       -1.082e-03  9.989e-01  1.725e-03  1.308e-03 -0.827 0.408164
+#> bmi_LM2       -1.624e-06  1.000e+00  5.694e-05  3.950e-05 -0.041 0.967194
+#> treatment      6.513e-01  1.918e+00  4.589e-01  4.592e-01  1.418 0.156087
+#> treatment_LM1 -5.332e-02  9.481e-01  4.928e-02  4.293e-02 -1.242 0.214307
+#> treatment_LM2  1.182e-03  1.001e+00  1.174e-03  9.039e-04  1.307 0.191124
+#> LM1           -8.247e-02  9.208e-01  1.342e-01  1.175e-01 -0.702 0.482726
+#> LM2            2.226e-03  1.002e+00  4.466e-03  3.534e-03  0.630 0.528756
 #> 
 #> Likelihood ratio test=NA  on 17 df, p=NA
 #> n= 2787, number of events= 1120

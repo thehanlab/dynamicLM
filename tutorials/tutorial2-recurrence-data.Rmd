@@ -132,11 +132,7 @@ data <- lmdata$data
 print(data[data$ID == "ID1029", ])
 ```
 
-Lastly, we add landmark time-interactions. The `_1` refers to the first
-interaction in `func_covars`, `_2` refers to the second interaction in
-`func_covars`, etc… Similarly, `LM_1` and `LM_2` are created from
-`func_lm`. Note that we use `pred_covars` here, defined earlier as the 
-covariates that will have landmark time interactions.
+Lastly, we add landmark time-interactions. We use the following naming convention: `_LM1` refers to the first interaction in `func_covars`, `_LM2` refers to the second interaction in `func_covars`, etc. For example, with linear and quadratic terms, `stage_LM1` refers to `stage * LM`, `stage_LM2` is `stage * LM^2`. Similarly, `LM1` and `LM2` are created from `func_lm`. Here, `LM1` = `LM` and `LM2` = `LM^2`. Note that we use `pred_covars` here, defined earlier as the covariates that will have landmark time interactions.
 
 ```{r}
 lmdata <- add_interactions(lmdata, pred_covars, func_covars = c("linear", "quadratic"), 
@@ -175,7 +171,13 @@ section of the documentation of `add_interactions()` for information on how
 the landmark interaction terms must be named.
 
 ```{r}
-formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment + age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 + bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
+formula <- "Hist(Time, event, LM) ~ 
+            age + age_LM1 + age_LM2 +
+            male + male_LM1 + male_LM2 +
+            stage + stage_LM1 + stage_LM2 +
+            bmi + bmi_LM1 + bmi_LM2 + 
+            treatment + treatment_LM1 + treatment_LM2 + 
+            LM1 + LM2 + cluster(ID)"
 supermodel <- dynamic_lm(lmdata, as.formula(formula), "CSC", x = TRUE) 
 print(supermodel)
 ```

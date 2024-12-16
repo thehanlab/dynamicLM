@@ -1,24 +1,28 @@
-- [1 dynamicLM](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#1-dynamiclm)
-- [2 Introduction](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#2-introduction)
-  - [2.1 What is landmarking and when is it used?](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#21-what-is-landmarking-and-when-is-it-used)
-  - [2.2 Installation](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#22-installation)
-- [3 Tutorial: basic example](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#3-tutorial-basic-example)
-  - [3.1 Data preparation](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#31-data-preparation)
-    - [3.1.1 Data](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#311-data)
-    - [3.1.2 Build a super data set](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#312-build-a-super-data-set)
-  - [3.2 Model fitting](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#32-model-fitting)
-    - [3.2.1 Traditional (unpenalized) landmark supermodel](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#321-traditional-unpenalized-landmark-supermodel)
-    - [3.2.2 Penalized landmark supermodel](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#322-penalized-landmark-supermodel)
-  - [3.3 Prediction](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#33-prediction)
-    - [3.3.1 Training data](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#331-training-data)
-    - [3.3.2 Testing data](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#332-testing-data)
-  - [3.4 Model evaluation](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#34-model-evaluation)
-    - [3.4.1 Calibration plots](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#341-calibration-plots)
-    - [3.4.2 Predictive performance](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#342-predictive-performance)
-    - [3.4.3 Bootstrapping](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#343-bootstrapping)
-    - [3.4.4 External validation](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#344-external-validation)
-    - [3.4.5 Visualize individual dynamic risk trajectories](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#345-visualize-individual-dynamic-risk-trajectories)
-- [4 References](https://github.com/thehanlab/dynamicLM/tree/extension/summary-metric?tab=readme-ov-file#4-references)
+- [1 dynamicLM](#dynamiclm)
+- [2 Introduction](#introduction)
+  - [2.1 What is landmarking and when is it
+    used?](#what-is-landmarking-and-when-is-it-used)
+  - [2.2 Installation](#installation)
+- [3 Tutorial: basic example](#tutorial-basic-example)
+  - [3.1 Data preparation](#data-preparation)
+    - [3.1.1 Data](#data)
+    - [3.1.2 Build a super data set](#build-a-super-data-set)
+  - [3.2 Model fitting](#model-fitting)
+    - [3.2.1 Traditional (unpenalized) landmark
+      supermodel](#traditional-unpenalized-landmark-supermodel)
+    - [3.2.2 Penalized landmark
+      supermodel](#penalized-landmark-supermodel)
+  - [3.3 Prediction](#prediction)
+    - [3.3.1 Training data](#training-data)
+    - [3.3.2 Testing data](#testing-data)
+  - [3.4 Model evaluation](#model-evaluation)
+    - [3.4.1 Calibration plots](#calibration-plots)
+    - [3.4.2 Predictive performance](#predictive-performance)
+    - [3.4.3 Bootstrapping](#bootstrapping)
+    - [3.4.4 External validation](#external-validation)
+    - [3.4.5 Visualize individual dynamic risk
+      trajectories](#visualize-individual-dynamic-risk-trajectories)
+- [4 References](#references)
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
@@ -110,12 +114,18 @@ patient’s covariate values.
 
 ## 2.2 Installation
 
-You can install the development version of `dynamicLM` from
-[GitHub](https://github.com/) with:
+In order to use `dynamicLM`, you need the development version of
+`riskRegression`. Both are available from [GitHub](https://github.com/)
+with:
 
 ``` r
 # install.packages("devtools")
+devtools::install_github("tagteam/riskRegression")
+#> Skipping install of 'riskRegression' from a github remote, the SHA1 (6666fd6c) has not changed since last install.
+#>   Use `force = TRUE` to force installation
 devtools::install_github("thehanlab/dynamicLM", ref = "extension/summary-metric")
+#> Skipping install of 'dynamicLM' from a github remote, the SHA1 (08e0101e) has not changed since last install.
+#>   Use `force = TRUE` to force installation
 ```
 
 Package documentation can be found in [this
@@ -304,11 +314,16 @@ lmdata$data$age <- lmdata$data$age + lmdata$data$LM
 ```
 
 Lastly, we add landmark time-interactions. We use the following naming
-convention: `_1` refers to the first interaction in `func_covars`, `_2`
-refers to the second interaction in `func_covars`, etc… Similarly,
-`LM_1` and `LM_2` are created from `func_lm`. An optional additional
-argument is `pred_covars` which can limit the covariates that will have
-landmark time interactions.
+convention: `_LM1` refers to the first interaction in `func_covars`,
+`_LM2` refers to the second interaction in `func_covars`, etc. For
+example, with linear and quadratic terms, `albumin_LM1` refers to
+`albumin * LM`, `albumin_LM2` is `albumin * LM^2`.
+
+Similarly, `LM1` and `LM2` are created from `func_lm`. Here, `LM1` =
+`LM` and `LM2` = `LM^2`.
+
+An optional additional argument is `pred_covars` which can limit the
+covariates that will have landmark time interactions.
 
 ``` r
 lmdata <- add_interactions(lmdata, 
@@ -317,14 +332,14 @@ lmdata <- add_interactions(lmdata,
 data <- lmdata$data
 print(data[data$id == 1, 
            c("LM", example_columns, 
-             paste0(example_columns[4:7], "_1"),
-             paste0(example_columns[4:7], "_2"))])
-#>   LM id time status trt      age albumin ascites trt_1    age_1 albumin_1
-#> 1  0  1  1.1      2   1 58.76523    2.60       1     0  0.00000      0.00
-#> 2  1  1  1.1      2   1 59.76523    2.94       1     1 59.76523      2.94
-#>   ascites_1 trt_2    age_2 albumin_2 ascites_2
-#> 1         0     0  0.00000      0.00         0
-#> 2         1     1 59.76523      2.94         1
+             paste0(example_columns[4:7], "_LM1"),
+             paste0(example_columns[4:7], "_LM2"))])
+#>   LM id time status trt      age albumin ascites trt_LM1  age_LM1 albumin_LM1
+#> 1  0  1  1.1      2   1 58.76523    2.60       1       0  0.00000        0.00
+#> 2  1  1  1.1      2   1 59.76523    2.94       1       1 59.76523        2.94
+#>   ascites_LM1 trt_LM2  age_LM2 albumin_LM2 ascites_LM2
+#> 1           0       0  0.00000        0.00           0
+#> 2           1       1 59.76523        2.94           1
 ```
 
 One can print `lmdata`. The argument `verbose` allows for additional
@@ -362,18 +377,20 @@ standard survival data or competing events are being considered.
 In the case of **standard survival data**:
 
 ``` r
-formula <- "Surv(LM, time, status) ~
-            stage + bili + bili_1 + bili_2 + albumin +  albumin_1 + albumin_2 +
-            LM_1 + LM_2 + cluster(id)"
+formula <- "Surv(LM, time, status) ~ stage + 
+            bili + bili_LM1 + bili_LM2 + 
+            albumin +  albumin_LM1 + albumin_LM2 +
+            LM1 + LM2 + cluster(id)"
 supermodel <- dynamic_lm(lmdata, as.formula(formula), "coxph", x = TRUE) 
 ```
 
 In the case of **competing risks** (as for this example data):
 
 ``` r
-formula <- "Hist(time, status, LM) ~ 
-            stage + bili + bili_1 + bili_2 + albumin +  albumin_1 + albumin_2 +
-            LM_1 + LM_2 + cluster(id)"
+formula <- "Hist(time, status, LM) ~ stage + 
+            bili + bili_LM1 + bili_LM2 + 
+            albumin +  albumin_LM1 + albumin_LM2 +
+            LM1 + LM2 + cluster(id)"
 supermodel <- dynamic_lm(lmdata, as.formula(formula), "CSC", x = TRUE) 
 ```
 
@@ -384,32 +401,32 @@ print(supermodel)
 #> 
 #> $model
 #> ----------> Cause: 1
-#>                coef exp(coef)  se(coef) robust se      z      p
-#> stage      0.726673  2.068189  0.201920  0.352789  2.060 0.0394
-#> bili       0.056299  1.057914  0.059149  0.037374  1.506 0.1320
-#> bili_1     0.050673  1.051979  0.056364  0.038767  1.307 0.1912
-#> bili_2     0.002579  1.002583  0.012455  0.009569  0.270 0.7875
-#> albumin   -0.273729  0.760539  0.710437  0.608541 -0.450 0.6528
-#> albumin_1 -0.235161  0.790443  0.764169  0.617457 -0.381 0.7033
-#> albumin_2  0.022656  1.022915  0.180097  0.142674  0.159 0.8738
-#> LM_1       0.635287  1.887563  2.683794  2.191284  0.290 0.7719
-#> LM_2      -0.179084  0.836036  0.626355  0.496641 -0.361 0.7184
+#>                  coef exp(coef)  se(coef) robust se      z      p
+#> stage        0.726673  2.068189  0.201920  0.352789  2.060 0.0394
+#> bili         0.056299  1.057914  0.059149  0.037374  1.506 0.1320
+#> bili_LM1     0.050673  1.051979  0.056364  0.038767  1.307 0.1912
+#> bili_LM2     0.002579  1.002583  0.012455  0.009569  0.270 0.7875
+#> albumin     -0.273729  0.760539  0.710437  0.608541 -0.450 0.6528
+#> albumin_LM1 -0.235161  0.790443  0.764169  0.617457 -0.381 0.7033
+#> albumin_LM2  0.022656  1.022915  0.180097  0.142674  0.159 0.8738
+#> LM1          0.635287  1.887563  2.683794  2.191284  0.290 0.7719
+#> LM2         -0.179084  0.836036  0.626355  0.496641 -0.361 0.7184
 #> 
 #> Likelihood ratio test=NA  on 9 df, p=NA
 #> n= 1175, number of events= 56 
 #> 
 #> 
 #> ----------> Cause: 2
-#>                coef exp(coef)  se(coef) robust se      z        p
-#> stage      0.609239  1.839032  0.087574  0.140112  4.348 1.37e-05
-#> bili       0.135984  1.145664  0.014712  0.015599  8.718  < 2e-16
-#> bili_1     0.003599  1.003605  0.018316  0.019694  0.183 0.855012
-#> bili_2     0.001171  1.001172  0.005023  0.005295  0.221 0.824928
-#> albumin   -0.977390  0.376292  0.262343  0.296724 -3.294 0.000988
-#> albumin_1  0.006638  1.006660  0.310891  0.303998  0.022 0.982578
-#> albumin_2 -0.035341  0.965276  0.075791  0.071283 -0.496 0.620050
-#> LM_1      -0.160122  0.852039  1.052334  1.054453 -0.152 0.879302
-#> LM_2       0.094909  1.099559  0.252121  0.246167  0.386 0.699833
+#>                  coef exp(coef)  se(coef) robust se      z        p
+#> stage        0.609239  1.839032  0.087574  0.140112  4.348 1.37e-05
+#> bili         0.135984  1.145664  0.014712  0.015599  8.718  < 2e-16
+#> bili_LM1     0.003599  1.003605  0.018316  0.019694  0.183 0.855012
+#> bili_LM2     0.001171  1.001172  0.005023  0.005295  0.221 0.824928
+#> albumin     -0.977390  0.376292  0.262343  0.296724 -3.294 0.000988
+#> albumin_LM1  0.006638  1.006660  0.310891  0.303998  0.022 0.982578
+#> albumin_LM2 -0.035341  0.965276  0.075791  0.071283 -0.496 0.620050
+#> LM1         -0.160122  0.852039  1.052334  1.054453 -0.152 0.879302
+#> LM2          0.094909  1.099559  0.252121  0.246167  0.386 0.699833
 #> 
 #> Likelihood ratio test=NA  on 9 df, p=NA
 #> n= 1175, number of events= 281
@@ -506,8 +523,8 @@ If you want to specify only a subset of covariates to fit the path to,
 this is done with the `y` argument:
 
 ``` r
-path1 <- pen_lm(lmdata, y = c("male", "male_1", "male_2", 
-                              "trt", "trt_1", "trt_2"))
+path1 <- pen_lm(lmdata, y = c("male", "male_LM1", "male_LM2", 
+                              "trt", "trt_LM1", "trt_LM2"))
 ```
 
 #### 3.2.2.2 Cross-validated model
@@ -538,8 +555,8 @@ plot(cv_model, all_causes = TRUE)
 To specify only a subset of covariates to fit to
 
 ``` r
-cv_model1 <- cv.pen_lm(lmdata, y = c("male", "male_1", "male_2", 
-                                     "trt", "trt_1", "trt_2"))
+cv_model1 <- cv.pen_lm(lmdata, y = c("male", "male_LM1", "male_LM2", 
+                                     "trt", "trt_LM1", "trt_LM2"))
 ```
 
 #### 3.2.2.3 Fitting a penalized landmark supermodel
@@ -712,12 +729,13 @@ plot(scores, summary = TRUE)
 <img src="man/figures/README-score-1.png" width="100%" />
 
 Additional parameters control which plots to include and additional
-information, for example, one can remove confidence intervals (first
-plot), plot the time-dependent contrasts (first example). One can also
-plot if model summary metrics are significantly different or not, either
-plotting the p-values of the significant comparisons to a plot (second
-example), or by plotting the contrasts directly (third example). See
-`?plot.LMScore` for more information.
+information. The first plot below shows how one can remove confidence
+intervals and plot the time-dependent contrasts. One can also plot if
+model summary metrics are significantly different or not. The second
+plot adds the p-values of the significant comparisons to a plot. The
+third plots the contrasts directly (third example).
+
+See `?plot.LMScore` for more information.
 
 ``` r
 # Three plots and make extra space below for the x-labels
@@ -792,10 +810,11 @@ We turn our data into long-form data to plot.
 
 ``` r
 # Select individuals
-idx <- pbc_df$id %in% c(2, 5)
+idx <- pbc_df$id %in% c(231, 29) #c(26, 130, 231, 290 ) #c(3,7,29) #36:40 #11:20 #3,7, (29,34,35)
+# idx <- pbc_df$id %in% c(235, 242, 120)
 
 # Prediction time points 
-x <- seq(0, 5, by = 0.25)
+x <- seq(0, 4, by = 0.05)
 
 # Stack landmark datasets
 dat <- stack_data(pbc_df[idx, ], outcome, x, w, covars, format = "long", 
@@ -806,13 +825,12 @@ dat <- dat[order(dat$id, dat$LM), ]
 
 ``` r
 print(dat[dat$LM %in% c(0, 2, 4), c("id", "time", "status", "LM", supermodel$lm_covs)])
-#>     id time status LM stage bili albumin
-#> 3    2  5.0      0  0     3  1.1    4.14
-#> 54   2  7.0      0  2     3  1.0    3.55
-#> 67   2  9.0      0  4     3  1.9    3.92
-#> 23   5  4.1      1  0     3  3.4    3.53
-#> 253  5  4.1      1  2     3  2.5    3.34
-#> 28   5  4.1      1  4     3 19.0    2.09
+#>         id time status LM stage bili albumin
+#> 182     29  5.0      0  0     2  0.7    3.78
+#> 18420   29  7.0      0  2     2  0.6    3.90
+#> 1868    29  9.0      0  4     2  0.5    3.74
+#> 1517   231  3.2      2  0     4  3.4    1.96
+#> 151916 231  3.2      2  2     4  8.1    3.06
 ```
 
 ``` r
@@ -820,12 +838,15 @@ plotrisk(supermodel, dat, format = "long", ylim = c(0, 0.35),
          x.legend = "topleft")
 ```
 
-<img src="man/figures/README-risk-1.png" width="100%" />
-
-We can see that the individual with higher bilirunbin levels has a
-higher and increasing 5-year risk of transplant. This can be explained
-by the dynamic hazard rate of bilirunbin (seen above). Further, the risk
-of transplant rapidly increases when the bilirunbin levels rise.
+<img src="man/figures/README-risk-1.png" width="100%" /> We can see that
+the individual (id = 29) with lower stage, low and constant bilirunbin
+levels, and constant albumin levels generally has a lower and largely
+unchanged 5-year risk of transplant. The individual (id = 231) with
+higher stage has a higher initial risk, but an increase in albumin
+levels at around landmark 2, leads to a much improved (lower) risk of
+transplant. This can be explained by the dynamic hazard rate of albumin
+(seen above) which is protective for higher levels and has a larger
+effect than bilirunbin.
 
 # 4 References
 
