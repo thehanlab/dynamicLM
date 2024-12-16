@@ -469,7 +469,7 @@ plot.LMScore <- function(x,
         }
 
         mid <- plot_summary(df, col_name, col, ylim, xlab, ylab, main, cex,
-                            font.main, length, se, contrasts = contrasts)
+                            font.main, length, se, contrasts = contrasts, ...)
 
         # add significant contrasts
         if (add_pairwise_contrasts && contrasts) {
