@@ -32,7 +32,8 @@ find_se_log <- function(t, coefs, covar, func_covars) {
 
 # ----------------------------------------------------------
 # find_se: Helper function to calculate SE for time varying HR
-# of the form coef[1] + t*coef[2] + t^2*coef[2] + ..
+# of the form exp(coef[1] + t*coef[2] + t^2*coef[2] + ..)
+# (No longer used)
 # ----------------------------------------------------------
 find_se <- function(t, coefs, covar, func_covars) {
   if (!requireNamespace("msm", quietly = TRUE)) {
@@ -179,9 +180,9 @@ initialize_df <- function(metric, bootstrap) {
     cols <- c("tLM", "times", "model", "reference", "delta.Brier", "se",
               "lower", "upper", "p")
   if (metric == "IF.AUC")
-    cols <- c("tLM", "riskRegression_ID", "model", "cause", "times", "IF.AUC")
+    cols <- c("tLM", "riskRegression_ID", "model", "times", "IF.AUC") # cause
   if (metric == "IF.Brier")
-    cols <- c("tLM", "riskRegression_ID", "model", "cause", "times", "IF.Brier")
+    cols <- c("tLM", "riskRegression_ID", "model", "times", "IF.Brier")
 
   df <- data.frame(matrix(NA, nrow = 1, ncol = length(cols)))
   colnames(df) <- cols
