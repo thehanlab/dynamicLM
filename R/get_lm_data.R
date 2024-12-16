@@ -33,6 +33,18 @@
 #'     (https://cran.r-project.org/web/packages/dynpred/index.html),
 #'     in particular, the code for cutLM.
 #' @return A landmark dataset.
+#'
+#' @examples
+#' \dontrun{
+#' data(relapse)
+#' outcome <- list(time = "Time", status = "event")
+#' covars <- list(fixed = c("age.at.time.0", "male", "stage", "bmi"),
+#'                varying = c("treatment"))
+#' lm12 <- get_lm_data(relapse, outcome, lm = 12, horizon = 60, covs = covars,
+#'                     format = "long", id = "ID", rtime = "T_txgiven")
+#' head(lm12)
+#' }
+#'
 #' @seealso [dynamicLM::stack_data()]
 #' @export
 get_lm_data <- function(data, outcome, lm, horizon, covs,
@@ -70,10 +82,8 @@ get_lm_data <- function(data, outcome, lm, horizon, covs,
       }
       t.fups <- di[[rtime]]
 
-      # idx <- cut(lm, c(di[[rtime]], Inf), right = right, labels = FALSE)
       idx <- findInterval(lm, c(t.fups, Inf), left.open = left.open)
 
-      # if (!is.na(idx)) {
       if (idx != 0) {
         return(di[idx, ])
       } else {

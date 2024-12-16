@@ -31,7 +31,7 @@
 #' @export
 pen_lm <- function(x, y, alpha = 1, ...) {
   if (!requireNamespace("glmnet", quietly = TRUE)) {
-    stop("Package \"glmnet\" must be installed to use function pen_lm.",
+    stop("Package `glmnet` must be installed to use function pen_lm.",
          call. = FALSE)
   }
 

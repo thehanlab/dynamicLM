@@ -61,6 +61,18 @@ Build a landmark dataset
 This function is based from \code{\link[dynpred:cutLM]{dynpred::cutLM()}} with minor changes.
 The original function was authored by Hein Putter.
 }
+\examples{
+\dontrun{
+data(relapse)
+outcome <- list(time = "Time", status = "event")
+covars <- list(fixed = c("age.at.time.0", "male", "stage", "bmi"),
+               varying = c("treatment"))
+lm12 <- get_lm_data(relapse, outcome, lm = 12, horizon = 60, covs = covars,
+                    format = "long", id = "ID", rtime = "T_txgiven")
+head(lm12)
+}
+
+}
 \references{
 \itemize{
 \item van Houwelingen HC, Putter H (2012). Dynamic Prediction in

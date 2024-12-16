@@ -4,7 +4,11 @@
 # Reference: https://stackoverflow.com/questions/45693010/how-do-you-format-multiline-r-package-messages
 # ----------------------------------------------------------
 tidymess <- function(..., prefix = "\n", initial = "") {
-  strwrap(..., prefix = prefix, initial = initial)
+  # Concatenate all the inputs into one single string
+  combined_input <- paste(..., collapse = " ")
+
+  # Apply strwrap to the combined input
+  strwrap(combined_input, prefix = prefix, initial = initial)
 }
 
 
