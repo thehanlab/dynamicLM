@@ -53,8 +53,31 @@ dynamic_lm_helper <- function(formula, type, data, lmdata, method, cluster,
     id_col <- cluster
   }
 
+  # Check the variables are in the data and as expected
+  lhs_vars <- all.vars(formula[[3]])
+  # lm_covs <- intersect(sub("_[^_]+$", "", lhs_vars), lm_covs)
+  lm_covs <- intersect(unique(sub("_LM\\d+$", "", lhs_vars)), lm_covs)
+
+  # check if all columns y are in the dataframe
+  missing_cols <- lhs_vars[!(lhs_vars %in% colnames(data))]
+  if (length(missing_cols) > 0) {
+    idx <- grep("_\\d$", missing_cols)
+    if (length(idx) > 0) {
+      stop(tidymess(
+        "Columns", paste0("`", paste(missing_cols[idx], collapse = ", "), "`"),
+        "are not in the dataframe. NOTE: in `dynamicLM` v2,
+        landmark-variables interactions are given by variable_name_LMi
+        (vs variable_name_i in v1) and landmark transformations are given
+        by LMi (vs LM_i in v1)."
+      ))
+    } else {
+      stop(tidymess(
+        "Columns", paste0("`", paste(missing_cols, collapse = ", "), "`"),
+        "are not in the dataframe."))
+    }
+  }
+
   # Fit the model
-  lm_covs <- intersect(sub("_[^_]+$", "", all.vars(formula[[3]])), lm_covs)
   if (type == "coxph") {
     superfm <- survival::coxph(formula, data, method = method, ...)
     models <- list(superfm)

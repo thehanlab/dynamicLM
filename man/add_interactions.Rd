@@ -4,7 +4,13 @@
 \alias{add_interactions}
 \title{Add landmarking time interactions to a super dataset}
 \usage{
-add_interactions(lmdata, lm_covs, func_covars, func_lms, keep = TRUE)
+add_interactions(
+  lmdata,
+  lm_covs,
+  func_covars = c("linear", "quadratic"),
+  func_lms = c("linear", "quadratic"),
+  keep = TRUE
+)
 }
 \arguments{
 \item{lmdata}{An object of class "LMdataframe"
@@ -53,13 +59,13 @@ The stacked dataset output is used as input to \code{\link[=dynamic_lm]{dynamic_
 supermodel for dynamic prediction.
 }
 \details{
-For each variable "var" in \code{lm_covs}, new columns var_1,...,var_i
-(length(func_covars) == i) are added; one column for each interaction given
-in func_covars is added.
+For each variable "var" in \code{lm_covs}, new columns var_LM1, ...,
+var_LMi are added; one column for each interaction given
+in func_covars is added (length(func_covars) == i).
 
-Transformations of the LM column are added and labelled as LM_1,...,LM_j
-(length(func_lms) == j); one column for each interaction given in func_lms
-is added.
+Transformations of the LM column are added and labelled as LM1, ..., LMj;
+one column for each interaction given in func_lms is added
+(length(func_lms) == j).
 }
 \examples{
 \dontrun{

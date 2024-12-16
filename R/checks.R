@@ -399,7 +399,7 @@ check_penlm_inputs <- function(x, y, id_col = NULL, alpha = 1, CV = FALSE) {
 
   if (missing(x))
     stop("argument x is missing with no default.")
-
+  # check data types
   if (inherits(x, "LMdataframe")) {
     lmdata <- x
     if (!missing(y)) {
@@ -407,12 +407,31 @@ check_penlm_inputs <- function(x, y, id_col = NULL, alpha = 1, CV = FALSE) {
         stop(tidymess("Inputs are mismatched. Arguments (x, y) should be of
             type (LMdataframe, vector of column names)"))
       } else {
+        # check if all columns y are in the dataframe
+        missing_cols <- y[!(y %in% colnames(lmdata$data))]
+        if (length(missing_cols) > 0) {
+          idx <- grep("_(\\d)$", missing_cols)
+          if (length(idx) > 0) {
+            stop(tidymess(
+              "Columns", paste0("`", paste(missing_cols[idx], collapse = ", "), "`"),
+              "are not in the dataframe. NOTE: in `dynamicLM` v2,
+              landmark-variables interactions are given by variable_name_LMi
+              (vs variable_name_i in v1) and landmark transformations are given
+              by LMi (vs LM_i in v1)."
+              ))
+          } else {
+            stop(tidymess(
+              "Columns", paste0("`", paste(missing_cols, collapse = ", "), "`"),
+              "are not in the dataframe."))
+          }
+        }
         xcols <- y
       }
     }
   } else {
     stop("argument x should be of class LMdataframe.")
   }
+
 
   ### get IDs if performing cross-validation ###
 

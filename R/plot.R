@@ -64,7 +64,7 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
   } else if (end_time > x$end_time && !extend) {
     if (!silence)
       message(paste0(
-        "NOTE: arg end_time (=", end_time,
+        "NOTE: arg `end_time` (=", end_time,
         ") is later than the last LM used in model fitting (=", x$end_time, ")",
         "\nand has been set back to the last LM used in model fitting. (=",
         x$end_time, ")", "\nIf you wish to still plot until ", end_time,
@@ -83,7 +83,7 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
   }
 
   if (x$type == "coxph") {
-    if (!missing(cause)) stop("no cause should be input for coxph supermodels.")
+    if (!missing(cause)) warning("no `cause` should be input for coxph supermodels.")
     bet <- fm$coefficients
     func_covars <- x$func_covars
     if (conf_int) sig <- stats::vcov(fm)
@@ -91,7 +91,7 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
   } else if (x$type == "CauseSpecificCox" | x$type == "CSC") {
     if (missing(cause)) cause <- as.numeric(fm$theCause)
     if (length(cause) > 1)
-      stop(paste0("Can only predict one cause. Provided are: ",
+      stop(paste0("Can only predict one `cause.` Provided are: ",
                   paste(cause, collapse = ", "), sep = ""))
 
     bet <- fm$models[[cause]]$coefficients
@@ -114,8 +114,7 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
         if (name == covars[i]) {
           return(var)
         } else {
-          # idx <- as.numeric(sub(".*\\D+", "\\1", name))
-          idx <- as.numeric(sub(".*_(\\d)$", "\\1", name))
+          idx <- as.numeric(sub(".*_LM(\\d)$", "\\1", name))
           return(func_covars[[idx]](x) * var)
         }
       })) # bet0 + bet1*x + bet2*x^2 + ...
