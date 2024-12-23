@@ -309,14 +309,14 @@ when fitting the model (i.e., when calling `dynamic_lm()`).
 ```{r, eval = FALSE}
 # Remember to fit the supermodel with argument 'x = TRUE'
 scores <- score(list("LM supermodel" = supermodel),
-              times = c(0, 6),
-              split.method = "bootcv", B = 10)       # 10 bootstraps
+              times = c(0, 6, 12, 18),
+              split.method = "bootcv", B = 10)        # 10 bootstraps
 
 par(mfrow = c(1, 2))
 outlist <- calplot(list("LM supermodel" = supermodel), 
-                    times = c(0, 6),                 # landmarks to plot at
-                    method = "quantile", q = 10,     # calibration plot method
-                    split.method = "bootcv", B = 10, # 10 bootstraps
+                    times = c(0, 6, 12, 18),          # landmarks to plot at
+                    method = "quantile", q = 5,       # calibration plot method
+                    split.method = "bootcv", B = 10,  # 10 bootstraps
                     # Optional plotting parameters to alter
                     ylim = c(0, 0.36), xlim = c(0, 0.36), 
                     lwd = 1, xlab = "Predicted Risk", ylab = "Observed Risk", 
@@ -374,8 +374,7 @@ head(dat)
 ```
 
 ```{r plotrisk}
-plotrisk(supermodel, dat, format = "long", ylim = c(0, 0.7), 
-         x.legend = "topright")
+plotrisk(supermodel, dat, format = "long", x.legend = "topright")
 ```
 
 We can see that the male has a higher and increasing 5-year risk of

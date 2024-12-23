@@ -16,7 +16,7 @@ You can install the development version of `dynamicLM` from
 ``` r
 # install.packages("devtools")
 devtools::install_github("thehanlab/dynamicLM", ref = "extension/summary-metric")
-#> Skipping install of 'dynamicLM' from a github remote, the SHA1 (08e0101e) has not changed since last install.
+#> Skipping install of 'dynamicLM' from a github remote, the SHA1 (304aafc3) has not changed since last install.
 #>   Use `force = TRUE` to force installation
 ```
 
@@ -443,14 +443,14 @@ however many bootstrap replications are desired). Note that the argument
 ``` r
 # Remember to fit the supermodel with argument 'x = TRUE'
 scores <- score(list("LM supermodel" = supermodel),
-              times = c(0, 6),
-              split.method = "bootcv", B = 10)       # 10 bootstraps
+              times = c(0, 6, 12, 18),
+              split.method = "bootcv", B = 10)        # 10 bootstraps
 
 par(mfrow = c(1, 2))
 outlist <- calplot(list("LM supermodel" = supermodel), 
-                    times = c(0, 6),                 # landmarks to plot at
-                    method = "quantile", q = 10,     # calibration plot method
-                    split.method = "bootcv", B = 10, # 10 bootstraps
+                    times = c(0, 6, 12, 18),          # landmarks to plot at
+                    method = "quantile", q = 5,       # calibration plot method
+                    split.method = "bootcv", B = 10,  # 10 bootstraps
                     # Optional plotting parameters to alter
                     ylim = c(0, 0.36), xlim = c(0, 0.36), 
                     lwd = 1, xlab = "Predicted Risk", ylab = "Observed Risk", 
@@ -524,8 +524,7 @@ head(dat)
 ```
 
 ``` r
-plotrisk(supermodel, dat, format = "long", ylim = c(0, 0.7), 
-         x.legend = "topright")
+plotrisk(supermodel, dat, format = "long", x.legend = "topright")
 ```
 
 <img src="man/figures/README-plotrisk-1.png" width="100%" />

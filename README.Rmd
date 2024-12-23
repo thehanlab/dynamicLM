@@ -68,7 +68,7 @@ In short, the creation of the landmark model for survival data is built on the c
 In order to use `dynamicLM`, you need the development version of 
 `riskRegression`. Both are available from [GitHub](https://github.com/) with:
 
-```{r}
+```{r, message = FALSE}
 # install.packages("devtools")
 devtools::install_github("tagteam/riskRegression")
 devtools::install_github("thehanlab/dynamicLM", ref = "extension/summary-metric")
@@ -514,7 +514,7 @@ plot(scores, auc = FALSE, landmarks = FALSE, summary = TRUE,
 
 ### Bootstrapping
 
-Bootstrapping can be performed by calling `calplot()` or `score()` and setting the arguments `split.method = "bootcv"` and `B` (the number of bootstrap replications). Note that the argument `x = TRUE` must be specified when fitting the model (i.e., when calling `dynamic_lm()`). 
+Bootstrapping can be performed by calling `score()` and setting the arguments `split.method = "bootcv"` and `B` (the number of bootstrap replications). Note that the argument `x = TRUE` must be specified when fitting the model (i.e., when calling `dynamic_lm()`). 
 
 ```{r, include = FALSE}
 supermodel_pen <- dynamic_lm(cv_model, lambda = "lambda.1se", x = TRUE)
