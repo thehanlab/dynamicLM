@@ -12,19 +12,18 @@
 #'
 #' @param lm_covs Vector of strings indicating the columns (covariates) that are
 #'   to have an interaction with the landmark times.
-#' @param func_covars Either a string (or vector of strings) specifying which
-#'   covariate(`x`)-landmark(`t`) interactions to include. One or
-#'   multiple of "linear" (`x, x*t`), "quadratic" (`x, x*t^2`),
-#'   "log" (`x, log(1 + x)`), or or "exp" (`x, exp(x)`).
+#' @param func_covars Either a string/vector of strings or list of
+#'   functions specifying which covariate-landmark interactions to include.
+#'   If `x` are covariates and `t` are landmarks then "linear" (`x, x*t`),
+#'   "quadratic" (`x, x*t^2`), "log" (`x, log(1 + x)`), or or "exp"
+#'   (`x, exp(x)`) can be specified.
 #'
-#'   Otherwise, a custom list of functions can be specified. For example,
-#'   `list( function(t) t, function(t) exp(20*t))` will, for each covariate `x`,
+#'   A custom list of functions can be specified. For example,
+#'   `list(function(t) t, function(t) exp(20*t))` will, for each covariate,
 #'   create `x, x*t, exp(20*t)`.
-#' @param func_lms Similar to `func_covars`: A list of functions to use for
-#'   transformations of the landmark times. Either a string or vector of
-#'   strings or a custom list of functions.
-#' @param lm_col Character string specifying the column name that indicates the
-#'   landmark time point for a row. Obtained from `lmdata` if not input.
+#' @param func_lms A list of functions to use for transformations of the
+#'   landmark times input similarly to `func_covars`, either as a string/
+#'   vector of strings or a custom list of functions.
 #' @param keep Boolean value to indicate whether or not to keep the columns
 #'   given by `lm_covs` without the time interactions. Default is TRUE.
 #'
@@ -39,16 +38,15 @@
 #'     if `keep` is TRUE.
 #'   - lm_col: as the input
 #'
-#' @details For each variable "var" in `lm_covs`, new columns var_1,...,var_i
-#'   (length(func_covars) == i) are added; one column for each interaction given
-#'   in func_covars is added.
+#' @details For each variable "var" in `lm_covs`, new columns var_LM1, ...,
+#'   var_LMi are added; one column for each interaction given
+#'   in func_covars is added (length(func_covars) == i).
 #'
-#'   Transformations of the LM column are added and labelled as LM_1,...,LM_j
-#'   (length(func_lms) == j); one column for each interaction given in func_lms
-#'   is added.
+#'   Transformations of the LM column are added and labelled as LM1, ..., LMj;
+#'   one column for each interaction given in func_lms is added
+#'   (length(func_lms) == j).
 #'
 #' @examples
-#' \dontrun{
 #' data(relapse)
 #' outcome <- list(time = "Time", status = "event")
 #' covars <- list(fixed = c("age.at.time.0", "male", "stage", "bmi"),
@@ -67,69 +65,71 @@
 #'                            func_covars = c("linear", "quadratic"),
 #'                            func_lms = c("linear", "quadratic"))
 #' head(lmdata$data)
-#' }
 #'
+#' @seealso [dynamicLM::stack_data()], [dynamicLM::dynamic_lm()]
 #' @export
-add_interactions <- function(lmdata, lm_covs, func_covars, func_lms, lm_col,
-                             keep = T){
-  if (missing(lm_col)){
-    lm_col <- lmdata$lm_col
-  }
-  if (lm_col %in% func_covars){
-    stop(paste0("arg lm_col (given as/inferred as ",lm_col,
-                ") should not be in arg func_covars."))
-  }
+add_interactions <- function(lmdata, lm_covs,
+                             func_covars = c("linear", "quadratic"),
+                             func_lms = c("linear", "quadratic"),
+                             keep = TRUE) {
+  # Validate inputs
+  if (!inherits(lmdata, "LMdataframe")) stop("`lmdata` must be of class 'LMdataframe'")
+  if (missing(lm_covs)) lm_covs <- lmdata$all_covs
+  lm_col <- "LM"
   data <- lmdata$data
+  if (is.null(data[[lm_col]])) stop(paste0("`", lm_col, "` column not found in data"))
 
-  f1 <- function(t) t
-  f2 <- function(t) t^2
-  f3 <- function(t) log(1 + t)
-  f4 <- function(t) exp(t)
-
-  if (missing(func_covars)) func_covars <- list(f1, f2)
-  if (missing(func_lms)) func_lms <- list(f1, f2)
-  if (inherits(func_covars, "character")){
-    funcs <- list()
-    if ("linear" %in% func_covars) funcs <- c(funcs, list(f1))
-    if ("quadratic" %in% func_covars) funcs <- c(funcs, list(f2))
-    if ("log" %in% func_covars) funcs <- c(funcs, list(f3))
-    if ("exp" %in% func_covars) funcs <- c(funcs, list(f4))
-    func_covars <- funcs
-  }
-  if (inherits(func_lms, "character")){
-    funcs <- list()
-    if ("linear" %in% func_lms) funcs <- c(funcs, list(f1))
-    if ("quadratic" %in% func_lms) funcs <- c(funcs, list(f2))
-    if ("log" %in% func_lms) funcs <- c(funcs, list(f3))
-    if ("exp" %in% func_lms) funcs <- c(funcs, list(f4))
-    func_lms <- funcs
+  # Predefined transformation functions
+  predefined_funcs <- function(name) {
+    switch(name,
+           "linear" = function(t) t,
+           "quadratic" = function(t) t^2,
+           "log" = function(t) log(1 + t),
+           "exp" = function(t) exp(t),
+           stop(paste("Unsupported transformation:", name))
+    )
   }
 
-  all_covs <- c(lm_covs)
-  data_LM <- data[[lm_col]]
-  # Add func_covarss: covariate LM interactions
-  for(i in 1:length(lm_covs)){
-    for (j in 1:length(func_covars)){
+  # Process landmark-transformations
+  if (inherits(func_covars, "character"))
+    func_covars <- lapply(func_covars, predefined_funcs)
+  else if (!is.list(funcs))
+    stop("`func_covars` must be a character vector or list of functions")
+
+  if (inherits(func_lms, "character"))
+    func_lms <- lapply(func_lms, predefined_funcs)
+  else if (!is.list(func_lms))
+    stop("`func_lms` must be a character vector or list of functions")
+
+  # Initialize output covariates tracker
+  all_covs <- lm_covs
+  data_lm <- data[[lm_col]]
+
+  # Add covariate-landmark interactions
+  for (cov in lm_covs) {
+    for (j in seq_along(func_covars)) {
       f <- func_covars[[j]]
-      name <- paste0(lm_covs[i],"_",j)
-      data[[name]]  <- data[[lm_covs[i]]]*f(data_LM)
+      name <- paste0(cov, "_LM", j)
+      data[[name]]  <- data[[cov]] * f(data_lm)
       all_covs <- c(all_covs, name)
     }
   }
-  # Add func_lms: LM interactions
-  for (k in 1:length(func_lms)){
-    g <- func_lms[[k]]
-    name <- paste0("LM_",k)
-    data[[name]]  <- g(data_LM)
+  # Add landmark-time transformations
+  for (j in seq_along(func_lms)){
+    g <- func_lms[[j]]
+    name <- paste0("LM", j)
+    data[[name]]  <- g(data_lm)
     all_covs <- c(all_covs, name)
   }
 
-  if(!keep){
-    remaining = colnames(data)[! colnames(data)  %in% lm_covs]
+  # Optionally drop original landmark covariates
+  if (!keep) {
+    remaining <- colnames(data)[! colnames(data)  %in% lm_covs]
     data <- data[remaining]
   }
-  lmdata$data <- data
 
+  # Update and return `lmdata`
+  lmdata$data <- data
   lmdata$func_covars <- func_covars
   lmdata$func_lms <- func_lms
   lmdata$lm_covs <- lm_covs

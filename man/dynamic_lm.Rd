@@ -2,112 +2,53 @@
 % Please edit documentation in R/dynamic_lm.R
 \name{dynamic_lm}
 \alias{dynamic_lm}
-\title{Fit a coxph or CSC model to a landmark super dataset, i.e., fit a dynamic
-landmark supermodel}
+\title{Fit a dynamic Cox or cause-specific Cox landmark supermodel with or without
+regularization.}
 \usage{
-dynamic_lm(
-  lmdata,
-  formula,
-  type = "coxph",
-  method = "breslow",
-  func_covars,
-  func_lms,
-  lm_col,
-  outcome,
-  w,
-  lm_covs,
-  cluster,
-  x = FALSE,
-  ...
-)
+dynamic_lm(...)
 }
 \arguments{
-\item{lmdata}{An object of class "LMdataframe", this can be created by
-running \code{\link[=stack_data]{stack_data()}} and \code{\link[=add_interactions]{add_interactions()}}}
-
-\item{formula}{The formula to be used, remember to include "+cluster(ID)" for
-the column that indicates the ID of the individual for robust error
-estimates.
-Note that transformations (e.g., \code{x1*x2}) cannot be used in the formula and
-factors/categorical variables must first be made into dummy variables.}
-
-\item{type}{"coxph" or "CSC"/"CauseSpecificCox"}
-
-\item{method}{A character string specifying the method for tie handling.
-Default is "breslow". More information can be found in coxph.}
-
-\item{func_covars}{A list of functions to use for interactions between LMs
-and covariates.}
-
-\item{func_lms}{A list of functions to use for transformations of the
-landmark times.}
-
-\item{lm_col}{Character string specifying the column name that indicates the
-landmark time point for a row.}
-
-\item{outcome}{List with items time and status, containing character strings
-identifying the names of time and status variables, respectively, of the
-survival outcome}
-
-\item{w}{Scalar, the value of the prediction window (ie predict w-year/other
-time period risk from the LM points)}
-
-\item{lm_covs}{Vector of strings indicating the columns that are to have a
-LM interaction}
-
-\item{cluster}{Variable which clusters the observations (for e.g., identifies
-repeated patient IDs), for the purposes of a robust variance.}
-
-\item{x}{Logical value. If set to true, the \code{lmdata} is stored in the returned
-object. This is required for internal validation.}
-
-\item{...}{Arguments given to coxph or CSC.}
+\item{...}{Arguments to pass to \code{dynamic_lm()}}
 }
 \value{
-An object of class "LMcoxph" or "LMCSC" with components:
+A fitted landmark supermodel object which has components:
 \itemize{
 \item model: fitted model
 \item type: as input
 \item w, func_covars, func_lms, lm_covs, all_covs, outcome: as in \code{lmdata}
-\item LHS: the LHS of the input formula
+\item LHS: the survival outcome
 \item linear.predictors: the vector of linear predictors, one per subject.
 Note that this vector has not been centered.
+}
+
+If the model is unpenalized (class "LMcoxph" or "LMCSC") it has additional
+components:
+\itemize{
 \item args: arguments used to call model fitting
 \item id_col: the cluster argument, often specifies the column with patient ID
 \item lm_col: column name that indicates the landmark time point for a row.
 }
+
+If the model is penalized (class "penLMcoxph" or "penLMCSC") it has
+additional components:
+\itemize{
+\item lambda: the values of lambda for which this model has been fit.
+}
 }
 \description{
-dynamic (dyn) landmark (lm) supermodel --> dynamic_lm
+To fit Cox or cause-specific Cox models without regularization see:
+\itemize{
+\item \code{\link[=dynamic_lm.LMdataframe]{dynamic_lm.LMdataframe()}} for use on a stacked landmark dataset
+\item \code{\link[=dynamic_lm.data.frame]{dynamic_lm.data.frame()}} for use on a dataframe
 }
-\examples{
-\dontrun{
-data(relapse)
-outcome <- list(time = "Time", status = "event")
-covars <- list(fixed = c("age.at.time.0", "male", "stage", "bmi"),
-               varying = c("treatment"))
-w <- 60; lms <- c(0, 6, 12, 18)
-# Choose covariates that will have time interaction
-pred_covars <- c("age", "male", "stage", "bmi", "treatment")
-# Stack landmark datasets
-lmdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
-                     id = "ID", rtime = "T_txgiven")
 
-# Update complex landmark-varying covariates
-# note age is in years and LM is in months
-lmdata$data$age <- lmdata$data$age.at.time.0 + lmdata$data$LM/12
-# Add LM-time interactions
-lmdata <- add_interactions(lmdata, pred_covars,
-                           func_covars = c("linear", "quadratic"),
-                           func_lms = c("linear", "quadratic"))
-
-formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment +
-           age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 +
-           bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
-supermodel <- dynamic_lm(lmdata, as.formula(formula), "CSC")
-print(supermodel)
-
-par(mfrow = c(2,3))
-plot(supermodel)
+To fit penalized Cox or cause-specific Cox models see:
+\itemize{
+\item \code{\link[=dynamic_lm.pen_lm]{dynamic_lm.pen_lm()}} without cross-validation
+\item \code{\link[=dynamic_lm.cv.pen_lm]{dynamic_lm.cv.pen_lm()}} with cross-validation
 }
+}
+\seealso{
+\code{\link[=dynamic_lm.LMdataframe]{dynamic_lm.LMdataframe()}}, \code{\link[=dynamic_lm.data.frame]{dynamic_lm.data.frame()}},
+\code{\link[=dynamic_lm.pen_lm]{dynamic_lm.pen_lm()}}, \code{\link[=dynamic_lm.cv.pen_lm]{dynamic_lm.cv.pen_lm()}}
 }

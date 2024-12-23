@@ -12,30 +12,31 @@ score(
   formula,
   data,
   lms = "LM",
-  id_col = "ID",
+  id_col,
   se.fit = TRUE,
   conf.int = 0.95,
+  contrasts = TRUE,
   split.method = "none",
   B = 1,
   M,
+  summary = TRUE,
   cores = 1,
   seed,
   cause,
-  silent = T,
-  na.rm = FALSE,
+  silent = TRUE,
   ...
 )
 }
 \arguments{
 \item{object}{A named list of prediction models, where allowed entries are
-outputs from \code{\link[=predict.dynamicLM]{predict.dynamicLM()}} or supermodels from \code{\link[=dynamic_lm]{dynamic_lm()}} depending on the
-type of calibration.}
+outputs from \code{\link[=predict.dynamicLM]{predict.dynamicLM()}} or supermodels from \code{\link[=dynamic_lm]{dynamic_lm()}}
+depending on the type of calibration.}
 
 \item{times}{Landmark times for which calibration must be plot. These must be
 a subset of landmark times used during the prediction}
 
 \item{metrics}{Character vector specifying which metrics to apply. Choices
-are "auc" and "brier". Case matters.}
+are "auc" and "brier".}
 
 \item{formula}{A survival or event history formula
 (\code{\link[prodlim:Hist]{prodlim::Hist()}}). The left hand side is used to compute the
@@ -60,6 +61,8 @@ bootstrapping, CIs are calculated from empirical quantiles. If not, for
 right censored data, they are calculated by the package \link{riskRegression} as
 in Blanche et al (references).}
 
+\item{contrasts}{If TRUE, perform model comparison tests.}
+
 \item{split.method}{Defines the internal validation design. Options are
 currently "none" or "bootcv".
 
@@ -75,6 +78,9 @@ of size \code{M}. Models are then assessed in observations not in the sample.}
 \item{M}{Subsample size for training in cross-validation. Entries not sampled
 in the M subsamples are used for validation.}
 
+\item{summary}{Compute the summary metrics (average of the time-dependent
+metrics). By default is TRUE.}
+
 \item{cores}{To perform parallel computing, specifies the number of cores.
 (Not yet implemented)}
 
@@ -87,22 +93,17 @@ this is inferred from object.}
 \item{silent}{Show any error messages when computing \code{score} for each
 landmark time (and potentially bootstrap iteration)}
 
-\item{na.rm}{Ignore bootstraps where there are errors (for example not
-enough datasamples) and calculate metrics on remaining values. This is not
-recommended. For example, if only one bootstrap sampling has enough data
-that live to the prediction window, the standard error will be zero.}
-
 \item{...}{Additional arguments to pass to \code{\link[riskRegression:Score]{riskRegression::Score()}}.
 These arguments have been included for user flexibility but have not been
 tested and should be used with precaution.}
 }
 \value{
-An object of class "LMScore", which has components:
+An list with entries \code{AUC} and \code{Brier} if "auc" and "brier" were
+included as metrics respectively and \code{AUC_Summary} and/or \code{Brier_summary}
+if \code{summary} is not null. Each will have entries:
 \itemize{
-\item \code{auct}: dataframe containing time-dependent AUC if "auc" was
-included as a metric
-\item \code{briert}: dataframe containing time-dependent Brier score if "brier" was
-included as a metric
+\item \code{score}: data.table containing the metric
+\item \code{contrasts}: data.table containing model comparisons
 }
 }
 \description{
@@ -111,28 +112,29 @@ apparent/internal, bootstrapped, and external. Accordingly, the named list of
 prediction models must be as follows:
 \itemize{
 \item For both apparent/internal evaluation, objects output from
-\code{\link[=predict.dynamicLM]{predict.dynamicLM()}} or supermodels fit with \code{\link[=dynamic_lm]{dynamic_lm()}} may be used as input.
-\item In order to bootstrap, supermodels fit with \code{\link[=dynamic_lm]{dynamic_lm()}} may be used as input
-(note that the argument \code{x=TRUE} must be specified when fitting the model
-in \code{\link[=dynamic_lm]{dynamic_lm()}}).
-\item For external calibration, supermodels fit with \code{\link[=dynamic_lm]{dynamic_lm()}} are input along
-with new data in the \code{data} argument. This data can be a LMdataframe or a
-dataframe (in which case \code{lms} must be specified).
+\code{\link[=predict.dynamicLM]{predict.dynamicLM()}} or supermodels fit with \code{\link[=dynamic_lm]{dynamic_lm()}} may be used as
+input.
+\item In order to bootstrap, supermodels fit with \code{\link[=dynamic_lm]{dynamic_lm()}} may be used as
+input (note that the argument \code{x=TRUE} must be specified when fitting the
+model in \code{\link[=dynamic_lm]{dynamic_lm()}}).
+\item For external calibration, supermodels fit with \code{\link[=dynamic_lm]{dynamic_lm()}} are input
+along with new data in the \code{data} argument. This data can be a LMdataframe
+or a dataframe (in which case \code{lms} must be specified).
 }
 }
 \details{
 For both internal evaluation and bootstrapping, it is assumed that all
 models in \code{object} are fit on the same data.
 
-If data at late evaluation times is sparse, certain bootstrap samples may
+If data at late landmark times is sparse, some bootstrap samples may
 not have patients that live long enough to perform evaluation leading to
 the message "Upper limit of followup in bootstrap samples, was too low.
 Results at evaluation time(s) beyond these points could not be computed
 and are left as NA". In this case, consider only evaluating for earlier
 landmarks or performing prediction with a smaller window as data points are
 slim. If you wish to see which model/bootstrap/landmark times failed, set
-SILENT=FALSE. Set na.rm = TRUE ignores these bootstraps and calculate
-metrics from the bootstrap samples that worked (not recommended).
+SILENT=FALSE. Currently ignores these bootstraps and calculates
+metrics from the bootstrap samples that worked.
 
 Another message may occur: "Dropping bootstrap b = {X} for model {name} due
 to unreliable predictions". As certain approximations are made, numerical
@@ -143,28 +145,35 @@ unintentionally.
 }
 \examples{
 \dontrun{
-# Internal validation
-scores <- score(list("Model1" = supermodel),
-                times = c(0, 6)) # landmarks at which to provide calibration plots
-scores
+# Internal validation (using model)
+scores <- score(list("Model1" = supermodel))
+print(scores)
 
-# Bootstrapping
-# Remember to fit the supermodel with argument 'x = TRUE'
-scores <- score(list("Model1" = supermodel),
-                times = c(0, 6),
-                split.method = "bootcv", B = 10) # 10 bootstraps
-scores
-
-par(mfrow=c(1,2))
+par(mfrow=c(1, 4))
 plot(scores)
 
+# Internal validation (using predictions)
+p1 <- predict(supermodel)
+scores <- score(list("Model1" = p1))
+print(scores)
+
+
+# # Bootstrapping
+# Remember to fit the supermodel with argument 'x = TRUE'
+scores <- score(list("Model1" = supermodel),
+                split.method = "bootcv", B = 10) # 10 bootstraps
+print(scores)
+
 # External validation
-# Either input an object from predict as the object or a supermodel and
-# "data" & "lms" argument
+# a) newdata is a dataframe
 newdata <- relapse[relapse$T_txgiven == 0, ]
 newdata$age <- newdata$age.at.time.0
 newdata$LM <- 0
-score(list("CSC" = supermodel), cause = 1, data = newdata, lms = "LM")
+score(list("Model1" = supermodel), data = newdata, lms = "LM")
+
+# b) newdata is a landmark dataset
+lmdata_new <- lmdata
+score(list("Model1" = supermodel), data = lmdata_new)
 }
 
 }

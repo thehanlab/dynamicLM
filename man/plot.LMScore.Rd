@@ -2,25 +2,84 @@
 % Please edit documentation in R/plot.R
 \name{plot.LMScore}
 \alias{plot.LMScore}
-\title{Plot an object output from \code{\link[=score]{score()}}: plot the landmark and time-dependent
-Brier and/or AUC of dynamic landmark supermodels.}
+\title{Plot an object output from \code{\link[=score]{score()}}: plot the time-dependent and/or summary
+Brier and/or AUC of landmark supermodels.}
 \usage{
-\method{plot}{LMScore}(x, metrics, se = TRUE, xlab, ylab, legend, pch, ylim, xlim, ...)
+\method{plot}{LMScore}(
+  x,
+  metrics,
+  contrasts = FALSE,
+  landmarks = TRUE,
+  summary = TRUE,
+  se = TRUE,
+  add_pairwise_contrasts = FALSE,
+  cutoff_contrasts = 0.05,
+  pairwise_heights,
+  width,
+  loc,
+  xlab,
+  ylab,
+  pch,
+  ylim,
+  xlim,
+  main,
+  font.main = 1,
+  col = NULL,
+  cex = 1,
+  length = 0.1,
+  legend = TRUE,
+  legend.title = NULL,
+  auc = TRUE,
+  brier = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{An object of class "LMScore" output from \code{\link[=score]{score()}}}
 
-\item{metrics}{One or both of "auc" and "brier"}
+\item{metrics}{One or both of "AUC" and "Brier"}
 
-\item{se}{Boolean, default TRUE. To include point wise confidence intervals.}
+\item{contrasts}{Plot the difference between metrics. Default is
+FALSE and plots the metrics themselves.}
 
-\item{xlab, ylab, pch, ylim, xlim}{graphical parameters}
+\item{landmarks}{Plot time-dependent metrics. Default is TRUE.}
 
-\item{legend}{Location of legend}
+\item{summary}{Plot the summary metric. Default is TRUE.}
 
-\item{...}{Additional arguments to \code{plot}}
+\item{se}{To include point wise confidence intervals. Default is TRUE.}
+
+\item{add_pairwise_contrasts}{If plotting summary metrics (\code{summary = TRUE},
+\code{landmarks = FALSE}) set this argument TRUE to include the p-values of
+significant pairwise contrasts. In this case, arguments \code{pairwise_heights}
+and \code{width} must be set. The argument \code{cutoff_contrasts} is optional,
+specifying the significance cutoff.}
+
+\item{cutoff_contrasts}{If \code{add_pairwise_contrasts}, sets the signifance
+level of which tests are considered significant (numeric, default is 0.05).}
+
+\item{pairwise_heights}{If \code{add_pairwise_contrasts}, sets the height at which
+the p-values are plotted. Given as a vector of heights.}
+
+\item{width}{If \code{add_pairwise_contrasts}, the width of the ends of the
+contrast bars as a numeric value.}
+
+\item{loc}{Location for legend.}
+
+\item{xlab, ylab, pch, ylim, xlim, main, font.main, col, cex}{graphical parameters}
+
+\item{length}{The width of the ends of the error bars.}
+
+\item{legend}{Include a legend or not. Default is TRUE.}
+
+\item{legend.title}{Title of the legend. No title by default.}
+
+\item{auc}{Plot the AUC or not (if available). Default is TRUE.}
+
+\item{brier}{Plot the Brier Score or not (if available). Default is TRUE.}
+
+\item{...}{Additional arguments to \code{plot()}}
 }
 \description{
-Plot an object output from \code{\link[=score]{score()}}: plot the landmark and time-dependent
-Brier and/or AUC of dynamic landmark supermodels.
+Plot an object output from \code{\link[=score]{score()}}: plot the time-dependent and/or summary
+Brier and/or AUC of landmark supermodels.
 }

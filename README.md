@@ -1,13 +1,24 @@
 - [1 dynamicLM](#dynamiclm)
-- [2 What is landmarking and when is it
-  used?](#what-is-landmarking-and-when-is-it-used)
-  - [2.1 Installation](#installation)
-- [3 Basic Example](#basic-example)
-  - [3.1 Data](#data)
-  - [3.2 Build a super data set](#build-a-super-data-set)
-  - [3.3 Fit the super model](#fit-the-super-model)
-  - [3.4 Obtain predictions](#obtain-predictions)
-  - [3.5 Model evaluation/validation](#model-evaluationvalidation)
+- [2 Introduction](#introduction)
+  - [2.1 What is landmarking and when is it used?](#what-is-landmarking-and-when-is-it-used)
+  - [2.2 Installation](#installation)
+- [3 Tutorial: basic example](#tutorial-basic-example)
+  - [3.1 Data preparation](#data-preparation)
+    - [3.1.1 Data](#data)
+    - [3.1.2 Build a super data set](#build-a-super-data-set)
+  - [3.2 Model fitting](#model-fitting)
+    - [3.2.1 Traditional (unpenalized) landmark supermodel](#traditional-unpenalized-landmark-supermodel)
+    - [3.2.2 Penalized landmark supermodel](#penalized-landmark-supermodel)
+  - [3.3 Prediction](#prediction)
+    - [3.3.1 Training data](#training-data)
+    - [3.3.2 Testing data](#testing-data)
+  - [3.4 Model evaluation](#model-evaluation)
+    - [3.4.1 Calibration plots](#calibration-plots)
+    - [3.4.2 Predictive performance](#predictive-performance)
+    - [3.4.3 Bootstrapping](#bootstrapping)
+    - [3.4.4 External validation](#external-validation)
+    - [3.4.5 Visualize individual dynamic risk trajectories](#visualize-individual-dynamic-risk-trajectories)
+- [4 References](#references)
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
@@ -17,22 +28,29 @@
 <!-- badges: end -->
 
 The goal of dynamicLM is to provide a simple framework to make dynamic
-w-year risk predictions, allowing for competing risks, time-dependent
-covariates, and censored data.
+w-year risk predictions, allowing for penalization, competing risks,
+time-dependent covariates, and censored data.
 
-# 2 What is landmarking and when is it used?
+If you use our library, please reference it:
+
+> Anya H Fries\*, Eunji Choi\*, Julie T Wu, Justin H Lee, Victoria Y
+> Ding, Robert J Huang, Su-Ying Liang, Heather A Wakelee, Lynne R
+> Wilkens, Iona Cheng, Summer S Han, Software Application Profile:
+> *dynamicLM*—a tool for performing dynamic risk prediction using a
+> landmark supermodel for survival data under competing risks,
+> *International Journal of Epidemiology*, Volume 52, Issue 6, December
+> 2023, Pages 1984–1989, <https://doi.org/10.1093/ije/dyad122>
+
+# 2 Introduction
+
+## 2.1 What is landmarking and when is it used?
 
 “Dynamic prediction” involves obtaining prediction probabilities at
 baseline and later points in time; it is essential for
 better-individualized treatment. Personalized risk is updated with new
 information and/or as time passes.
 
-<figure>
-<img src="man/figures/README-descrip.png"
-alt="illustration of dynamic w-yearpredictions" />
-<figcaption aria-hidden="true">illustration of dynamic
-w-yearpredictions</figcaption>
-</figure>
+![](man/figures/README-descrip.png)
 
 An example is cancer treatment: we may want to predict a 5-year risk of
 recurrence whenever a patient’s health information changes. For example,
@@ -43,8 +61,8 @@ current covariates *Z*(*s*) (e.g., 30+*s* years old, off treatment).
 Note that here the predictions make use of the most recent covariate
 value of the patient.
 
-The landmark model for survival data is a simple and powerful approach
-to dynamic prediction for many reasons:
+The landmark model for survival data is is a simple and powerful
+approach to dynamic prediction for many reasons:
 
 - **Time-varying effects** are captured by considering interaction terms
   between the prediction (“landmark”) time and covariates
@@ -52,15 +70,32 @@ to dynamic prediction for many reasons:
   prediction at landmark time *s*, the most updated value *Z*(*s*) will
   be used. Note that covariates do not have to be time-dependent because
   time-varying effects will be captured regardless.
-- **Competing risks** analysis can be performed. Here, we consider the
-  time-to-first-event (‘time’) and the event type (‘cause’).
+- Both **standard survival data** and **competing risks** can be
+  handled. In standard survival analysis only one event (e.g.,
+  recurrence) is considered, with possible censoring. Competing risks
+  consider the time-to-first-event (‘time’) and the event type
+  (‘cause’), for example analyzing recurrence with the competing risk of
+  death.
+- **Penalization** enables effective handling of high-dimensional data
+  by penalizing model coefficients to either select covariates or shrink
+  coefficients.
 
-Putter and Houwelingen describe landmarking extensively
-[here](https://onlinelibrary.wiley.com/doi/10.1111/j.1467-9469.2006.00529.x)
-and [here](https://onlinelibrary.wiley.com/doi/full/10.1002/sim.5665).
+It is built on hazards, like a (cause-specific) Cox model. From a
+landmark time $s\in[s_0,s_L ]$, the hazard for $j$ th event (“cause”)
+($j=1,2,…,C$) at time $t$ ($s \le t \le s+w$) is:  
+$$h_j (t│Z(s), s)=h_{j0} (t)  exp⁡(\alpha_j (s)+ \beta_j (s)^T Z(s))$$
+where $Z(s)$ are the most up-to-date values of an individual’s
+covariates at time (landmark) $s$ and $\alpha(s)$ models the main
+effects of the landmark time. The interaction of $s$ with the
+covariates, modeled by $\beta_j (s)$, captures the time-dependent
+effects of covariates. For example, $\beta(s)= \beta_0+ \beta_1 s$
+models a main and linear time-dependent effect.
 
-The creation of the landmark model for survival data is built on the
-concept of risk assessment times (i.e., landmarks) that span risk
+> We offer a [short introduction to the theory behind the landmark
+> supermodel](https://github.com/thehanlab/dynamicLM/blob/extension/summary-metric/tutorials/theory-landmark-supermodel.md).
+
+In short, the creation of the landmark model for survival data is built
+on the concept of risk assessment times (i.e., landmarks) that span risk
 prediction times of interest. In this approach, a training dataset of
 the study cohort is transformed into multiple censored datasets based on
 a prediction window of interest and the predefined landmarks. A model is
@@ -68,26 +103,50 @@ fit on these stacked datasets (i.e., supermodel), and dynamic risk
 prediction is then performed by using the most up-to-date value of a
 patient’s covariate values.
 
-## 2.1 Installation
+> *Further references*: Putter and Houwelingen describe landmarking
+> extensively
+> [here](https://onlinelibrary.wiley.com/doi/10.1111/j.1467-9469.2006.00529.x)
+> and [here](https://onlinelibrary.wiley.com/doi/full/10.1002/sim.5665).
 
-You can install the development version of `dynamicLM` from
-[GitHub](https://github.com/) with:
+## 2.2 Installation
+
+In order to use `dynamicLM`, you need the development version of
+`riskRegression`. Both are available from [GitHub](https://github.com/)
+with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("thehanlab/dynamicLM")
+devtools::install_github("tagteam/riskRegression")
+devtools::install_github("thehanlab/dynamicLM", ref = "extension/summary-metric")
 ```
 
 Package documentation can be found in [this
-pdf](https://github.com/thehanlab/dynamicLM/blob/main/man/dynamicLM_0.3.0.pdf).
+pdf](https://github.com/thehanlab/dynamicLM/blob/extension/summary-metric/tutorials/dynamicLM_1.0.0.pdf)
+and more information about any function can be obtained by running
+`?function_name`.
 
-# 3 Basic Example
+# 3 Tutorial: basic example
 
 This is a basic example which shows you how to use `dynamicLM` to make
 dynamic 5-year predictions and check calibration and discrimination
 metrics.
 
-## 3.1 Data
+> We have [an alternative
+> tutorial](https://github.com/thehanlab/dynamicLM/blob/extension/summary-metric/tutorials/tutorial2-recurrence-data.md)
+> which uses cancer relapse data. This is the example first used at the
+> time of publishing the [Software Application Profile in
+> IJE](https://academic.oup.com/ije/article/52/6/1984/7260912), and only
+> includes an unpenalized landmark supermodel.
+
+First, load the library:
+
+``` r
+library(dynamicLM)
+```
+
+## 3.1 Data preparation
+
+### 3.1.1 Data
 
 Data can come in various forms, with or without time-dependent
 covariates:
@@ -99,61 +158,91 @@ covariates:
 - Wide-form data, with a column containing the time at which the
   covariate changes from 0 to 1.
 
-We illustrate the package using the long-form example data set given in
-the package. This gives the time-to-event of cancer relapse under two
-competing risks. Three fixed patient bio-markers are given as well (age
-at baseline, stage of initial cancer, bmi, male). A time-dependent
-covariate treatment indicates if the treatment is on or off treatment
-and `T_txgiven` gives the time at which this patient entry was created.
+We illustrate the package using the long-form PBC data sets from the
+`survival` package, which gives the time-to-event of a transplant under
+the competing event of death. We combine the `pbc` data which contains
+baseline data and follow-up status with the `pbcseq` data which has
+repeated laboratory values where `futime` gives the time at which this
+patient entry was created. In the merged data, the follow-up time has
+column name `tstart`. Run `?pbc` or `?pbcseq` for more information on
+the data.
 
 ``` r
-library(dynamicLM)
-#> Loading required package: dynpred
-#> Loading required package: survival
-#> Loading required package: prodlim
-#> Loading required package: riskRegression
-#> riskRegression version 2024.01.26
+library(survival)
+data(pbc, package="survival")     # baseline data
+data(pbcseq, package="survival")  # longitudinal data
+#> Warning in data(pbcseq, package = "survival"): data set 'pbcseq' not found
+
+# only the first 312 patients are in both datasets
+pbc1 <- subset(pbc, id <= 312, select=c(id:sex, stage)) 
+# merge baseline data with longitudinal data
+pbc_df <- tmerge(pbc1, pbc1, id=id, endpt = event(time, status))
+pbc_df <- tmerge(pbc_df, pbcseq, id=id, 
+                 # make sure time-dependent covariates (tdc) vary
+                 albumin = tdc(day, albumin),
+                 alk.phos = tdc(day, alk.phos),
+                 ascites = tdc(day, ascites),
+                 ast = tdc(day, ast),
+                 bili = tdc(day, bili), 
+                 chol = tdc(day, chol), 
+                 edema = tdc(day, edema),
+                 hepato = tdc(day, hepato), 
+                 platelet = tdc(day, platelet),
+                 protime = tdc(day, protime), 
+                 spiders = tdc(day, spiders))
+
+# use complete data
+incomplete_ids <- unique(pbc_df$id[!complete.cases(pbc_df)])
+pbc_df <- pbc_df[!pbc_df$id %in% incomplete_ids, ]
+
+# convert times to years for easier reading later
+pbc_df$time <- round(pbc_df$time / 365.25, 1)
+pbc_df$tstart <- round(pbc_df$tstart / 365.25, 1)
+pbc_df$tstop <- round(pbc_df$tstop / 365.25, 1)
+
+# convert factor variables to numeric
+pbc_df$male <- ifelse(pbc_df$sex == "m", 1, 0); pbc_df$sex <- NULL
+
+head(pbc_df)
+#>   id time status trt      age stage tstart tstop endpt albumin alk.phos ascites
+#> 1  1  1.1      2   1 58.76523     4    0.0   0.5     0    2.60     1718       1
+#> 2  1  1.1      2   1 58.76523     4    0.5   1.1     2    2.94     1612       1
+#> 3  2 12.3      0   1 56.44627     3    0.0   0.5     0    4.14     7395       0
+#> 4  2 12.3      0   1 56.44627     3    0.5   1.0     0    3.60     2107       0
+#> 5  2 12.3      0   1 56.44627     3    1.0   2.1     0    3.55     1711       0
+#> 6  2 12.3      0   1 56.44627     3    2.1   4.9     0    3.92     1365       0
+#>     ast bili chol edema hepato platelet protime spiders male
+#> 1 138.0 14.5  261     1      1      190    12.2       1    0
+#> 2   6.2 21.3  261     1      1      183    11.2       1    0
+#> 3 113.5  1.1  302     0      1      221    10.6       1    0
+#> 4 139.5  0.8  302     0      1      188    11.0       1    0
+#> 5 144.2  1.0  302     0      1      161    11.6       1    0
+#> 6 144.2  1.9  302     0      1      122    10.6       1    0
 ```
 
+### 3.1.2 Build a super data set
+
+We first specify which variables are fixed or longitudinal
+(time-varying).
+
 ``` r
-data(relapse)
-dim(relapse)
-#> [1] 989   9
+outcome <- list(time = "time", status = "status")
+fixed_variables <- c("male", "stage", "trt", "age")
+varying_variables <- c("albumin", "alk.phos", "ascites", "ast", "bili",
+                       "edema", "hepato",  "platelet", "protime", "spiders")
+
+covars <- list(fixed = fixed_variables, varying = varying_variables)
 ```
 
-``` r
-length(unique(relapse$ID)) # There are 171 patients with two entries, i.e., one after time 0
-#> [1] 818
-```
-
-## 3.2 Build a super data set
-
-We first note the outcome variables we are interested in, as well as
-which variables are fixed or landmark-varying. When there are no
-landmark-varying variables, set `varying = NULL`.
+We will produce 5-year dynamic predictions of transplant (`w`). Landmark
+time points (`lms`) are set as every year between 0 and 5 years to train
+the model. This means we are only interested in predicting the 5-year
+risk of transplant for patients both at baseline and at later points -
+up to 4 years after diagnosis.
 
 ``` r
-outcome <- list(time = "Time", status = "event")
-covars <- list(fixed = c("age.at.time.0","male","stage","bmi"),
-               varying = c("treatment"))
-```
-
-We will produce 5-year dynamic predictions of relapse (`w`). Landmark
-time points (`lms`) are set as every year between 0 and 3 years to train
-the model. This means we are only interested in prediction between 0 and
-3 years.
-
-We will consider linear and quadratic landmark interactions with the
-covariates (given by `func_covars = c("linear", "quadratic")`) and the
-landmarks (`func_lms = c("linear", "quadratic")`). The covariates that
-should have these landmark interactions are given in `pred_covars`.
-
-``` r
-w <- 60                    # risk prediction window (risk within time w)
-lms <- seq(0,36,by=6)      # landmarks on which to build the model
-
-# Choose variables that will have time interaction
-pred_covars <- c("age", "male", "stage", "bmi", "treatment") 
+w <- 5                    # Predict the 5-year outcome of transplant
+lms <- seq(0, 4, by = 1)  # Risk assessment time points (every year for 4 years)
 ```
 
 With this, we are ready to build the super data set that will train the
@@ -165,105 +254,84 @@ There are three steps:
 2.  An **optional** additional update for more complex columns that vary
     with landmark-times: For example, here we update the value of age.
 3.  `add_interactions()`: Landmark time interactions are added, note the
-    additional columns created.
+    additional columns created. We will consider linear and quadratic
+    landmark interactions with the covariates (given by
+    `func_covars = c("linear", "quadratic")`) and the landmarks
+    (`func_lms = c("linear", "quadratic")`).
 
 *Note that these return an object of class `LMdataframe`. This has a
 component `data` which contains the dataset itself.*
 
 We illustrate the process in detail by printing the entries at each step
-for one individual, ID1029.
+for one individual and some example columns.
 
 ``` r
-relapse[relapse$ID == "ID1029",]  
-#>       ID     Time event age.at.time.0 male stage  bmi treatment T_txgiven
-#> 7 ID1029 60.03288     0      62.25753    0     0 26.8         0      0.00
-#> 8 ID1029 60.03288     0      62.25753    0     0 26.8         1     12.96
+example_columns <- c("id", "time", "status", "trt",  "age", "albumin", "ascites")
+pbc_df[pbc_df$id == 1, c("tstart", example_columns)]  
+#>   tstart id time status trt      age albumin ascites
+#> 1    0.0  1  1.1      2   1 58.76523    2.60       1
+#> 2    0.5  1  1.1      2   1 58.76523    2.94       1
 ```
 
 We first stack the datasets over the landmarks (see the new column ‘LM’)
-and update the treatment covariate. Note that one row is created for
-each landmark that the individual is still alive at. In this row, if
-time is greater time than the landmark time plus the window, it is
-censored at this value (this occurs in the first row, for example,
-censored at 0+60), and the most recent value all covariates is used (in
-our case, only treatment varies).
+and update the treatment covariate. One row is created for each landmark
+that the individual is still alive at. In this row, if time is greater
+time than the landmark time plus the window, it is censored at this
+value (this occurs in the first row, for example, censored at 0+5), and
+the most recent value all covariates is used (in our case, only
+treatment varies).
 
 ``` r
 # Stack landmark datasets
-lmdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
-                     id = "ID", rtime = "T_txgiven")
+covars <- list(fixed = fixed_variables, varying = varying_variables)
+# covars <- list(fixed = NULL, varying = NULL)
+lmdata <- stack_data(pbc_df, outcome, lms, w, covars, format = "long",
+                     id = "id", rtime = "tstart")
+
 data <- lmdata$data
-print(data[data$ID == "ID1029",])
-#>         ID     Time event age.at.time.0 male stage  bmi treatment T_txgiven LM
-#> 7   ID1029 60.00000     0      62.25753    0     0 26.8         0      0.00  0
-#> 73  ID1029 60.03288     0      62.25753    0     0 26.8         0      0.00  6
-#> 733 ID1029 60.03288     0      62.25753    0     0 26.8         0      0.00 12
-#> 736 ID1029 60.03288     0      62.25753    0     0 26.8         1     12.96 18
-#> 751 ID1029 60.03288     0      62.25753    0     0 26.8         1     12.96 24
-#> 786 ID1029 60.03288     0      62.25753    0     0 26.8         1     12.96 30
-#> 788 ID1029 60.03288     0      62.25753    0     0 26.8         1     12.96 36
+print(data[data$id == 4, c("LM", example_columns)])
+#>     LM id time status trt      age albumin ascites
+#> 16   0  4  5.0      0   1 54.74059    2.54       0
+#> 18   1  4  5.3      2   1 54.74059    2.80       0
+#> 19   2  4  5.3      2   1 54.74059    2.92       0
+#> 191  3  4  5.3      2   1 54.74059    2.92       0
+#> 21   4  4  5.3      2   1 54.74059    2.59       0
 ```
 
 We then (optionally) update more complex LM-varying covariates. Here we
-create an age covariate, based on age at time 0.
+create update the age covariate, based on age at time 0.
 
 ``` r
-lmdata$data$age <- lmdata$data$age.at.time.0 + lmdata$data$LM/12 # age is in years and LM is in months
-data <- lmdata$data
-print(data[data$ID == "ID1029",])
-#>         ID     Time event age.at.time.0 male stage  bmi treatment T_txgiven LM
-#> 7   ID1029 60.00000     0      62.25753    0     0 26.8         0      0.00  0
-#> 73  ID1029 60.03288     0      62.25753    0     0 26.8         0      0.00  6
-#> 733 ID1029 60.03288     0      62.25753    0     0 26.8         0      0.00 12
-#> 736 ID1029 60.03288     0      62.25753    0     0 26.8         1     12.96 18
-#> 751 ID1029 60.03288     0      62.25753    0     0 26.8         1     12.96 24
-#> 786 ID1029 60.03288     0      62.25753    0     0 26.8         1     12.96 30
-#> 788 ID1029 60.03288     0      62.25753    0     0 26.8         1     12.96 36
-#>          age
-#> 7   62.25753
-#> 73  62.75753
-#> 733 63.25753
-#> 736 63.75753
-#> 751 64.25753
-#> 786 64.75753
-#> 788 65.25753
+lmdata$data$age <- lmdata$data$age + lmdata$data$LM
 ```
 
-Lastly, we add landmark time-interactions. The `_1` refers to the first
-interaction in `func_covars`, `_2` refers to the second interaction in
-`func_covars`, etc… Similarly, `LM_1` and `LM_2` are created from
-`func_lm`. Note that we use `pred_covars` here, defined earlier as the
+Lastly, we add landmark time-interactions. We use the following naming
+convention: `_LM1` refers to the first interaction in `func_covars`,
+`_LM2` refers to the second interaction in `func_covars`, etc. For
+example, with linear and quadratic terms, `albumin_LM1` refers to
+`albumin * LM`, `albumin_LM2` is `albumin * LM^2`.
+
+Similarly, `LM1` and `LM2` are created from `func_lm`. Here, `LM1` =
+`LM` and `LM2` = `LM^2`.
+
+An optional additional argument is `pred_covars` which can limit the
 covariates that will have landmark time interactions.
 
 ``` r
-lmdata <- add_interactions(lmdata, pred_covars, func_covars = c("linear", "quadratic"), 
+lmdata <- add_interactions(lmdata, 
+                           func_covars = c("linear", "quadratic"), 
                            func_lms = c("linear", "quadratic")) 
 data <- lmdata$data
-print(data[data$ID == "ID1029",])
-#>         ID     Time event age.at.time.0 male stage  bmi treatment T_txgiven LM
-#> 7   ID1029 60.00000     0      62.25753    0     0 26.8         0      0.00  0
-#> 73  ID1029 60.03288     0      62.25753    0     0 26.8         0      0.00  6
-#> 733 ID1029 60.03288     0      62.25753    0     0 26.8         0      0.00 12
-#> 736 ID1029 60.03288     0      62.25753    0     0 26.8         1     12.96 18
-#> 751 ID1029 60.03288     0      62.25753    0     0 26.8         1     12.96 24
-#> 786 ID1029 60.03288     0      62.25753    0     0 26.8         1     12.96 30
-#> 788 ID1029 60.03288     0      62.25753    0     0 26.8         1     12.96 36
-#>          age     age_1     age_2 male_1 male_2 stage_1 stage_2 bmi_1   bmi_2
-#> 7   62.25753    0.0000     0.000      0      0       0       0   0.0     0.0
-#> 73  62.75753  376.5452  2259.271      0      0       0       0 160.8   964.8
-#> 733 63.25753  759.0904  9109.085      0      0       0       0 321.6  3859.2
-#> 736 63.75753 1147.6356 20657.441      0      0       0       0 482.4  8683.2
-#> 751 64.25753 1542.1808 37012.340      0      0       0       0 643.2 15436.8
-#> 786 64.75753 1942.7260 58281.781      0      0       0       0 804.0 24120.0
-#> 788 65.25753 2349.2712 84573.764      0      0       0       0 964.8 34732.8
-#>     treatment_1 treatment_2 LM_1 LM_2
-#> 7             0           0    0    0
-#> 73            0           0    6   36
-#> 733           0           0   12  144
-#> 736          18         324   18  324
-#> 751          24         576   24  576
-#> 786          30         900   30  900
-#> 788          36        1296   36 1296
+print(data[data$id == 1, 
+           c("LM", example_columns, 
+             paste0(example_columns[4:7], "_LM1"),
+             paste0(example_columns[4:7], "_LM2"))])
+#>   LM id time status trt      age albumin ascites trt_LM1  age_LM1 albumin_LM1
+#> 1  0  1  1.1      2   1 58.76523    2.60       1       0  0.00000        0.00
+#> 2  1  1  1.1      2   1 59.76523    2.94       1       1 59.76523        2.94
+#>   ascites_LM1 trt_LM2  age_LM2 albumin_LM2 ascites_LM2
+#> 1           0       0  0.00000        0.00           0
+#> 2           1       1 59.76523        2.94           1
 ```
 
 One can print `lmdata`. The argument `verbose` allows for additional
@@ -273,90 +341,90 @@ stored objects to be printed (default is FALSE).
 print(lmdata, verbose = TRUE)
 ```
 
-## 3.3 Fit the super model
-
-Now we can fit the model. We fit a model with all the covariates
-created. Note that `lmdata$all_covs` returns a vector with all the
-covariates that have LM interactions and from `pred_covars`. Again, the
-`_1` refers to the first interaction in `func_covars`, `_2` refers to
-the second interaction in `func.covars`, etc… `LM_1` and `LM_2` are
-created from `func_lms`.
+Note that `lmdata$all_covs` returns a vector with all the covariates
+that have landmark interactions.
 
 ``` r
-all_covs <- lmdata$all_covs
-print(all_covs)
-#>  [1] "age"         "male"        "stage"       "bmi"         "treatment"  
-#>  [6] "age_1"       "age_2"       "male_1"      "male_2"      "stage_1"    
-#> [11] "stage_2"     "bmi_1"       "bmi_2"       "treatment_1" "treatment_2"
-#> [16] "LM_1"        "LM_2"
+print(lmdata$all_covs)
 ```
 
-It is then easy to fit a landmark supermodel using `dynamic_lm()`. A
-formula, super dataset and method need to be provided. If the super
-dataset is not of class `LMdataframe` (i.e., is a self-created R
-dataframe), then additional parameters must be specified. In this case,
-see the details section of the documentation of `add_interactions()` for
-information on how the landmark interaction terms must be named.
+## 3.2 Model fitting
+
+A traditional (unpenalized) or penalized landmark supermodel can be fit
+to the data.
+
+Please note that convergence warnings in `cox.fit` are common throughout
+but can be disregarded if the coefficients obtained from the model are
+reasonable (Therry Therneau, the author of the `survival` package, has
+stated this in previous discussions
+[here](https://stat.ethz.ch/pipermail/r-help/2008-September/174201.html)
+and [here](https://stackoverflow.com/a/19370173)).
+
+### 3.2.1 Traditional (unpenalized) landmark supermodel
+
+To fit a supermodel, a stacked data set, formula, and method need to be
+provided. The input to `dynamic_lm` varies slightly depending on if
+standard survival data or competing events are being considered.
+
+In the case of **standard survival data**:
 
 ``` r
-formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment + age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 + bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
-supermodel <- dynamic_lm(lmdata, as.formula(formula), "CSC") 
-#> Warning in agreg.fit(X, Y, istrat, offset, init, control, weights = weights, :
-#> Loglik converged before variable 8,9 ; beta may be infinite.
-print(supermodel)
+formula <- "Surv(LM, time, status) ~ stage + 
+            bili + bili_LM1 + bili_LM2 + 
+            albumin +  albumin_LM1 + albumin_LM2 +
+            LM1 + LM2 + cluster(id)"
+supermodel <- dynamic_lm(lmdata, as.formula(formula), "coxph", x = TRUE) 
+```
+
+In the case of **competing risks** (as for this example data):
+
+``` r
+formula <- "Hist(time, status, LM) ~ stage + 
+            bili + bili_LM1 + bili_LM2 + 
+            albumin +  albumin_LM1 + albumin_LM2 +
+            LM1 + LM2 + cluster(id)"
+supermodel <- dynamic_lm(lmdata, as.formula(formula), "CSC", x = TRUE) 
+```
+
+``` r
+print(supermodel) 
 #> 
-#> Landmark cause-specific cox super model fit for dynamic prediction of window size 60:
+#> Landmark cause-specific cox super model fit for dynamic prediction of window size 5:
 #> 
 #> $model
 #> ----------> Cause: 1
-#>                   coef  exp(coef)   se(coef)  robust se       z        p
-#> age          2.896e-02  1.029e+00  3.093e-02  3.433e-02   0.844  0.39893
-#> male         1.632e+00  5.112e+00  5.271e-01  5.254e-01   3.105  0.00190
-#> stage        8.954e-01  2.448e+00  2.685e-01  2.881e-01   3.108  0.00189
-#> bmi          2.262e-03  1.002e+00  2.403e-02  2.511e-02   0.090  0.92821
-#> treatment   -1.472e+00  2.295e-01  1.287e+00  1.345e+00  -1.094  0.27384
-#> age_1        4.573e-04  1.000e+00  4.384e-03  2.606e-03   0.175  0.86071
-#> age_2       -8.016e-05  9.999e-01  1.238e-04  7.297e-05  -1.098  0.27201
-#> male_1       1.453e-01  1.156e+00  1.083e-01  2.397e-02   6.064 1.33e-09
-#> male_2      -8.921e-03  9.911e-01  4.959e-03  8.159e-04 -10.934  < 2e-16
-#> stage_1      1.067e-02  1.011e+00  3.860e-02  2.052e-02   0.520  0.60302
-#> stage_2     -1.056e-03  9.989e-01  1.121e-03  5.840e-04  -1.807  0.07069
-#> bmi_1        1.340e-03  1.001e+00  3.385e-03  1.535e-03   0.873  0.38258
-#> bmi_2       -6.102e-05  9.999e-01  9.713e-05  3.813e-05  -1.600  0.10950
-#> treatment_1  1.503e-01  1.162e+00  1.150e-01  9.866e-02   1.524  0.12760
-#> treatment_2 -2.950e-03  9.971e-01  2.456e-03  1.885e-03  -1.565  0.11759
-#> LM_1        -7.468e-02  9.280e-01  2.784e-01  1.708e-01  -0.437  0.66195
-#> LM_2         6.981e-03  1.007e+00  7.837e-03  4.848e-03   1.440  0.14991
+#>                  coef exp(coef)  se(coef) robust se      z      p
+#> stage        0.726673  2.068189  0.201920  0.352789  2.060 0.0394
+#> bili         0.056299  1.057914  0.059149  0.037374  1.506 0.1320
+#> bili_LM1     0.050673  1.051979  0.056364  0.038767  1.307 0.1912
+#> bili_LM2     0.002579  1.002583  0.012455  0.009569  0.270 0.7875
+#> albumin     -0.273729  0.760539  0.710437  0.608541 -0.450 0.6528
+#> albumin_LM1 -0.235161  0.790443  0.764169  0.617457 -0.381 0.7033
+#> albumin_LM2  0.022656  1.022915  0.180097  0.142674  0.159 0.8738
+#> LM1          0.635287  1.887563  2.683794  2.191284  0.290 0.7719
+#> LM2         -0.179084  0.836036  0.626355  0.496641 -0.361 0.7184
 #> 
-#> Likelihood ratio test=63.51  on 17 df, p=2.741e-07
-#> n= 2787, number of events= 251 
+#> Likelihood ratio test=NA  on 9 df, p=NA
+#> n= 1175, number of events= 56 
 #> 
 #> 
 #> ----------> Cause: 2
-#>                   coef  exp(coef)   se(coef)  robust se      z        p
-#> age          3.047e-02  1.031e+00  9.707e-03  1.053e-02  2.894 0.003799
-#> male        -7.321e-03  9.927e-01  2.926e-01  3.284e-01 -0.022 0.982215
-#> stage       -1.346e-01  8.741e-01  9.742e-02  9.975e-02 -1.349 0.177310
-#> bmi         -4.412e-03  9.956e-01  8.547e-03  9.176e-03 -0.481 0.630639
-#> treatment    6.513e-01  1.918e+00  4.589e-01  4.592e-01  1.418 0.156087
-#> age_1        1.776e-03  1.002e+00  2.051e-03  1.884e-03  0.942 0.345945
-#> age_2       -3.555e-05  1.000e+00  6.811e-05  5.581e-05 -0.637 0.524153
-#> male_1       7.982e-01  2.222e+00  4.063e+01  2.136e-01  3.736 0.000187
-#> male_2      -1.592e-01  8.528e-01  6.771e+00  1.779e-02 -8.949  < 2e-16
-#> stage_1      1.550e-02  1.016e+00  2.038e-02  1.755e-02  0.883 0.377385
-#> stage_2     -9.016e-04  9.991e-01  6.987e-04  6.136e-04 -1.469 0.141745
-#> bmi_1       -1.082e-03  9.989e-01  1.725e-03  1.308e-03 -0.827 0.408164
-#> bmi_2       -1.624e-06  1.000e+00  5.694e-05  3.950e-05 -0.041 0.967194
-#> treatment_1 -5.332e-02  9.481e-01  4.928e-02  4.293e-02 -1.242 0.214307
-#> treatment_2  1.182e-03  1.001e+00  1.174e-03  9.039e-04  1.307 0.191124
-#> LM_1        -8.247e-02  9.208e-01  1.342e-01  1.175e-01 -0.702 0.482726
-#> LM_2         2.226e-03  1.002e+00  4.466e-03  3.534e-03  0.630 0.528756
+#>                  coef exp(coef)  se(coef) robust se      z        p
+#> stage        0.609239  1.839032  0.087574  0.140112  4.348 1.37e-05
+#> bili         0.135984  1.145664  0.014712  0.015599  8.718  < 2e-16
+#> bili_LM1     0.003599  1.003605  0.018316  0.019694  0.183 0.855012
+#> bili_LM2     0.001171  1.001172  0.005023  0.005295  0.221 0.824928
+#> albumin     -0.977390  0.376292  0.262343  0.296724 -3.294 0.000988
+#> albumin_LM1  0.006638  1.006660  0.310891  0.303998  0.022 0.982578
+#> albumin_LM2 -0.035341  0.965276  0.075791  0.071283 -0.496 0.620050
+#> LM1         -0.160122  0.852039  1.052334  1.054453 -0.152 0.879302
+#> LM2          0.094909  1.099559  0.252121  0.246167  0.386 0.699833
 #> 
-#> Likelihood ratio test=75.45  on 17 df, p=2.438e-09
-#> n= 2787, number of events= 1120
+#> Likelihood ratio test=NA  on 9 df, p=NA
+#> n= 1175, number of events= 281
 ```
 
-There are additional ways of printing/accessing the model:
+There are additional ways of printing/accessing the model.
 
 ``` r
 # E.g., of additional arguments to print
@@ -368,25 +436,170 @@ print(supermodel, cause = 1, verbose = TRUE)
 coef(supermodel)
 ```
 
-Dynamic hazard ratios can be plotted, either log hazard ratio or hazard
-ratio using the argument `logHR`. Specifying the `covars` arguments
-allows for a subset of dynamic hazard ratios to be plotted.
+Dynamic log hazard ratios can be plotted:
 
 ``` r
-par(mfrow = c(2,3))
+par(mfrow = c(1,3))
 plot(supermodel)
 ```
 
 <img src="man/figures/README-dynhr-1.png" width="100%" />
 
+The hazard ratio (not log HR) can also be plotted setting
+`logHR = FALSE`. Specifying the `covars` arguments allows for a subset
+of dynamic hazard ratios to be plotted and `conf_int = FALSE` removes
+the confidence intervals.
+
 ``` r
-# To create only two plots:
-plot(supermodel, covars = c("age", "male"))
+plot(supermodel, logHR = FALSE, covars = c("bili", "albumin"), conf_int = FALSE)
 ```
 
-## 3.4 Obtain predictions
+If the super dataset is not created via the functions `stack_data()` and
+`add_interactions` and is simply a dataframe, additional parameters must
+be specified to fit a model. (In this case, see `?dynamic_lm.data.frame`
+for the additional parameters and the details section of
+`?add_interactions` for how the interaction terms must be named).
 
-### 3.4.1 For the training data
+### 3.2.2 Penalized landmark supermodel
+
+With a large dataset and time-dependent effects, the supermodel has
+numerous parameters. To handle this high-dimensionality and ensure
+generalizability, one can alternatively fit a penalized model, where
+coefficients are shrunk or selected by penalizing the pseudo-partial
+likelihood $l$ of the model with a penalty $p$, which can be a LASSO
+(the L1-norm), Ridge (the L2-norm), or an elastic net (a combination of
+the two).
+
+$$\log l(\beta, \alpha) - \lambda p(\beta, \alpha)$$ Penalization
+balances model complexity and goodness-of-fit, where the optimal weight
+$\lambda$ is chosen via cross-validation.
+
+To fit a penalized landmark supermodel, the lmdata is the only required
+input. First, either a coefficient path (using `pen_lm`) or a
+cross-validated model (using `cv.pen_lm`) is created for multiple
+penalties (lambdas $\lambda$). Then, a specific penalty can be chosen to
+fit a model via `dynamic_lm`.
+
+The code largely makes calls to the
+[glmnet](https://glmnet.stanford.edu/articles/glmnet.html) library.
+
+#### 3.2.2.1 Coefficient path
+
+A coefficient path can be fit as follows. By default the argument
+`alpha` is 1, which represents the LASSO (L1) penalty. By using
+`alpha = 0`, we are using a Ridge (L2) penalty.
+
+``` r
+path <- pen_lm(lmdata, alpha = 0)
+```
+
+Each line on the plot represents one variable and shows how its
+coefficient changes against the L1 norm of the coefficient vector (i.e.,
+for different penalties). The top axis shows how many variables are
+selected.
+
+``` r
+par(mfrow = c(1, 2))
+plot(path, all_causes = TRUE)
+```
+
+<img src="man/figures/README-pathplot-1.png" width="100%" />
+
+Alternatively, the path can be printed.
+
+``` r
+print(path, all_causes = TRUE)
+```
+
+If you want to specify only a subset of covariates to fit the path to,
+this is done with the `y` argument:
+
+``` r
+path1 <- pen_lm(lmdata, y = c("male", "male_LM1", "male_LM2", 
+                              "trt", "trt_LM1", "trt_LM2"))
+```
+
+#### 3.2.2.2 Cross-validated model
+
+A cross-validated can be fit as follows. By default the argument `alpha`
+is 1, which representies the LASSO (L1) penalty. By using `alpha = 0`,
+we are using a Ridge (L2) penalty.
+
+``` r
+cv_model <- cv.pen_lm(lmdata, alpha = 0) 
+```
+
+To print the outcome for all causes:
+
+``` r
+print(cv_model, all_causes = TRUE)
+```
+
+To plot the cross-validation curve:
+
+``` r
+par(mfrow = c(1, 2))
+plot(cv_model, all_causes = TRUE)
+```
+
+<img src="man/figures/README-cvplot-1.png" width="100%" />
+
+To specify only a subset of covariates to fit to
+
+``` r
+cv_model1 <- cv.pen_lm(lmdata, y = c("male", "male_LM1", "male_LM2", 
+                                     "trt", "trt_LM1", "trt_LM2"))
+```
+
+#### 3.2.2.3 Fitting a penalized landmark supermodel
+
+To fit a landmark supermodel, either a coefficient path or
+cross-validated model is passed to `dynamic_lm()` with a value for
+`lambda`. This value can be numeric (as many lambdas as causes) or, for
+cross-validated models, can be the minimum from cross-validation
+(“lambda.min”) or within 1-standard error from the minimum
+(“lambda.1se”).
+
+``` r
+supermodel_pen <- dynamic_lm(cv_model, lambda = "lambda.1se")
+```
+
+One can print the covariates:
+
+``` r
+print(supermodel_pen, all_causes = TRUE)
+```
+
+The largest coefficients can also be plot. Here, we plot the 15 largest
+coefficients. For further arguments, see `?plot.penLMCSC` or
+`?plot.penLMcoxph`.
+
+``` r
+# Add more space on the sides
+par(mar = c(5, 10, 1, 7)) # default is c(5.1, 4.1, 4.1, 2.1)
+plot(supermodel_pen, max_coefs=15)
+```
+
+<img src="man/figures/README-covarplot-1.png" width="100%" />
+
+The hazard ratios can also be plot, as for an unpenalized model, by
+setting `HR = TRUE`.
+
+``` r
+par(mfrow=c(1,3))
+plot(supermodel_pen, covars = c("bili", "stage", "edema"), 
+     HR = TRUE, ylim = c(0, 0.25))
+```
+
+<img src="man/figures/README-hr2-1.png" width="100%" />
+
+## 3.3 Prediction
+
+Once `dynamic_lm` has been run, the same prediction procedures and model
+evaluation, etc., can be performed regardless of how the model has been
+fit.
+
+### 3.3.1 Training data
 
 Predictions for the training data can easily be obtained. This provides
 *w*-year risk estimates for each individual at each of the training
@@ -394,16 +607,18 @@ landmarks they are still alive.
 
 ``` r
 p1 <- predict(supermodel)
+p2 <- predict(supermodel_pen)
+
 print(p1)
 #> $preds
 #>   LM       risk
-#> 1  0 0.11514265
-#> 2  0 0.04641678
-#> 3  0 0.04639277
-#> 4  0 0.11005431
-#> 5  0 0.04485027
-#> 6  0 0.04585672
-#>  [ omitted 2782 rows ]
+#> 1  0 0.02705205
+#> 2  0 0.03687079
+#> 3  0 0.07795531
+#> 4  0 0.07450562
+#> 5  0 0.04540469
+#> 6  0 0.03708919
+#>  [ omitted 1170 rows ]
 ```
 
 One can print the predictions. The argument `verbose` allows for
@@ -413,39 +628,38 @@ additional stored objects to be printed (default is FALSE).
 print(p1, verbose = TRUE)
 ```
 
-### 3.4.2 For new data
+### 3.3.2 Testing data
 
-A prediction is made for an individual at a specific prediction time.
-Thus both a prediction (“landmark”) time (e.g., at baseline, at 2 years,
-etc) and an individual (i.e., covariate values set at the landmark
-time-point) must be given. Note that the model creates the landmark
-time-interactions; the new data has the same form as in your original
-dataset. For example, we can prediction *w*-year risk from baseline
-using an entry from the very original data frame.
+Test data can be a stacked dataset (lmdata):
 
 ``` r
-# Individuals with covariate values at 0
-individuals <- relapse[1:2, ]
-individuals$age <- individuals$age.at.time.0
-individuals$LM <- 0 # Prediction time
-print(individuals)
-#>       ID       Time event age.at.time.0 male stage  bmi treatment T_txgiven
-#> 1 ID1007 62.6849315     0      60.25936    0     1 25.9         0         0
-#> 2  ID101  0.6575342     1      59.97808    0     0 29.3         0         0
-#>        age LM
-#> 1 60.25936  0
-#> 2 59.97808  0
+p_test <- predict(supermodel, lmdata)
 ```
+
+Alternatively, test data can be a data frame. As a prediction is made
+for an individual at a specific prediction time, both a prediction
+(“landmark”) time (e.g., at baseline, at 2 years, etc) and an individual
+(i.e., covariate values set at the landmark time-point) must be given.
+For example, we can prediction *w*-year risk from baseline using an
+entry from the very original data frame.
 
 ``` r
-p0 <- predict(supermodel, individuals, lms = "LM", cause = 1)
-p0$preds
-#>   LM       risk
-#> 1  0 0.11514265
-#> 2  0 0.04641678
+example_test <- pbc_df[1:5, ]
+example_test$age <- example_test$age + example_test$tstart
+print(example_test[, c("tstart", example_columns)])
+#>   tstart id time status trt      age albumin ascites
+#> 1    0.0  1  1.1      2   1 58.76523    2.60       1
+#> 2    0.5  1  1.1      2   1 59.26523    2.94       1
+#> 3    0.0  2 12.3      0   1 56.44627    4.14       0
+#> 4    0.5  2 12.3      0   1 56.94627    3.60       0
+#> 5    1.0  2 12.3      0   1 57.44627    3.55       0
+
+p_test <- predict(supermodel, example_test, lms = "tstart", cause = 1)
 ```
 
-## 3.5 Model evaluation/validation
+## 3.4 Model evaluation
+
+### 3.4.1 Calibration plots
 
 Calibration plots, which assess the agreement between predictions and
 observations in different percentiles of the predicted values, can be
@@ -455,20 +669,22 @@ between models. This list can be of supermodels or prediction objects
 (created by calling `predict()`).
 
 ``` r
-par(mfrow = c(2, 3), pty = "s")
-outlist <- calplot(list("LM supermodel" = p1), 
-                    times = c(0,6,12,18,24,30), # landmarks to plot at
+par(mfrow = c(1, 3), pty = "s") # square axes
+outlist <- calplot(list("LM" = p1, "penLM" = p2), 
+                    times = c(0,2,4), # landmarks to plot at
                     method = "quantile", q=10,  # method for calibration plot
                     # Optional plotting parameters to alter
-                    ylim = c(0, 0.36), xlim = c(0, 0.36), 
-                    lwd = 1, xlab = "Predicted Risk", ylab = "Observed Risk", legend = F)
+                    ylim = c(0, 0.52), xlim = c(0, 0.52), lwd = 1, 
+                    xlab = "Predicted Risk", ylab = "Observed Risk", 
+                    legend = TRUE, legend.x = "bottomright")
 ```
 
 <img src="man/figures/README-calplot-1.png" width="100%" />
 
-Predictive performance can also be assessed using time-dependent dynamic
-area under the receiving operator curve (AUCt) or time-dependent dynamic
-Brier score (BSt).
+### 3.4.2 Predictive performance
+
+Predictive performance can also be assessed using **time-dependent
+dynamic AUC** (AUCt) or **time-dependent dynamic Brier score** (BSt).
 
 - AUCt is defined as the percentage of correctly ordered markers when
   comparing a case and a control – i.e., those who incur the pr imary
@@ -477,150 +693,185 @@ Brier score (BSt).
   markers at time w after prediction and the absolute risk estimates by
   that time point.
 
+Predictive performance can also be assessed using the **summary
+(average)** time-dependent dynamic area under the receiving operator
+curve or time-dependent dynamic Brier score. This enables one score per
+model or one comparison for a pair of models.
+
 ``` r
-scores <- score(list("LM supermodel" = p1),
-                     times = c(6, 12, 18, 24)) # landmarks at which to assess
-scores
-#> 
-#> Metric: Time-dependent AUC (window 60)
-#> 
-#> Results by model:
-#>      tLM         model    AUC  lower  upper
-#>    <num>        <fctr> <char> <char> <char>
-#> 1:     6 LM supermodel 61.808 51.891 71.726
-#> 2:    12 LM supermodel 60.855 50.447 71.262
-#> 3:    18 LM supermodel 61.374 51.034 71.714
-#> 4:    24 LM supermodel 55.188 43.949 66.427
-#> NOTE: Values are multiplied by 100 and given in %.
-#> NOTE: The higher AUC the better.
-#> NOTE: Predictions are made at time tLM for risk windows of length 60
-#> 
-#> Metric: Time-dependent Brier Score (window 60)
-#> 
-#> Results by model:
-#>      tLM         model  Brier  lower  upper
-#>    <num>        <fctr> <char> <char> <char>
-#> 1:     6    Null model  8.493  6.288 10.698
-#> 2:     6 LM supermodel  8.141  6.017 10.266
-#> 3:    12    Null model 11.152  8.420 13.883
-#> 4:    12 LM supermodel 10.639  7.945 13.333
-#> 5:    18    Null model 11.582  8.591 14.574
-#> 6:    18 LM supermodel 11.163  8.246 14.081
-#> 7:    24    Null model 11.494  8.231 14.758
-#> 8:    24 LM supermodel 11.467  8.247 14.687
-#> NOTE: Values are multiplied by 100 and given in %.
-#> NOTE: The lower Brier the better.
-#> NOTE: Predictions are made at time tLM for risk windows of length 60
+scores <- score(list("LM" = p1, "penLM" = p2),
+                times = c(0, 2, 4)) # landmarks at which to assess
+```
+
+These results can be printed:
+
+``` r
+print(scores)                       # print everything
+print(scores, summary = FALSE)      # only print AUCt and BSt
+print(scores, landmarks = FALSE)    # only print summary metrics
 ```
 
 These results can also be plot with point wise confidence intervals.
-Setting `se = FALSE` in plot excludes the intervals.
 
 ``` r
-par(mfrow = c(1, 2))
-plot(scores)
+par(mfrow = c(1, 4))
+plot(scores, summary = TRUE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-22-1.png" width="100%" />
+<img src="man/figures/README-score-1.png" width="100%" />
 
-**Bootstrapping** can be performed by calling `calplot()` or `score()`
-and setting the arguments `split.method = "bootcv"` and `B = 10` (or
-however many bootstrap replications are desired). Note that the argument
-`x = TRUE` must be specified when fitting the model (i.e., when calling
-`dynamic_lm()`).
+Additional parameters control which plots to include and additional
+information. The first plot below shows how one can remove confidence
+intervals and plot the time-dependent contrasts. One can also plot if
+model summary metrics are significantly different or not. The second
+plot adds the p-values of the significant comparisons to a plot. The
+third plots the contrasts directly (third example).
+
+See `?plot.LMScore` for more information.
 
 ``` r
-# Remember to fit the supermodel with argument 'x = TRUE'
-scores <- score(list("LM supermodel" = supermodel),
-              times = c(0, 6),
+# Three plots and make extra space below for the x-labels
+par(mfrow = c(1, 3), mar = c(9, 4, 4, 3))
+
+# E.g., plot only the time-dependent AUC contrasts without CIs
+plot(scores, brier = FALSE, landmarks = TRUE,
+     summary = FALSE, contrasts = TRUE, se = FALSE)
+
+# E.g., plot only summary BS and add p-value comparisons
+plot(scores, auc = FALSE, landmarks = FALSE, summary = TRUE,
+     ylim = c(0, 0.15),
+     las = 2,                                # Rotate x-axis labels
+     add_pairwise_contrasts = TRUE,          # Include the contrasts
+     cutoff_contrasts = 0.05,                # Significance cutoff, default 0.05
+     pairwise_heights = c(0.1, 0.13),        # Height of the contrast labels
+                                             #  (only 2/3 are significant so
+                                             #  only need to specify 2 heights)
+     width = 0.01)                           # Width of ends of bars
+
+# E.g., plot summary BS contrasts
+plot(scores, auc = FALSE, landmarks = FALSE, summary = TRUE,
+     contrasts = TRUE, las = 2)
+```
+
+<img src="man/figures/README-scoreextra-1.png" width="100%" />
+
+### 3.4.3 Bootstrapping
+
+Bootstrapping can be performed by calling `score()` and setting the
+arguments `split.method = "bootcv"` and `B` (the number of bootstrap
+replications). Note that the argument `x = TRUE` must be specified when
+fitting the model (i.e., when calling `dynamic_lm()`).
+
+``` r
+scores <- score(list("LM" = supermodel, "penLM" = supermodel_pen),
+              times = c(0, 2, 4), metrics = "auc",
               split.method = "bootcv", B = 10)       # 10 bootstraps
-
-par(mfrow = c(1, 2))
-outlist <- calplot(list("LM supermodel" = supermodel), 
-                    times = c(0, 6),                 # landmarks to plot at
-                    method = "quantile", q = 10,     # calibration plot method
-                    split.method = "bootcv", B = 10, # 10 bootstraps
-                    # Optional plotting parameters to alter
-                    ylim = c(0, 0.36), xlim = c(0, 0.36), 
-                    lwd = 1, xlab = "Predicted Risk", ylab = "Observed Risk", 
-                    legend = FALSE)
 ```
 
-**External validation** can be performed by specifying the supermodel as
-the object argument and passing new data through the `data` argument.
-This data can be a LMdataframe or a dataframe (in which case `lms` must
-be specified). Alternatively, predictions can be made on new data using
-`predict()` and this object can be input.
+### 3.4.4 External validation
+
+External validation can be performed by passing in test predictions
+(created by calling `predict()`) or by specifying the supermodel as the
+object argument and passing new data through the `data` argument. This
+data can be a LMdataframe or a dataframe (in which case `lms` must be
+specified).
 
 ``` r
-# Use all data from baseline as "new" data
-newdata <- relapse[relapse$T_txgiven == 0, ]
-newdata$age <- newdata$age.at.time.0
-newdata$LM <- 0 # specify the landmark time of the data points
+newdata <- pbc_df[pbc_df$tstart == 0, ] # Use the data from baseline as "new" data
 
 par(mfrow = c(1,1))
-cal <- calplot(list("CSC" = supermodel), cause = 1, data = newdata, lms = "LM",
-               method = "quantile", q = 10, ylim = c(0, 0.1), xlim = c(0, 0.1))
+outlist <- calplot(list("LM" = supermodel, "penLM" = supermodel_pen), 
+                   cause = 1, 
+                   data = newdata, 
+                   lms = 0,    # landmark time of the newdata
+                   method = "quantile", q = 10, 
+                   ylim = c(0, 0.25), xlim = c(0, 0.25))
 
-score(list("CSC" = supermodel), cause = 1, data = newdata, lms = "LM")
+score(list("LM" = supermodel, "penLM" = supermodel_pen), 
+      cause = 1, data = newdata, lms = 0)
 ```
 
-### 3.5.1 Visualize individual dynamic risk trajectories
+### 3.4.5 Visualize individual dynamic risk trajectories
 
 Individual risk score trajectories can be plotted. As with `predict()`,
 the data input is in the form of the original data. For example, we can
-consider two individuals of similar age, bmi, and treatment status at
-baseline, but of different gender.
-
-``` r
-idx <- relapse$ID %in% c("ID2412", "ID1007")
-relapse[idx, ]
-#>         ID     Time event age.at.time.0 male stage  bmi treatment T_txgiven
-#> 1   ID1007 62.68493     0      60.25936    0     1 25.9         0      0.00
-#> 442 ID2412 43.35342     0      60.09132    1     0 24.1         0      0.00
-#> 443 ID2412 43.35342     0      60.09132    1     0 24.1         1     39.04
-```
+consider two individuals with the same stage and similar albumin levels,
+but with different bilirunbin levels.
 
 We turn our data into long-form data to plot.
 
-*Note: we convert to long-form because of the age variable, wide-form
-data can be used too if there are no complex variables involved.*
-
 ``` r
+# Select individuals
+idx <- pbc_df$id %in% c(231, 29) #c(26, 130, 231, 290 ) #c(3,7,29) #36:40 #11:20 #3,7, (29,34,35)
+# idx <- pbc_df$id %in% c(235, 242, 120)
+
 # Prediction time points 
-x <- seq(0, 36, by = 6)
+x <- seq(0, 4, by = 0.05)
 
 # Stack landmark datasets
-dat <- stack_data(relapse[idx, ], outcome, x, w, covars, format = "long", 
-                  id = "ID", rtime = "T_txgiven")$data
-dat$age <- dat$age.at.time.0 + dat$LM / 12 # age is in years and LM is in months
-
-head(dat)
-#>          ID     Time event age.at.time.0 male stage  bmi treatment T_txgiven LM
-#> 1    ID1007 60.00000     0      60.25936    0     1 25.9         0         0  0
-#> 442  ID2412 43.35342     0      60.09132    1     0 24.1         0         0  0
-#> 11   ID1007 62.68493     0      60.25936    0     1 25.9         0         0  6
-#> 4421 ID2412 43.35342     0      60.09132    1     0 24.1         0         0  6
-#> 12   ID1007 62.68493     0      60.25936    0     1 25.9         0         0 12
-#> 4422 ID2412 43.35342     0      60.09132    1     0 24.1         0         0 12
-#>           age
-#> 1    60.25936
-#> 442  60.09132
-#> 11   60.75936
-#> 4421 60.59132
-#> 12   61.25936
-#> 4422 61.09132
+dat <- stack_data(pbc_df[idx, ], outcome, x, w, covars, format = "long", 
+                  id = "id", rtime = "tstart")$data
+dat$age <- dat$age + dat$LM 
+dat <- dat[order(dat$id, dat$LM), ]
 ```
 
 ``` r
-plotrisk(supermodel, dat, format = "long", ylim = c(0, 0.7), 
-         x.legend = "topright")
+print(dat[dat$LM %in% c(0, 2, 4), c("id", "time", "status", "LM", supermodel$lm_covs)])
+#>         id time status LM stage bili albumin
+#> 182     29  5.0      0  0     2  0.7    3.78
+#> 18420   29  7.0      0  2     2  0.6    3.90
+#> 1868    29  9.0      0  4     2  0.5    3.74
+#> 1517   231  3.2      2  0     4  3.4    1.96
+#> 151916 231  3.2      2  2     4  8.1    3.06
 ```
 
-<img src="man/figures/README-plotRisk-1.png" width="100%" />
+``` r
+plotrisk(supermodel, dat, format = "long", ylim = c(0, 0.35), 
+         x.legend = "topleft")
+```
 
-We can see that the male has a higher and increasing 5-year risk of
-recurrence that peaks around 1 year, and then rapidly decreases. This
-can be explained by the dynamic hazard rate of being male (seen above).
-In comparison, the 5-year risk of recurrent for the female remains
-relatively constant.
+<img src="man/figures/README-risk-1.png" width="100%" /> We can see that
+the individual (id = 29) with lower stage, low and constant bilirunbin
+levels, and constant albumin levels generally has a lower and largely
+unchanged 5-year risk of transplant. The individual (id = 231) with
+higher stage has a higher initial risk, but an increase in albumin
+levels at around landmark 2, leads to a much improved (lower) risk of
+transplant. This can be explained by the dynamic hazard rate of albumin
+(seen above) which is protective for higher levels and has a larger
+effect than bilirunbin.
+
+# 4 References
+
+- van Houwelingen, H.C. (2007), Dynamic Prediction by Landmarking in
+  Event History Analysis. Scandinavian Journal of Statistics, 34: 70-85.
+  <https://doi.org/10.1111/j.1467-9469.2006.00529.x>
+- Nicolaie, M.A., van Houwelingen, J.C., de Witte, T.M. and Putter, H.
+  (2013), Dynamic prediction by landmarking in competing risks. Statist.
+  Med., 32: 2031-2047. <https://doi.org/10.1002/sim.5665>
+- Anya H Fries, Eunji Choi, Julie T Wu, Justin H Lee, Victoria Y Ding,
+  Robert J Huang, Su-Ying Liang, Heather A Wakelee, Lynne R Wilkens,
+  Iona Cheng, Summer S Han, Software Application Profile: dynamicLM—a
+  tool for performing dynamic risk prediction using a landmark
+  supermodel for survival data under competing risks, International
+  Journal of Epidemiology, Volume 52, Issue 6, December 2023, Pages
+  1984–1989, <https://doi.org/10.1093/ije/dyad122>
+- Gerds T, Ohlendorff J, Ozenne B (2024). riskRegression: Risk
+  Regression Models and Prediction Scores for Survival Analysis with
+  Competing Risks. R package version 2024.04.25,
+  <https://github.com/tagteam/riskRegression>.
+- Gerds T, Kattan M (2021). Medical Risk Prediction Models: With Ties to
+  Machine Learning (1st ed.). Chapman and Hall/CRC.
+  <doi:10.1201/9781138384484>. <https://doi.org/10.1201/9781138384484>
+- Friedman J, Tibshirani R, Hastie T (2010). “Regularization Paths for
+  Generalized Linear Models via Coordinate Descent.” Journal of
+  Statistical Software, *33*(1), 1-22. <doi:10.18637/jss.v033.i01>.
+  <https://doi.org/10.18637/jss.v033.i01>\>
+- Simon N, Friedman J, Tibshirani R, Hastie T (2011). “Regularization
+  Paths for Cox’s Proportional Hazards Model via Coordinate Descent.”
+  Journal of Statistical Software, *39*(5), 1-13.
+  <doi:10.18637/jss.v039.i05>. <https://doi.org/10.18637/jss.v039.i05>
+- Blanche, P., Proust-Lima, C., Loubère, L., Berr, C., Dartigues, J.-F.
+  and Jacqmin-Gadda, H. (2015), Quantifying and comparing dynamic
+  predictive accuracy of joint models for longitudinal marker and
+  time-to-event in presence of censoring and competing risks. Biom, 71:
+  102-113. <https://doi.org/10.1111/biom.12232>

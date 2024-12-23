@@ -5,25 +5,26 @@
 #' apparent/internal, bootstrapped, and external. Accordingly, the named list of
 #' prediction models must be as follows:
 #' * For both apparent/internal evaluation, objects output from
-#'   [predict.dynamicLM()] or supermodels fit with [dynamic_lm()] may be used as input.
-#' * In order to bootstrap, supermodels fit with [dynamic_lm()] may be used as input
-#'   (note that the argument `x=TRUE` must be specified when fitting the model
-#'   in [dynamic_lm()]).
-#' * For external calibration, supermodels fit with [dynamic_lm()] are input along
-#'   with new data in the `data` argument. This data can be a LMdataframe or a
-#'   dataframe (in which case `lms` must be specified).
+#'   [predict.dynamicLM()] or supermodels fit with [dynamic_lm()] may be used as
+#'   input.
+#' * In order to bootstrap, supermodels fit with [dynamic_lm()] may be used as
+#'   input (note that the argument `x=TRUE` must be specified when fitting the
+#'   model in [dynamic_lm()]).
+#' * For external calibration, supermodels fit with [dynamic_lm()] are input
+#'   along with new data in the `data` argument. This data can be a LMdataframe
+#'   or a dataframe (in which case `lms` must be specified).
 #'
 #' For both internal evaluation and bootstrapping, it is assumed that all
 #' models in `object` are fit on the same data.
 #'
 #'
 #' @param object A named list of prediction models, where allowed entries are
-#'   outputs from [predict.dynamicLM()] or supermodels from [dynamic_lm()] depending on the
-#'   type of calibration.
+#'   outputs from [predict.dynamicLM()] or supermodels from [dynamic_lm()]
+#'   depending on the type of calibration.
 #' @param times Landmark times for which calibration must be plot. These must be
 #'   a subset of landmark times used during the prediction
 #' @param metrics  Character vector specifying which metrics to apply. Choices
-#'   are "auc" and "brier". Case matters.
+#'   are "auc" and "brier".
 #' @param formula A survival or event history formula
 #'   ([prodlim::Hist()]). The left hand side is used to compute the
 #'   expected event status. If none is given, it is obtained from the prediction
@@ -41,6 +42,7 @@
 #'   bootstrapping, CIs are calculated from empirical quantiles. If not, for
 #'   right censored data, they are calculated by the package [riskRegression] as
 #'   in Blanche et al (references).
+#' @param contrasts If TRUE, perform model comparison tests.
 #' @param split.method Defines the internal validation design. Options are
 #'   currently "none" or "bootcv".
 #'
@@ -54,6 +56,8 @@
 #' @param B Number of times bootstrapping is performed.
 #' @param M Subsample size for training in cross-validation. Entries not sampled
 #'   in the M subsamples are used for validation.
+#' @param summary Compute the summary metrics (average of the time-dependent
+#'   metrics). By default is TRUE.
 #' @param cores To perform parallel computing, specifies the number of cores.
 #'   (Not yet implemented)
 #' @param seed Optional, integer passed to set.seed. If not given or NA, no seed
@@ -65,24 +69,21 @@
 #'   tested and should be used with precaution.
 #' @param silent Show any error messages when computing `score` for each
 #'   landmark time (and potentially bootstrap iteration)
-#' @param na.rm Ignore bootstraps where there are errors (for example not
-#'   enough datasamples) and calculate metrics on remaining values. This is not
-#'   recommended. For example, if only one bootstrap sampling has enough data
-#'   that live to the prediction window, the standard error will be zero.
-#' @return An object of class "LMScore", which has components:
-#'   - `auct`: dataframe containing time-dependent AUC if "auc" was
-#'     included as a metric
-#'   - `briert`: dataframe containing time-dependent Brier score if "brier" was
-#'     included as a metric
-#' @details If data at late evaluation times is sparse, certain bootstrap samples may
+#'
+#' @return An list with entries `AUC` and `Brier` if "auc" and "brier" were
+#'   included as metrics respectively and `AUC_Summary` and/or `Brier_summary`
+#'   if `summary` is not null. Each will have entries:
+#'   - `score`: data.table containing the metric
+#'   - `contrasts`: data.table containing model comparisons
+#' @details If data at late landmark times is sparse, some bootstrap samples may
 #'   not have patients that live long enough to perform evaluation leading to
 #'   the message "Upper limit of followup in bootstrap samples, was too low.
 #'   Results at evaluation time(s) beyond these points could not be computed
 #'   and are left as NA". In this case, consider only evaluating for earlier
 #'   landmarks or performing prediction with a smaller window as data points are
 #'   slim. If you wish to see which model/bootstrap/landmark times failed, set
-#'   SILENT=FALSE. Set na.rm = TRUE ignores these bootstraps and calculate
-#'   metrics from the bootstrap samples that worked (not recommended).
+#'   SILENT=FALSE. Currently ignores these bootstraps and calculates
+#'   metrics from the bootstrap samples that worked.
 #'
 #'   Another message may occur: "Dropping bootstrap b = {X} for model {name} due
 #'   to unreliable predictions". As certain approximations are made, numerical
@@ -103,33 +104,43 @@
 #'   32(30):5381–5397, 2013.
 #' @examples
 #' \dontrun{
-#' # Internal validation
-#' scores <- score(list("Model1" = supermodel),
-#'                 times = c(0, 6)) # landmarks at which to provide calibration plots
-#' scores
+#' # Internal validation (using model)
+#' scores <- score(list("Model1" = supermodel))
+#' print(scores)
 #'
-#' # Bootstrapping
-#' # Remember to fit the supermodel with argument 'x = TRUE'
-#' scores <- score(list("Model1" = supermodel),
-#'                 times = c(0, 6),
-#'                 split.method = "bootcv", B = 10) # 10 bootstraps
-#' scores
-#'
-#' par(mfrow=c(1,2))
+#' par(mfrow=c(1, 4))
 #' plot(scores)
 #'
+#' # Internal validation (using predictions)
+#' p1 <- predict(supermodel)
+#' scores <- score(list("Model1" = p1))
+#' print(scores)
+#'
+#'
+#' # # Bootstrapping
+#' # Remember to fit the supermodel with argument 'x = TRUE'
+#' scores <- score(list("Model1" = supermodel),
+#'                 split.method = "bootcv", B = 10) # 10 bootstraps
+#' print(scores)
+#'
 #' # External validation
-#' # Either input an object from predict as the object or a supermodel and
-#' # "data" & "lms" argument
+#' # a) newdata is a dataframe
 #' newdata <- relapse[relapse$T_txgiven == 0, ]
 #' newdata$age <- newdata$age.at.time.0
 #' newdata$LM <- 0
-#' score(list("CSC" = supermodel), cause = 1, data = newdata, lms = "LM")
+#' score(list("Model1" = supermodel), data = newdata, lms = "LM")
+#'
+#' # b) newdata is a landmark dataset
+#' lmdata_new <- lmdata
+#' score(list("Model1" = supermodel), data = lmdata_new)
 #' }
 #'
 #' @import riskRegression
 #' @importFrom data.table .SD
 #' @export
+# TODO: add null.model argument
+# TODO: handle na.rm
+# TODO: add checks for left-censoring for summary = TRUE
 score <-
   function(object,
            times,
@@ -137,67 +148,85 @@ score <-
            formula,
            data,
            lms = "LM",
-           id_col="ID",
+           id_col,
            se.fit = TRUE,
            conf.int = 0.95,
+           contrasts = TRUE,
            split.method = "none",
            B = 1,
            M,
+           summary = TRUE,
            cores = 1,
            seed,
            cause,
-           silent = T,
-           na.rm = FALSE,
+           silent = TRUE,
            ...) {
 
     if (!requireNamespace("data.table", quietly = TRUE)) {
-      stop("Package \"data.table\" must be installed to use function score()",
+      stop("Package 'data.table' must be installed to use function score()",
            call. = FALSE)
     }
 
-    get.auc <- FALSE; get.brier <- FALSE
-    if ("auc" %in% metrics) get.auc <- TRUE
-    if ("brier" %in% metrics) get.brier <- TRUE
-    if (!get.auc && !get.brier)
-      stop("At least one of the following metrics must be specified: \"auc\", \"brier\".")
-
+    # Get cleaned input
     checked_input <- match.call()
     m <- match(c("object", "times", "formula", "data", "lms", "id_col",
                  "split.method", "B", "M", "cores", "seed", "cause"),
                names(checked_input), 0L)
     checked_input <- as.list(checked_input[m])
-    checked_input <- do.call(check_evaluation_inputs, checked_input)
+    checked_input <- do.call(check_evaluation_inputs, checked_input,
+                             envir = parent.frame())
+    object <- checked_input$object
+    times <- checked_input$times
+    preds <- checked_input$preds
+    pred_LMs <- checked_input$pred_LMs
+    data <- checked_input$data
+    NF <- checked_input$NF
+    w <- checked_input$w
+    formula <- checked_input$formula
+    cause <- checked_input$cause
+    id_col <- checked_input$id_col
 
-    object = checked_input$object
-    times = checked_input$times
-    preds = checked_input$preds
-    pred_LMs = checked_input$pred_LMs
-    data = checked_input$data
-    NF = checked_input$NF
-    w = checked_input$w
-    formula = checked_input$formula
-    cause = checked_input$cause
+    # Determine which metrics to calculate
+    get.auc <- "auc" %in% tolower(metrics)
+    get.bs <- "brier" %in% tolower(metrics)
+    if (!get.auc && !get.bs)
+      stop(tidymess("At least one of the following metrics must be specified:
+                    \"auc\", \"brier\"."))
+    get.a.iid <- get.auc && summary
+    get.b.iid <- get.bs && summary
 
-    if(!all("b" %in% colnames(data))) data$b = 1
+    if (!all("bootstrap" %in% colnames(data))) data$bootstrap <- 1
+    if (length(object) == 1) contrasts <- FALSE
 
-    num_B = length(unique(data$b))
-    se.fit.b <- se.fit
-    if (num_B > 1) se.fit.b <- FALSE
+    num_B <- length(unique(data$bootstrap))
+    se.fit.b <- if (num_B > 1) FALSE else se.fit
 
     # TODO: parallelize?
-    metrics <- lapply(unique(data$b), function(b){
-      m_b <- lapply(1:length(times), function(t){
-        tLM = times[t]
+    # Get the metrics for each bootstrap (if not bootstrapping then for the
+    # single iteration)
+    metrics <- lapply(1:num_B, function(b) {
+      lapply(seq_along(times), function(t) {
+        tLM <- times[t]
+        idx <- (pred_LMs == tLM) & (data$bootstrap == b)
+        data_to_test <- data[idx, ]
 
-        idx = (pred_LMs == tLM) & (data$b == b)
-        data_to_test = data[idx,]
-        risks_to_test = lapply(1:NF, function(i) {
-          preds[idx, i]
-        })
-        names(risks_to_test) = names(object)
+        #       by only including those who live after s, our censoring times
+        #       etc align properly but we can also do it as below and set
+        #       times = w
+        # data_to_test[[time]] <- data_to_test[[time]] - tLM
+        # data_to_test[["LM"]] <- data_to_test[["LM"]] - tLM
 
-        if (nrow(data_to_test) != length(risks_to_test[[1]])) {
+        risks_to_test <- lapply(1:NF, function(i) preds[idx, i])
+        names(risks_to_test) <- names(object)
+
+        if (nrow(data_to_test) != length(risks_to_test[[1]]))
           stop("nrow(data_to_test)!=length(risks_to_test)")
+
+        if (nrow(data_to_test) == 0) {
+          warning(tidymess(paste0(
+            "Skipping calplot for landmark time ", tLM, " as no data was
+            provided for this landmark.")))
+          return(NULL)
         }
 
         score_t <- suppressMessages(try(
@@ -207,96 +236,140 @@ score <-
             data = data_to_test,
             metrics = metrics,
             cause = cause,
-            times = c(tLM + w - 10e-5),
-            se.fit = se.fit.b,
+            times = tLM + w - 10e-5,
+            # se.fit = se.fit.b,
             conf.int = conf.int,
+            keep = c("residuals", "iid"),
             ...
-          ), silent = T
+          ), silent = TRUE
         ))
+        # print(score_t)
 
+        # Error handing & get what we need from the output
         if (inherits(score_t, "try-error")) {
-          auct_b <- data.frame(model=names(object), times=NA, AUC=NA)
-          briert_b <- data.frame(model=names(object), times=NA, Brier=NA)
+          if (!silent) {
+            cat(paste0(
+              "\nError in bootstrap ", b, " for landmark time ", tLM,
+              ". The error is the following:\n\n"))
+            cat(score_t)
+          }
+          return(NULL)
         } else {
-          auct_b <- score_t$AUC$score
-          briert_b <- score_t$Brier$score
+          auct_b <- cbind(tLM, score_t$AUC$score, bootstrap = b)
+          briert_b <- cbind(tLM, score_t$Brier$score, bootstrap = b)
+          auc_contrasts_b <- cbind(tLM, score_t$AUC$contrasts, bootstrap = b)
+          brier_contrasts_b <- cbind(tLM, score_t$Brier$contrasts,
+                                     bootstrap = b)
+          if (get.a.iid)
+            a_iid <- cbind(tLM, score_t$AUC$iid.decomp, bootstrap = b)
+          if (get.b.iid)
+            b_iid <- cbind(tLM, score_t$Brier$iid.decomp, bootstrap = b)
+
+        return(list(
+          AUC = if (get.auc) auct_b else NULL,
+          Brier = if (get.bs) briert_b else NULL,
+          a_contrasts = if (contrasts && get.auc) auc_contrasts_b else NULL,
+          b_contrasts = if (contrasts && get.bs) brier_contrasts_b else NULL,
+          a_iid = if (get.a.iid) a_iid else NULL,
+          b_iid = if (get.b.iid) b_iid else NULL
+        ))
         }
-        auct_b$b <- b; briert_b$b <- b
-
-        metrics_b_t <- list()
-        if (get.auc) metrics_b_t$AUC <- cbind(tLM, auct_b)
-        if (get.brier) metrics_b_t$Brier <- cbind(tLM, briert_b)
-        metrics_b_t
       })
-
-      m_out <- list()
-      if (get.auc) m_out$AUC <- do.call("rbind", lapply(m_b, function(m) m$AUC))
-      if (get.brier) m_out$Brier <- do.call("rbind", lapply(m_b, function(m) m$Brier))
-      m_out
     })
 
-    auct <- do.call("rbind", lapply(metrics, function(m) m$AUC))
-    briert <- do.call("rbind", lapply(metrics, function(m) m$Brier))
+    failures <- sapply(metrics, function(m) any(sapply(m, is.null)))
+    num_failures <- sum(failures)
+    if (num_failures > 0)
+      cat(paste("\n--> WARNING:", num_failures, "bootstrap(s) dropped due to",
+        "errors/unreliable results. Results are computed on the remaining",
+        "iterations.\n"))
+    metrics <- metrics[!failures]
 
+    # Convert to dataframe
+    get_metrics <- function(metrics, metric_name) {
+      do.call("rbind", lapply(metrics, function(mb)
+        do.call("rbind", lapply(mb, function(mi) mi[[metric_name]]))))
+    }
+    auct <- get_metrics(metrics, "AUC")
+    # print("auc done")
+    briert <- get_metrics(metrics, "Brier")
+    a_contrasts <- get_metrics(metrics, "a_contrasts")
+    # print("a contrasts done")
+    b_contrasts <- get_metrics(metrics, "b_contrasts")
+    a_iid <- get_metrics(metrics, "a_iid")
+    # print("a iid done")
+    b_iid <- get_metrics(metrics, "b_iid")
+
+    # Clean output and handle bootstrapping results
     if (B > 1) {
-      if (se.fit==TRUE) {
-        alpha = 1-conf.int
-        auct_out <- auct[,
-                     data.table::data.table(
-                       mean(.SD[["AUC"]],na.rm=na.rm),
-                       se=stats::sd(.SD[["AUC"]],na.rm=T),
-                       lower=stats::quantile(.SD[["AUC"]],alpha/2,na.rm=T),
-                       upper=stats::quantile(.SD[["AUC"]],(1-alpha/2),na.rm=T)),
-                     by=c("model","tLM"),.SDcols="AUC"
-                     ]
-        briert_out <- briert[,
-                         data.table::data.table(
-                           mean(.SD[["Brier"]],na.rm=na.rm),
-                           se=stats::sd(.SD[["Brier"]],na.rm=T),
-                           lower=stats::quantile(.SD[["Brier"]],alpha/2,na.rm=T),
-                           upper=stats::quantile(.SD[["Brier"]],(1-alpha/2),na.rm=T)),
-                         by=c("model","tLM"),.SDcols="Brier"
-                         ]
-        data.table::setnames(auct_out,c("model","tLM","AUC","se","lower","upper"))
-        data.table::setnames(briert_out,c("model","tLM","Brier","se","lower","upper"))
-
-        if (!silent) {
-          b_na <- auct$b[is.na(auct$AUC)]
-          tLM_na <- auct$tLM[is.na(auct$AUC)]
-          model_na <- auct$model[is.na(auct$AUC)]
-
-          if(length(b_na) != 0) {
-            message("Upper limit of followup in bootstrap samples was too low. Results at evaluation time(s) beyond these points could not be computed and are left as NA.")
-            message(paste0("Metrics not computed for (model, b, tLM) = ",
-                       paste0("(",model_na,", ",b_na,", ",tLM_na,")",
-                              collapse=", ")))
-          }
-        }
-
-        if (na.rm == FALSE) {
-          auct_out <- auct_out[c(is.na(auct_out[,3])), `:=` ("se"=NA,"lower"=NA,"upper"=NA)]
-          briert_out <- briert_out[c(is.na(briert_out[,3])), `:=` ("se"=NA,"lower"=NA,"upper"=NA)]
-        }
-
-
-      } else {
-        auct_out <- auct[,data.table::data.table(mean(.SD[["AUC"]],na.rm=na.rm)),by=c("model","tLM"),.SDcols="AUC"]
-        briert_out <- briert[,data.table::data.table(mean(.SD[["Brier"]],na.rm=na.rm)),by=c("model","tLM"),.SDcols="Brier"]
-        data.table::setnames(auct_out,c("model","tLM","AUC"))
-        data.table::setnames(briert_out,c("model","tLM","Brier"))
+      alpha <- 1 - conf.int
+      clean_if <- function(condition, df, metric, ...) {
+        if (condition) clean_bootstraps(df, metric, alpha, se.fit = se.fit, ...)
+        else NULL
       }
-    } else {
+
+      auct_out <- clean_if(get.auc, auct, "AUC")
+      a_contrasts_out <- clean_if(contrasts && get.auc, a_contrasts,
+                                  "delta.AUC", contrasts = TRUE)
+      briert_out <- clean_if(get.bs, briert, "Brier")
+      b_contrasts_out <- clean_if(contrasts && get.bs, b_contrasts,
+                                  "delta.Brier", contrasts = TRUE)
+
+      # if (!silent) {
+      #   b_na <- auct$bootstrap[is.na(auct$AUC)]
+      #   tlm_na <- auct$tLM[is.na(auct$AUC)]
+      #   model_na <- auct$model[is.na(auct$AUC)]
+      #   if (length(b_na) != 0) {
+      #     message(tidymess(paste0(
+      #     "Upper limit of followup in bootstrap samples was too low. Results
+      #     at evaluation time(s) beyond these points could not be computed and
+      #     are left as NA.\nMetrics not computed for (model, b, tLM) = ",
+      #     paste0("(", model_na, ", ", b_na, ", ", tlm_na, ")",
+      #            collapse = ", "))))
+      #   }
+      # }
+      # if (na.rm == FALSE) {
+      #   auct_out <- auct_out[is.na(auct_out[, 3]),
+      #                        `:=`("se" = NA, "lower" = NA, "upper" = NA)]
+      #   briert_out <- briert_out[is.na(briert_out[, 3]),
+      #                            `:=`("se" = NA, "lower" = NA, "upper" = NA)]
+      # }
+
+    } else { # B == 1
       auct_out <- auct
       briert_out <- briert
-      auct_out$b <- NULL
-      briert_out$b <- NULL
+      a_contrasts_out <- a_contrasts
+      b_contrasts_out <- b_contrasts
+      auct_out$bootstrap <- briert_out$bootstrap <- NULL
+      if (contrasts) {
+        a_contrasts_out$bootstrap <- b_contrasts_out$bootstrap <- NULL
+      }
     }
 
-    outlist <- list(
-      auct = auct_out,
-      briert = briert_out,
-      w = w
-    )
-    class(outlist) = "LMScore"
+    outlist <- list()
+    if (get.auc)
+      outlist$AUC <- list(score = auct_out, contrasts = a_contrasts_out)
+    if (get.bs)
+      outlist$Brier <- list(score = briert_out, contrasts = b_contrasts_out)
+    if (B > 1) {
+      outlist$B <- B - num_failures
+      outlist$split.method <- split.method
+    }
+
+    # Get summary metrics
+    if (summary) {
+      if (get.a.iid) {
+        outlist$AUC_summary <- summary_metric(
+          "AUC", auct, a_contrasts, a_iid, conf.int, object, id_col, B, se.fit)
+      }
+      if (get.b.iid) {
+        outlist$Brier_summary <- summary_metric(
+          "Brier", briert, b_contrasts, b_iid, conf.int, object,
+          id_col, B, se.fit)
+      }
+    }
+
+    outlist$w <- w
+    class(outlist) <- "LMScore"
     return(outlist)
   }

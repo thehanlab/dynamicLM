@@ -20,14 +20,13 @@ calplot(
   cause,
   plot = TRUE,
   main,
-  sub = FALSE,
   ...
 )
 }
 \arguments{
 \item{object}{A named list of prediction models, where allowed entries are
-outputs from \code{\link[=predict.dynamicLM]{predict.dynamicLM()}} or supermodels from \code{\link[=dynamic_lm]{dynamic_lm()}} depending
-on the type of calibration.}
+outputs from \code{\link[=predict.dynamicLM]{predict.dynamicLM()}} or supermodels from \code{\link[=dynamic_lm]{dynamic_lm()}}
+depending on the type of calibration.}
 
 \item{times}{Landmark times for which calibration must be plot. These must be
 a subset of landmark times used during the prediction}
@@ -80,9 +79,6 @@ object. Default is TRUE.}
 
 \item{main}{Optional title to override default.}
 
-\item{sub}{If TRUE, add a subheading with the number of individuals at risk,
-Default is FALSE}
-
 \item{...}{Additional arguments to pass to calPlot (\code{pec} package).
 These arguments have been included for user flexibility but have not been
 tested and should be used with precaution.}
@@ -100,13 +96,14 @@ and external. Accordingly, the named list of prediction models must be as
 follows:
 \itemize{
 \item For both apparent/internal calbration, objects output from
-\code{\link[=predict.dynamicLM]{predict.dynamicLM()}} for supermodels fit with \code{\link[=dynamic_lm]{dynamic_lm()}} may be used as input.
-\item In order to bootstrap, supermodels fit with \code{\link[=dynamic_lm]{dynamic_lm()}} may be used as input
-(note that the argument \code{x=TRUE} must be specified when fitting the model
-in \code{\link[=dynamic_lm]{dynamic_lm()}}).
-\item For external calibration, supermodels fit with \code{\link[=dynamic_lm]{dynamic_lm()}} are input along with
-new data in the \code{data} argument. This data can be a LMdataframe or a
-dataframe (in which case \code{lms} must be specified).
+\code{\link[=predict.dynamicLM]{predict.dynamicLM()}} for supermodels fit with \code{\link[=dynamic_lm]{dynamic_lm()}} may be used
+as input.
+\item In order to bootstrap, supermodels fit with \code{\link[=dynamic_lm]{dynamic_lm()}} may be used as
+input (note that the argument \code{x=TRUE} must be specified when fitting the
+model in \code{\link[=dynamic_lm]{dynamic_lm()}}).
+\item For external calibration, supermodels fit with \code{\link[=dynamic_lm]{dynamic_lm()}} are input
+along with new data in the \code{data} argument. This data can be a LMdataframe
+or a dataframe (in which case \code{lms} must be specified).
 }
 }
 \details{
@@ -134,31 +131,37 @@ made during the bootstrap resampling.
 \examples{
 \dontrun{
 # Internal validation
-par(mfrow=c(1,2),pty="s")
-outlist <- calplot(list("Model_1" = supermodel),
-                   times = c(0, 6),             # landmark times at which to plot
-                   method = "quantile", q = 10, # method for calibration plot
+par(mfrow = c(2, 2), pty = "s")
+outlist <- calplot(list("Model1" = supermodel),
+                   method = "quantile", q = 5,  # method for calibration plot
                    regression_values = TRUE,    # output regression values
                    ylim = c(0, 0.4), xlim = c(0, 0.4)) # optional
 outlist$regression_values
 
 # Bootstrapping
 # Remember to fit the supermodel with argument 'x = TRUE'
-par(mfrow=c(1,2),pty="s")
-outlist = calplot(list("Model_1" = supermodel),
-                  times = c(0, 6),
-                  method = "quantile", q=10,
-                  split.method = "bootcv", B = 10, # 10 bootstraps
-                  ylim = c(0, 0.4), xlim = c(0, 0.4))
+par(mfrow = c(2, 2), pty = "s")
+outlist <- calplot(list("Model1" = supermodel),
+                   method = "quantile", q = 5,
+                   split.method = "bootcv", B = 10, # 10 bootstraps
+                   ylim = c(0, 0.4), xlim = c(0, 0.4))
 
 # External validation
-# Either input an object from predict as the object or a supermodel and
-# "data" & "lms" argument
+# a) newdata is a dataframe
 newdata <- relapse[relapse$T_txgiven == 0, ]
 newdata$age <- newdata$age.at.time.0
 newdata$LM <- 0
-par(mfrow = c(1,1))
-cal <- calplot(list("CSC" = supermodel), cause = 1, data = newdata, lms = "LM",
-               method = "quantile", q = 10, ylim = c(0, 0.1), xlim = c(0, 0.1))
+par(mfrow = c(1, 1))
+cal <- calplot(list("Model1" = supermodel), data = newdata, lms = "LM",
+               method = "quantile", q = 5, ylim = c(0, 0.1), xlim = c(0, 0.1))
+
+# b) newdata is a landmark dataset
+par(mfrow = c(2, 2), pty = "s")
+lmdata_new <- lmdata
+cal <- calplot(list("Model1" = supermodel), data = lmdata_new,
+               method = "quantile", q = 10, ylim = c(0, 0.4), xlim = c(0, 0.4))
 }
+}
+\seealso{
+\code{\link[=score]{score()}}, \code{\link[pec:calPlot]{pec::calPlot()}}
 }

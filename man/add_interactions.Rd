@@ -4,7 +4,13 @@
 \alias{add_interactions}
 \title{Add landmarking time interactions to a super dataset}
 \usage{
-add_interactions(lmdata, lm_covs, func_covars, func_lms, lm_col, keep = T)
+add_interactions(
+  lmdata,
+  lm_covs,
+  func_covars = c("linear", "quadratic"),
+  func_lms = c("linear", "quadratic"),
+  keep = TRUE
+)
 }
 \arguments{
 \item{lmdata}{An object of class "LMdataframe"
@@ -17,21 +23,19 @@ and w), end_time is the largest landmarking time.}
 \item{lm_covs}{Vector of strings indicating the columns (covariates) that are
 to have an interaction with the landmark times.}
 
-\item{func_covars}{Either a string (or vector of strings) specifying which
-covariate(\code{x})-landmark(\code{t}) interactions to include. One or
-multiple of "linear" (\verb{x, x*t}), "quadratic" (\verb{x, x*t^2}),
-"log" (\verb{x, log(1 + x)}), or or "exp" (\verb{x, exp(x)}).
+\item{func_covars}{Either a string/vector of strings or list of
+functions specifying which covariate-landmark interactions to include.
+If \code{x} are covariates and \code{t} are landmarks then "linear" (\verb{x, x*t}),
+"quadratic" (\verb{x, x*t^2}), "log" (\verb{x, log(1 + x)}), or or "exp"
+(\verb{x, exp(x)}) can be specified.
 
-Otherwise, a custom list of functions can be specified. For example,
-\code{list( function(t) t, function(t) exp(20*t))} will, for each covariate \code{x},
+A custom list of functions can be specified. For example,
+\code{list(function(t) t, function(t) exp(20*t))} will, for each covariate,
 create \verb{x, x*t, exp(20*t)}.}
 
-\item{func_lms}{Similar to \code{func_covars}: A list of functions to use for
-transformations of the landmark times. Either a string or vector of
-strings or a custom list of functions.}
-
-\item{lm_col}{Character string specifying the column name that indicates the
-landmark time point for a row. Obtained from \code{lmdata} if not input.}
+\item{func_lms}{A list of functions to use for transformations of the
+landmark times input similarly to \code{func_covars}, either as a string/
+vector of strings or a custom list of functions.}
 
 \item{keep}{Boolean value to indicate whether or not to keep the columns
 given by \code{lm_covs} without the time interactions. Default is TRUE.}
@@ -55,16 +59,15 @@ The stacked dataset output is used as input to \code{\link[=dynamic_lm]{dynamic_
 supermodel for dynamic prediction.
 }
 \details{
-For each variable "var" in \code{lm_covs}, new columns var_1,...,var_i
-(length(func_covars) == i) are added; one column for each interaction given
-in func_covars is added.
+For each variable "var" in \code{lm_covs}, new columns var_LM1, ...,
+var_LMi are added; one column for each interaction given
+in func_covars is added (length(func_covars) == i).
 
-Transformations of the LM column are added and labelled as LM_1,...,LM_j
-(length(func_lms) == j); one column for each interaction given in func_lms
-is added.
+Transformations of the LM column are added and labelled as LM1, ..., LMj;
+one column for each interaction given in func_lms is added
+(length(func_lms) == j).
 }
 \examples{
-\dontrun{
 data(relapse)
 outcome <- list(time = "Time", status = "event")
 covars <- list(fixed = c("age.at.time.0", "male", "stage", "bmi"),
@@ -83,6 +86,8 @@ lmdata <- add_interactions(lmdata, pred_covars,
                            func_covars = c("linear", "quadratic"),
                            func_lms = c("linear", "quadratic"))
 head(lmdata$data)
-}
 
+}
+\seealso{
+\code{\link[=stack_data]{stack_data()}}, \code{\link[=dynamic_lm]{dynamic_lm()}}
 }

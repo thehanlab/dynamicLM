@@ -13,13 +13,13 @@ stack_data(
   format = c("wide", "long"),
   id,
   rtime,
-  right = FALSE
+  left.open = FALSE
 )
 }
 \arguments{
 \item{data}{Data frame from which to construct landmark super dataset}
 
-\item{outcome}{A list with items time and status, containing character strings
+\item{outcome}{A list with items time and status, containing strings
 identifying the names of time and status variables, respectively, of the
 survival outcome}
 
@@ -33,7 +33,8 @@ time w landmark points)}
 
 \item{covs}{A list with items fixed and varying, containing character strings
 specifying column names in the data containing time-fixed and time-varying
-covariates, respectively.}
+covariates, respectively. If missing, all columns that are not the outcome,
+rtime or id column are set to be time-varying covariates.}
 
 \item{format}{Character string specifying whether the original data are in
 wide (default) or in long format.}
@@ -45,9 +46,9 @@ subject id.}
 the (running) time variable associated with the time-varying variables;
 only needed if format = "long".}
 
-\item{right}{Boolean (default = FALSE), indicating if the intervals for the
-time-varying covariates are closed on the right (and open on the left) or
-vice-versa.}
+\item{left.open}{Boolean (default = FALSE), indicating if the intervals for
+the time-varying covariates are open on the left (and closed on the right)
+or vice-versa.}
 }
 \value{
 An object of class "LMdataframe". This the following components:
@@ -62,10 +63,10 @@ points. The value of the landmark time point is stored in column LM.
 }
 }
 \description{
-This stacked dataset output is used as input to \code{\link[=dynamic_lm]{dynamic_lm()}} to fit a landmark
-supermodel for dynamic prediction. Calling \code{\link[=add_interactions]{add_interactions()}} on the output
-before fitting the supermodel allows for landmark time interactions to be
-included.
+This stacked dataset output is used as input to \code{\link[=dynamic_lm]{dynamic_lm()}} to fit a
+landmark supermodel for dynamic prediction. Calling \code{\link[=add_interactions]{add_interactions()}} on
+the output before fitting the supermodel allows for landmark time
+interactions to be included.
 }
 \examples{
 \dontrun{
@@ -79,4 +80,8 @@ lmdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
                      id = "ID", rtime = "T_txgiven")
 head(lmdata$data)
 }
+
+}
+\seealso{
+\code{\link[=add_interactions]{add_interactions()}}, \code{\link[=dynamic_lm]{dynamic_lm()}}
 }

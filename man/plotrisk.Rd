@@ -28,6 +28,7 @@ plotrisk(
   ylim = c(0, 1),
   x.legend,
   y.legend,
+  las = 1,
   ...
 )
 }
@@ -88,6 +89,8 @@ the model}
 legend. They can be specified by keyword or in any way which is accepted
 by xy.coords.}
 
+\item{las}{the style of axis labels}
+
 \item{...}{Additional arguments passed to plot}
 }
 \value{
@@ -100,4 +103,28 @@ of interest within a given window
 \details{
 See our \href{https://github.com/thehanlab/dynamicLM}{GitHub} for example
 code
+}
+\examples{
+data(relapse)
+
+# select patients whose risk we want to plot
+idx <- relapse$ID \%in\% c("ID1007", "ID1301")
+
+outcome <- list(time = "Time", status = "event")
+covars <- list(fixed = c("age.at.time.0", "male", "stage", "bmi"),
+               varying = c("treatment"))
+w <- 60; lms <- c(0, 6, 12, 18)
+
+# Prediction time points (how smooth the plot will be)
+x <- seq(0, 18, by = 1)
+
+# Stack landmark datasets
+dat <- stack_data(relapse[idx, ], outcome, x, w, covars, format = "long",
+                  id = "ID", rtime = "T_txgiven")$data
+dat$age <- dat$age.at.time.0 + dat$LM / 12 # age is in years and LM is in months
+head(dat)
+
+plotrisk(supermodel, dat, format = "long", ylim = c(0, 1), #0.7),
+         x.legend = "bottomright")
+
 }

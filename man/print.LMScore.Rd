@@ -4,12 +4,18 @@
 \alias{print.LMScore}
 \title{Print function for object of class LMScore, i.e., output from \code{\link[=score]{score()}}}
 \usage{
-\method{print}{LMScore}(x, digits = 3, ...)
+\method{print}{LMScore}(x, digits = 3, landmarks = TRUE, summary = TRUE, ...)
 }
 \arguments{
 \item{x}{Object of class LMScore}
 
 \item{digits}{Number of significant digits to include}
+
+\item{landmarks}{Print the time-dependent metrics at individual landmarks.
+Default is TRUE.}
+
+\item{summary}{Print the summary metrics of the models if they have been
+calculated. Default is TRUE.}
 
 \item{...}{Arguments passed to print.}
 }

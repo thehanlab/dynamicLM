@@ -13,14 +13,16 @@ get_lm_data(
   format = c("wide", "long"),
   id,
   rtime,
-  right = TRUE
+  left.open = FALSE,
+  split.data
 )
 }
 \arguments{
 \item{data}{Data frame from which to construct landmark super dataset}
 
 \item{outcome}{A list with items time and status, containing character
-strings identifying the names of time and status variables, respectively, of the survival outcome}
+strings identifying the names of time and status variables, respectively,
+of the survival outcome}
 
 \item{lm}{The value of the landmark time point at which to construct the
 landmark dataset.}
@@ -42,9 +44,12 @@ subject id.}
 the (running) time variable associated with the time-varying variables;
 only needed if format = "long".}
 
-\item{right}{Boolean (default = FALSE), indicating if the intervals for the
-time-varying covariates are closed on the right (and open on the left) or
+\item{left.open}{Boolean (default = FALSE), indicating if the intervals for the
+time-varying covariates are open on the left (and closed on the right) or
 vice-versa.}
+
+\item{split.data}{List of data split according to ID. Allows for faster
+computation.}
 }
 \value{
 A landmark dataset.
@@ -56,7 +61,27 @@ Build a landmark dataset
 This function is based from \code{\link[dynpred:cutLM]{dynpred::cutLM()}} with minor changes.
 The original function was authored by Hein Putter.
 }
+\examples{
+\dontrun{
+data(relapse)
+outcome <- list(time = "Time", status = "event")
+covars <- list(fixed = c("age.at.time.0", "male", "stage", "bmi"),
+               varying = c("treatment"))
+lm12 <- get_lm_data(relapse, outcome, lm = 12, horizon = 60, covs = covars,
+                    format = "long", id = "ID", rtime = "T_txgiven")
+head(lm12)
+}
+
+}
 \references{
-van Houwelingen HC, Putter H (2012). Dynamic Prediction in
+\itemize{
+\item van Houwelingen HC, Putter H (2012). Dynamic Prediction in
 Clinical Survival Analysis. Chapman & Hall.
+\item The dynpred package
+(https://cran.r-project.org/web/packages/dynpred/index.html),
+in particular, the code for cutLM.
+}
+}
+\seealso{
+\code{\link[=stack_data]{stack_data()}}
 }

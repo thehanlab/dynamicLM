@@ -4,20 +4,21 @@
 #' and external. Accordingly, the named list of prediction models must be as
 #' follows:
 #' * For both apparent/internal calbration, objects output from
-#'   [predict.dynamicLM()] for supermodels fit with [dynamic_lm()] may be used as input.
-#' * In order to bootstrap, supermodels fit with [dynamic_lm()] may be used as input
-#'   (note that the argument `x=TRUE` must be specified when fitting the model
-#'   in [dynamic_lm()]).
-#' * For external calibration, supermodels fit with [dynamic_lm()] are input along with
-#'   new data in the `data` argument. This data can be a LMdataframe or a
-#'   dataframe (in which case `lms` must be specified).
+#'   [predict.dynamicLM()] for supermodels fit with [dynamic_lm()] may be used
+#'   as input.
+#' * In order to bootstrap, supermodels fit with [dynamic_lm()] may be used as
+#'   input (note that the argument `x=TRUE` must be specified when fitting the
+#'   model in [dynamic_lm()]).
+#' * For external calibration, supermodels fit with [dynamic_lm()] are input
+#'   along with new data in the `data` argument. This data can be a LMdataframe
+#'   or a dataframe (in which case `lms` must be specified).
 #'
 #' For both internal calibration and bootstrapping, it is assumed that all
 #' models in `object` are fit on the same data.
 #'
 #' @param object A named list of prediction models, where allowed entries are
-#'   outputs from [predict.dynamicLM()] or supermodels from [dynamic_lm()] depending
-#'   on the type of calibration.
+#'   outputs from [predict.dynamicLM()] or supermodels from [dynamic_lm()]
+#'   depending on the type of calibration.
 #' @param times Landmark times for which calibration must be plot. These must be
 #'   a subset of landmark times used during the prediction
 #' @param formula A survival or event history formula (`Hist(...)`). The left
@@ -61,9 +62,6 @@
 #' @param plot If FALSE, do not plot the results, just return a plottable
 #'   object. Default is TRUE.
 #' @param main Optional title to override default.
-#' @param sub If TRUE, add a subheading with the number of individuals at risk,
-#"   and the number that under the event of interest.
-#'   Default is FALSE
 #' @param ... Additional arguments to pass to calPlot (`pec` package).
 #'   These arguments have been included for user flexibility but have not been
 #'   tested and should be used with precaution.
@@ -95,35 +93,39 @@
 #' @examples
 #' \dontrun{
 #' # Internal validation
-#' par(mfrow=c(1,2),pty="s")
-#' outlist <- calplot(list("Model_1" = supermodel),
-#'                    times = c(0, 6),             # landmark times at which to plot
-#'                    method = "quantile", q = 10, # method for calibration plot
+#' par(mfrow = c(2, 2), pty = "s")
+#' outlist <- calplot(list("Model1" = supermodel),
+#'                    method = "quantile", q = 5,  # method for calibration plot
 #'                    regression_values = TRUE,    # output regression values
 #'                    ylim = c(0, 0.4), xlim = c(0, 0.4)) # optional
 #' outlist$regression_values
 #'
 #' # Bootstrapping
 #' # Remember to fit the supermodel with argument 'x = TRUE'
-#' par(mfrow=c(1,2),pty="s")
-#' outlist = calplot(list("Model_1" = supermodel),
-#'                   times = c(0, 6),
-#'                   method = "quantile", q=10,
-#'                   split.method = "bootcv", B = 10, # 10 bootstraps
-#'                   ylim = c(0, 0.4), xlim = c(0, 0.4))
+#' par(mfrow = c(2, 2), pty = "s")
+#' outlist <- calplot(list("Model1" = supermodel),
+#'                    method = "quantile", q = 5,
+#'                    split.method = "bootcv", B = 10, # 10 bootstraps
+#'                    ylim = c(0, 0.4), xlim = c(0, 0.4))
 #'
 #' # External validation
-#' # Either input an object from predict as the object or a supermodel and
-#' # "data" & "lms" argument
+#' # a) newdata is a dataframe
 #' newdata <- relapse[relapse$T_txgiven == 0, ]
 #' newdata$age <- newdata$age.at.time.0
 #' newdata$LM <- 0
-#' par(mfrow = c(1,1))
-#' cal <- calplot(list("CSC" = supermodel), cause = 1, data = newdata, lms = "LM",
-#'                method = "quantile", q = 10, ylim = c(0, 0.1), xlim = c(0, 0.1))
+#' par(mfrow = c(1, 1))
+#' cal <- calplot(list("Model1" = supermodel), data = newdata, lms = "LM",
+#'                method = "quantile", q = 5, ylim = c(0, 0.1), xlim = c(0, 0.1))
+#'
+#' # b) newdata is a landmark dataset
+#' par(mfrow = c(2, 2), pty = "s")
+#' lmdata_new <- lmdata
+#' cal <- calplot(list("Model1" = supermodel), data = lmdata_new,
+#'                method = "quantile", q = 10, ylim = c(0, 0.4), xlim = c(0, 0.4))
 #' }
 #' @import prodlim
 #' @export
+#' @seealso [dynamicLM::score()], [pec::calPlot()]
 #'
 calplot <-
   function(object,
@@ -141,7 +143,6 @@ calplot <-
            cause,
            plot = TRUE,
            main,
-           sub = FALSE,
            ...) {
 
     ### Check input and set up some initial variables ###
@@ -150,7 +151,7 @@ calplot <-
       stop("Package \"pec\" must be installed to use function calplot",
            call. = FALSE)
     }
-    if (!(inherits(object, "list"))) stop("object must be a named list.")
+    if (!(inherits(object, "list"))) stop("`object` must be a named list.")
 
 
     checked_input <- match.call()
@@ -190,12 +191,20 @@ calplot <-
       })
       names(risks_to_test) <- names(object)
       if (object[[1]]$type == "coxph") {
-        risks_to_test <- lapply(risks_to_test, function(r) 1-r)
+        risks_to_test <- lapply(risks_to_test, function(r) 1 - r)
       }
 
       if (nrow(data_to_test) != length(risks_to_test[[1]])) {
         stop("nrow(data_to_test)!=length(risks_to_test)")
       }
+
+      if (nrow(data_to_test) == 0) {
+        warning(tidymess(paste0(
+          "Skipping calplot for landmark time ", tLM, " as no data was provided
+          for this landmark.")))
+        next
+      }
+
       x <- NULL
       x <- pec::calPlot(
         risks_to_test,
@@ -219,22 +228,40 @@ calplot <-
 
       if (plot) {
         if (add_title) {
-          title <- paste0("Risk calibration at LM time ",tLM)
+          title <- paste("Risk calibration at landmark", tLM)
           graphics::title(main = title)
         } else {
           graphics::title(main = main)
         }
 
-        if (sub) {
-          num_patients <- length(risks_to_test[[1]])
-          status <- object[[1]]$outcome$status
-          num_events <- sum(data_to_test[[status]] == indicator)
-          subtitle <- paste0("#at risk=", num_patients,
-                            ",#that undergo event=", num_events)
-          graphics::title(sub = substitute(paste(italic(subtitle))))
-        }
-      }
+        # Older: Sub gave the number at risk and with an event
+        # if (sub) {
+        #   num_patients <- length(risks_to_test[[1]])
+        #   status <- object[[1]]$outcome$status
+        #   num_events <- sum(data_to_test[[status]] == indicator)
+        #   subtitle <- paste0("#at risk=", num_patients,
+        #                     ",#that undergo event=", num_events)
+        #   graphics::title(sub = substitute(paste(italic(subtitle))))
+        # }
 
+        # Potential addition: sub shows the regression values
+        # @param sub If TRUE and `regression_values` is also set to TRUE, add a
+        #    subheading with the regression slope and intercept.
+        # @param digits If `sub` and `regression_values` are TRUE, determines
+        #    the number of digits to print.
+        # if (sub && regression_values) {
+        #   slopes <- sapply(1:NF, function(i) {
+        #     reg_values_list[[i]][nrow(reg_values_list[[i]]), "Pred"]
+        #   })
+        #   intercepts <- sapply(1:NF, function(i) {
+        #     reg_values_list[[i]][nrow(reg_values_list[[i]]), "(Intercept)"]
+        #   })
+        #   subtitle <- paste0(names(object),
+        #                      ": slope:", round(slopes, digits),
+        #                      ", intercept:", round(intercepts, digits), "\n")
+        #   graphics::title(sub = substitute(paste(italic(subtitle))))
+        # }
+      }
 
       outlist[[t]] <- x
 
