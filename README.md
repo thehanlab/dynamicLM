@@ -1,24 +1,24 @@
-- [1 dynamicLM](#dynamiclm)
-- [2 Introduction](#introduction)
-  - [2.1 What is landmarking and when is it used?](#what-is-landmarking-and-when-is-it-used)
-  - [2.2 Installation](#installation)
-- [3 Tutorial: basic example](#tutorial-basic-example)
-  - [3.1 Data preparation](#data-preparation)
-    - [3.1.1 Data](#data)
-    - [3.1.2 Build a super data set](#build-a-super-data-set)
-  - [3.2 Model fitting](#model-fitting)
-    - [3.2.1 Traditional (unpenalized) landmark supermodel](#traditional-unpenalized-landmark-supermodel)
-    - [3.2.2 Penalized landmark supermodel](#penalized-landmark-supermodel)
-  - [3.3 Prediction](#prediction)
-    - [3.3.1 Training data](#training-data)
-    - [3.3.2 Testing data](#testing-data)
-  - [3.4 Model evaluation](#model-evaluation)
-    - [3.4.1 Calibration plots](#calibration-plots)
-    - [3.4.2 Predictive performance](#predictive-performance)
-    - [3.4.3 Bootstrapping](#bootstrapping)
-    - [3.4.4 External validation](#external-validation)
-    - [3.4.5 Visualize individual dynamic risk trajectories](#visualize-individual-dynamic-risk-trajectories)
-- [4 References](#references)
+- [1 dynamicLM](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#1-dynamiclm)
+- [2 Introduction](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#2-introduction)
+  - [2.1 What is landmarking and when is it used?](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#21-what-is-landmarking-and-when-is-it-used)
+  - [2.2 Installation](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#22-installation)
+- [3 Tutorial: basic example](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#3-tutorial-basic-example)
+  - [3.1 Data preparation](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#31-data-preparation)
+    - [3.1.1 Data](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#311-data)
+    - [3.1.2 Build a super data set](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#312-build-a-super-data-set)
+  - [3.2 Model fitting](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#32-model-fitting)
+    - [3.2.1 Traditional (unpenalized) landmark supermodel](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#321-traditional-unpenalized-landmark-supermodel)
+    - [3.2.2 Penalized landmark supermodel](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#322-penalized-landmark-supermodel)
+  - [3.3 Prediction](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#33-prediction)
+    - [3.3.1 Training data](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#331-training-data)
+    - [3.3.2 Testing data](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#332-testing-data)
+  - [3.4 Model evaluation](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#34-model-evaluation)
+    - [3.4.1 Calibration plots](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#341-calibration-plots)
+    - [3.4.2 Predictive performance](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#342-predictive-performance)
+    - [3.4.3 Bootstrapping](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#343-bootstrapping)
+    - [3.4.4 External validation](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#344-external-validation)
+    - [3.4.5 Visualize individual dynamic risk trajectories](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#345-visualize-individual-dynamic-risk-trajectories)
+- [4 References](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#4-references)
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
@@ -92,7 +92,7 @@ effects of covariates. For example, $\beta(s)= \beta_0+ \beta_1 s$
 models a main and linear time-dependent effect.
 
 > We offer a [short introduction to the theory behind the landmark
-> supermodel](https://github.com/thehanlab/dynamicLM/blob/extension/summary-metric/tutorials/theory-landmark-supermodel.md).
+> supermodel](https://github.com/thehanlab/dynamicLM/blob/main/tutorials/theory-landmark-supermodel.md).
 
 In short, the creation of the landmark model for survival data is built
 on the concept of risk assessment times (i.e., landmarks) that span risk
@@ -117,11 +117,11 @@ with:
 ``` r
 # install.packages("devtools")
 devtools::install_github("tagteam/riskRegression")
-devtools::install_github("thehanlab/dynamicLM", ref = "extension/summary-metric")
+devtools::install_github("thehanlab/dynamicLM")
 ```
 
 Package documentation can be found in [this
-pdf](https://github.com/thehanlab/dynamicLM/blob/extension/summary-metric/tutorials/dynamicLM_1.0.0.pdf)
+pdf](https://github.com/thehanlab/dynamicLM/blob/main/tutorials/dynamicLM_1.0.0.pdf)
 and more information about any function can be obtained by running
 `?function_name`.
 
@@ -132,7 +132,7 @@ dynamic 5-year predictions and check calibration and discrimination
 metrics.
 
 > We have [an alternative
-> tutorial](https://github.com/thehanlab/dynamicLM/blob/extension/summary-metric/tutorials/tutorial2-recurrence-data.md)
+> tutorial](https://github.com/thehanlab/dynamicLM/blob/main/tutorials/tutorial2-recurrence-data.md)
 > which uses cancer relapse data. This is the example first used at the
 > time of publishing the [Software Application Profile in
 > IJE](https://academic.oup.com/ije/article/52/6/1984/7260912), and only

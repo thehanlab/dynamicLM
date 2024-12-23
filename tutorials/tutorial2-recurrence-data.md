@@ -10,18 +10,18 @@ metrics.
 
 ## Installation
 
-You can install the development version of `dynamicLM` from
-[GitHub](https://github.com/) with:
+In order to use `dynamicLM`, you need the development version of
+`riskRegression`. Both are available from [GitHub](https://github.com/)
+with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("thehanlab/dynamicLM", ref = "extension/summary-metric")
-#> Skipping install of 'dynamicLM' from a github remote, the SHA1 (304aafc3) has not changed since last install.
-#>   Use `force = TRUE` to force installation
+devtools::install_github("tagteam/riskRegression")
+devtools::install_github("thehanlab/dynamicLM")
 ```
 
 Package documentation can be found in [this
-pdf](https://github.com/thehanlab/dynamicLM/blob/extension/summary-metric/tutorials/dynamicLM_1.0.0.pdf)
+pdf](https://github.com/thehanlab/dynamicLM/blob/main/tutorials/dynamicLM_1.0.0.pdf)
 and more information about any function can be obtained by running
 `?function_name`.
 

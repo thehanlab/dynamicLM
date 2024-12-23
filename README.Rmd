@@ -57,7 +57,7 @@ It is built on hazards, like a (cause-specific) Cox model. From a landmark time 
 $$h_j (t│Z(s), s)=h_{j0} (t)  exp⁡(\alpha_j (s)+ \beta_j (s)^T Z(s))$$
 where $Z(s)$ are the most up-to-date values of an individual’s covariates at time (landmark) $s$ and $\alpha(s)$ models the main effects of the landmark time. The interaction of $s$ with the covariates, modeled by $\beta_j (s)$, captures the time-dependent effects of covariates. For example, $\beta(s)= \beta_0+ \beta_1 s$ models a main and linear time-dependent effect.
 
-> We offer a [short introduction to the theory behind the landmark supermodel](https://github.com/thehanlab/dynamicLM/blob/extension/summary-metric/tutorials/theory-landmark-supermodel.md).
+> We offer a [short introduction to the theory behind the landmark supermodel](https://github.com/thehanlab/dynamicLM/blob/main/tutorials/theory-landmark-supermodel.md).
 
 In short, the creation of the landmark model for survival data is built on the concept of risk assessment times (i.e., landmarks) that span risk prediction times of interest. In this approach, a training dataset of the study cohort is transformed into multiple censored datasets based on a prediction window of interest and the predefined landmarks. A model is fit on these stacked datasets (i.e., supermodel), and dynamic risk prediction is then performed by using the most up-to-date value of a patient’s covariate values.
 
@@ -71,16 +71,16 @@ In order to use `dynamicLM`, you need the development version of
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, results='hide'}
 # install.packages("devtools")
 devtools::install_github("tagteam/riskRegression")
-devtools::install_github("thehanlab/dynamicLM", ref = "extension/summary-metric")
+devtools::install_github("thehanlab/dynamicLM")
 ```
 
-Package documentation can be found in [this pdf](https://github.com/thehanlab/dynamicLM/blob/extension/summary-metric/tutorials/dynamicLM_1.0.0.pdf) and more information about any function can be obtained by running `?function_name`.
+Package documentation can be found in [this pdf](https://github.com/thehanlab/dynamicLM/blob/main/tutorials/dynamicLM_1.0.0.pdf) and more information about any function can be obtained by running `?function_name`.
 
 # Tutorial: basic example
 
 This is a basic example which shows you how to use `dynamicLM` to make dynamic 5-year predictions and check calibration and discrimination metrics.
 
-> We have [an alternative tutorial](https://github.com/thehanlab/dynamicLM/blob/extension/summary-metric/tutorials/tutorial2-recurrence-data.md) which uses cancer relapse data. This is the example first used at the time of publishing the [Software Application Profile in IJE](https://academic.oup.com/ije/article/52/6/1984/7260912), and only includes an unpenalized landmark supermodel.
+> We have [an alternative tutorial](https://github.com/thehanlab/dynamicLM/blob/main/tutorials/tutorial2-recurrence-data.md) which uses cancer relapse data. This is the example first used at the time of publishing the [Software Application Profile in IJE](https://academic.oup.com/ije/article/52/6/1984/7260912), and only includes an unpenalized landmark supermodel.
 
 First, load the library:
 
