@@ -68,7 +68,7 @@ In short, the creation of the landmark model for survival data is built on the c
 In order to use `dynamicLM`, you need the development version of 
 `riskRegression`. Both are available from [GitHub](https://github.com/) with:
 
-```{r, echo=TRUE, warning=FALSE, message=FALSE, results='hide'}
+```{r, echo=TRUE, warning=FALSE, message=FALSE, results='hide', eval=FALSE}
 # install.packages("devtools")
 devtools::install_github("tagteam/riskRegression")
 devtools::install_github("thehanlab/dynamicLM")
@@ -582,11 +582,10 @@ We turn our data into long-form data to plot.
 
 ```{r}
 # Select individuals
-idx <- pbc_df$id %in% c(231, 29) #c(26, 130, 231, 290 ) #c(3,7,29) #36:40 #11:20 #3,7, (29,34,35)
-# idx <- pbc_df$id %in% c(235, 242, 120)
+idx <- pbc_df$id %in% c(231, 29)
 
 # Prediction time points 
-x <- seq(0, 4, by = 0.05)
+x <- seq(0, 4, by = 0.5)
 
 # Stack landmark datasets
 dat <- stack_data(pbc_df[idx, ], outcome, x, w, covars, format = "long", 
@@ -596,7 +595,7 @@ dat <- dat[order(dat$id, dat$LM), ]
 ```
 
 ```{r}
-print(dat[dat$LM %in% c(0, 2, 4), c("id", "time", "status", "LM", supermodel$lm_covs)])
+print(dat[dat$LM %in% 0:3, c("id", "time", "status", "LM", supermodel$lm_covs)])
 ```
 
 
@@ -604,7 +603,11 @@ print(dat[dat$LM %in% c(0, 2, 4), c("id", "time", "status", "LM", supermodel$lm_
 plotrisk(supermodel, dat, format = "long", ylim = c(0, 0.35), 
          x.legend = "topleft")
 ```
-We can see that the individual (id = 29) with lower stage, low and constant bilirunbin levels, and constant albumin levels generally has a lower and largely unchanged 5-year risk of transplant. The individual (id = 231) with higher stage has a higher initial risk, but an increase in albumin levels at around landmark 2, leads to a much improved (lower) risk of transplant. This can be explained by the dynamic hazard rate of albumin (seen above) which is protective for higher levels and has a larger effect than bilirunbin.
+
+We can see that the individual with higher bilirunbin levels (id=231) has a
+higher and increasing 5-year risk of transplant. This can be explained
+by the dynamic hazard rate of bilirunbin (seen above). Further, the risk
+of transplant rapidly increases when the bilirunbin levels rise.
 
 # References
 

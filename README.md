@@ -1,24 +1,24 @@
-- [1 dynamicLM](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#1-dynamiclm)
-- [2 Introduction](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#2-introduction)
-  - [2.1 What is landmarking and when is it used?](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#21-what-is-landmarking-and-when-is-it-used)
-  - [2.2 Installation](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#22-installation)
-- [3 Tutorial: basic example](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#3-tutorial-basic-example)
-  - [3.1 Data preparation](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#31-data-preparation)
-    - [3.1.1 Data](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#311-data)
-    - [3.1.2 Build a super data set](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#312-build-a-super-data-set)
-  - [3.2 Model fitting](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#32-model-fitting)
-    - [3.2.1 Traditional (unpenalized) landmark supermodel](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#321-traditional-unpenalized-landmark-supermodel)
-    - [3.2.2 Penalized landmark supermodel](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#322-penalized-landmark-supermodel)
-  - [3.3 Prediction](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#33-prediction)
-    - [3.3.1 Training data](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#331-training-data)
-    - [3.3.2 Testing data](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#332-testing-data)
-  - [3.4 Model evaluation](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#34-model-evaluation)
-    - [3.4.1 Calibration plots](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#341-calibration-plots)
-    - [3.4.2 Predictive performance](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#342-predictive-performance)
-    - [3.4.3 Bootstrapping](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#343-bootstrapping)
-    - [3.4.4 External validation](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#344-external-validation)
-    - [3.4.5 Visualize individual dynamic risk trajectories](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#345-visualize-individual-dynamic-risk-trajectories)
-- [4 References](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#4-references)
+- [1 dynamicLM](#dynamiclm)
+- [2 Introduction](#introduction)
+  - [2.1 What is landmarking and when is it used?](#what-is-landmarking-and-when-is-it-used)
+  - [2.2 Installation](#installation)
+- [3 Tutorial: basic example](#tutorial-basic-example)
+  - [3.1 Data preparation](#data-preparation)
+    - [3.1.1 Data](#data)
+    - [3.1.2 Build a super data set](#build-a-super-data-set)
+  - [3.2 Model fitting](#model-fitting)
+    - [3.2.1 Traditional (unpenalized) landmark supermodel](#traditional-unpenalized-landmark-supermodel)
+    - [3.2.2 Penalized landmark supermodel](#penalized-landmark-supermodel)
+  - [3.3 Prediction](#prediction)
+    - [3.3.1 Training data](#training-data)
+    - [3.3.2 Testing data](#testing-data)
+  - [3.4 Model evaluation](#model-evaluation)
+    - [3.4.1 Calibration plots](#calibration-plots)
+    - [3.4.2 Predictive performance](#predictive-performance)
+    - [3.4.3 Bootstrapping](#bootstrapping)
+    - [3.4.4 External validation](#external-validation)
+    - [3.4.5 Visualize individual dynamic risk trajectories](#visualize-individual-dynamic-risk-trajectories)
+- [4 References](#references)
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
@@ -766,6 +766,8 @@ fitting the model (i.e., when calling `dynamic_lm()`).
 scores <- score(list("LM" = supermodel, "penLM" = supermodel_pen),
               times = c(0, 2, 4), metrics = "auc",
               split.method = "bootcv", B = 10)       # 10 bootstraps
+#> 
+#> --> WARNING: 1 bootstrap(s) dropped due to errors/unreliable results. Results are computed on the remaining iterations.
 ```
 
 ### 3.4.4 External validation
@@ -802,11 +804,10 @@ We turn our data into long-form data to plot.
 
 ``` r
 # Select individuals
-idx <- pbc_df$id %in% c(231, 29) #c(26, 130, 231, 290 ) #c(3,7,29) #36:40 #11:20 #3,7, (29,34,35)
-# idx <- pbc_df$id %in% c(235, 242, 120)
+idx <- pbc_df$id %in% c(231, 29)
 
 # Prediction time points 
-x <- seq(0, 4, by = 0.05)
+x <- seq(0, 4, by = 0.5)
 
 # Stack landmark datasets
 dat <- stack_data(pbc_df[idx, ], outcome, x, w, covars, format = "long", 
@@ -816,13 +817,16 @@ dat <- dat[order(dat$id, dat$LM), ]
 ```
 
 ``` r
-print(dat[dat$LM %in% c(0, 2, 4), c("id", "time", "status", "LM", supermodel$lm_covs)])
-#>         id time status LM stage bili albumin
-#> 182     29  5.0      0  0     2  0.7    3.78
-#> 18420   29  7.0      0  2     2  0.6    3.90
-#> 1868    29  9.0      0  4     2  0.5    3.74
-#> 1517   231  3.2      2  0     4  3.4    1.96
-#> 151916 231  3.2      2  2     4  8.1    3.06
+print(dat[dat$LM %in% 0:3, c("id", "time", "status", "LM", supermodel$lm_covs)])
+#>        id time status LM stage bili albumin
+#> 182    29  5.0      0  0     2  0.7    3.78
+#> 184    29  6.0      0  1     2  0.6    3.90
+#> 1842   29  7.0      0  2     2  0.6    3.90
+#> 1851   29  8.0      0  3     2  0.5    3.74
+#> 1517  231  3.2      2  0     4  3.4    1.96
+#> 1518  231  3.2      2  1     4  4.4    3.25
+#> 15191 231  3.2      2  2     4  8.1    3.06
+#> 15201 231  3.2      2  3     4 14.8    2.89
 ```
 
 ``` r
@@ -830,15 +834,13 @@ plotrisk(supermodel, dat, format = "long", ylim = c(0, 0.35),
          x.legend = "topleft")
 ```
 
-<img src="man/figures/README-risk-1.png" width="100%" /> We can see that
-the individual (id = 29) with lower stage, low and constant bilirunbin
-levels, and constant albumin levels generally has a lower and largely
-unchanged 5-year risk of transplant. The individual (id = 231) with
-higher stage has a higher initial risk, but an increase in albumin
-levels at around landmark 2, leads to a much improved (lower) risk of
-transplant. This can be explained by the dynamic hazard rate of albumin
-(seen above) which is protective for higher levels and has a larger
-effect than bilirunbin.
+<img src="man/figures/README-risk-1.png" width="100%" />
+
+We can see that the individual with higher bilirunbin levels (id=231)
+has a higher and increasing 5-year risk of transplant. This can be
+explained by the dynamic hazard rate of bilirunbin (seen above).
+Further, the risk of transplant rapidly increases when the bilirunbin
+levels rise.
 
 # 4 References
 

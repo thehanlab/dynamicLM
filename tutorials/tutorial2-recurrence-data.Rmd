@@ -30,7 +30,7 @@ metrics.
 In order to use `dynamicLM`, you need the development version of 
 `riskRegression`. Both are available from [GitHub](https://github.com/) with:
 
-```{r, echo=TRUE, warning=FALSE, message=FALSE, results='hide'}
+```{r, echo=TRUE, warning=FALSE, message=FALSE, results='hide', eval=FALSE}
 # install.packages("devtools")
 devtools::install_github("tagteam/riskRegression")
 devtools::install_github("thehanlab/dynamicLM")
@@ -378,7 +378,7 @@ head(dat)
 plotrisk(supermodel, dat, format = "long", x.legend = "topright")
 ```
 
-We can see that the male has a higher and increasing 5-year risk of
+We can see that the male (ID2412) has a higher and increasing 5-year risk of
 recurrence that peaks around 1 year, and then rapidly decreases. This
 can be explained by the dynamic hazard rate of being male (seen above). In
 comparison, the 5-year risk of recurrent for the female remains

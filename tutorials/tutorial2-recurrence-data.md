@@ -529,8 +529,8 @@ plotrisk(supermodel, dat, format = "long", x.legend = "topright")
 
 <img src="man/figures/README-plotrisk-1.png" width="100%" />
 
-We can see that the male has a higher and increasing 5-year risk of
-recurrence that peaks around 1 year, and then rapidly decreases. This
-can be explained by the dynamic hazard rate of being male (seen above).
-In comparison, the 5-year risk of recurrent for the female remains
-relatively constant.
+We can see that the male (ID2412) has a higher and increasing 5-year
+risk of recurrence that peaks around 1 year, and then rapidly decreases.
+This can be explained by the dynamic hazard rate of being male (seen
+above). In comparison, the 5-year risk of recurrent for the female
+remains relatively constant.
