@@ -17,7 +17,7 @@
 riskScore <- function(object, tLM, data, func_covars, func_lms) {
   coefs <- object$coefficients
   pred_covars <- names(coefs)
-  idx_lm_covars <- grep("LM", pred_covars, fixed=TRUE)
+  idx_lm_covars <- grep("^LM[0-9]+$", pred_covars)
 
   # 1. risk from landmark
   if (sum(idx_lm_covars) > 0) {
@@ -27,7 +27,7 @@ riskScore <- function(object, tLM, data, func_covars, func_lms) {
     # coef_LM1*g1(t) + coef_LM2*g2(t) + ...
     risk1 <- sapply(lm_covars, function(coef_name){
         # Get associated function
-        idx <-  as.numeric(sub(".*\\D+", "\\1", coef_name))
+        idx <-  as.numeric(sub("LM(\\d+)", "\\1", coef_name))
         return(func_lms[[idx]](tLM) * coefs[coef_name])
       })
   } else {
@@ -40,12 +40,12 @@ riskScore <- function(object, tLM, data, func_covars, func_lms) {
   risk <- sum(risk1) + sum(
     sapply(bet_covars, function(coef_name) {
       # Get associated covariate info (remove _i from the name)
-      covar <- sub("_(\\d)$", "", coef_name)
+      covar <- sub("_LM(\\d)$", "", coef_name)
       # Get associated function & multiply both by coef
       if (coef_name == covar) {
         return(coefs[coef_name] * data[, covar])
       } else {
-        idx <- as.numeric(sub(".*_(\\d)$", "\\1", coef_name))
+        idx <- as.numeric(sub(".*_LM(\\d)$", "\\1", coef_name))
         f <- func_covars[[idx]]
         return(f(tLM) * coefs[coef_name] * data[, covar])
       }
