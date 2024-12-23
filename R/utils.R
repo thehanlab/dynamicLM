@@ -141,11 +141,17 @@ update_hist_formula <- function(formula, type) {
 # ----------------------------------------------------------
 clean_bootstraps <- function(table, column, alpha, contrasts = FALSE,
                              se.fit = TRUE, summary = FALSE) {
+  # Define grouping columns
   by_columns <- c("tLM", "model")
   if (summary) by_columns <- c("model")
   if (contrasts) by_columns <- c(by_columns, "reference")
 
+  # Drop rows with NA in grouping columns
+  to_keep <- complete.cases(table[, ..by_columns])
+  table <- table[to_keep, ]
+
   if (se.fit) {
+    # Calculate statistics with standard error
     out <- table[, data.table::data.table(
       mean(.SD[[column]], na.rm = TRUE),
       se = stats::sd(.SD[[column]], na.rm = TRUE),
@@ -155,10 +161,12 @@ clean_bootstraps <- function(table, column, alpha, contrasts = FALSE,
     data.table::setnames(
       out, c(by_columns, column, "se", "lower", "upper"))
     if (contrasts) {
+      # Add p-value for contrasts
       out[, p := 2 * stats::pnorm(abs(get(column) / se),
                                   lower.tail=FALSE)]
     }
   } else {
+    # Calculate mean only
     out <- table[, data.table::data.table(
       mean(.SD[[column]], na.rm = TRUE)
     ), by = by_columns, .SDcols = column]
@@ -184,9 +192,9 @@ initialize_df <- function(metric, bootstrap) {
     cols <- c("tLM", "times", "model", "reference", "delta.Brier", "se",
               "lower", "upper", "p")
   if (metric == "IF.AUC")
-    cols <- c("tLM", "riskRegression_ID", "model", "times", "IF.AUC") # cause
+    cols <- c("tLM", "riskRegression_ID", "model", "cause", "times", "IF.AUC")
   if (metric == "IF.Brier")
-    cols <- c("tLM", "riskRegression_ID", "model", "times", "IF.Brier")
+    cols <- c("tLM", "riskRegression_ID", "model", "cause", "times", "IF.Brier")
 
   df <- data.frame(matrix(NA, nrow = 1, ncol = length(cols)))
   colnames(df) <- cols
