@@ -68,7 +68,7 @@ In short, the creation of the landmark model for survival data is built on the c
 In order to use `dynamicLM`, you need the development version of 
 `riskRegression`. Both are available from [GitHub](https://github.com/) with:
 
-```{r, message = FALSE}
+```{r, echo=TRUE, warning=FALSE, message=FALSE, results='hide'}
 # install.packages("devtools")
 devtools::install_github("tagteam/riskRegression")
 devtools::install_github("thehanlab/dynamicLM", ref = "extension/summary-metric")

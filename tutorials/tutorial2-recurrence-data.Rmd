@@ -27,11 +27,12 @@ metrics.
 
 ## Installation
 
-You can install the development version of `dynamicLM` from
-[GitHub](https://github.com/) with:
+In order to use `dynamicLM`, you need the development version of 
+`riskRegression`. Both are available from [GitHub](https://github.com/) with:
 
-```{r}
+```{r, echo=TRUE, warning=FALSE, message=FALSE, results='hide'}
 # install.packages("devtools")
+devtools::install_github("tagteam/riskRegression")
 devtools::install_github("thehanlab/dynamicLM", ref = "extension/summary-metric")
 ```
 
