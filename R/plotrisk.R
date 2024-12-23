@@ -84,6 +84,10 @@ plotrisk <- function(
     las = 1,
     ...
 ) {
+  if (inherits(data, "tbl"))
+    stop(tidymess(
+      "arg 'data' must be a data frame and cannot be a tibble. Convert to data
+      frame using as.data.frame() before calling this function."))
 
   model_w <- object$w
   if (missing(w)) {
