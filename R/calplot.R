@@ -205,12 +205,6 @@ calplot <-
         next
       }
 
-      print("time")
-      print(tLM)
-      print(summary(risks_to_test[[1]]))
-      groups <- cut(risks_to_test[[1]], breaks = 5)
-      print(levels(groups))
-
       x <- NULL
       x <- pec::calPlot(
         risks_to_test,
