@@ -27,6 +27,32 @@
 #'   code
 #' @export
 #'
+#' @examples
+#'
+#' data(relapse)
+#' outcome <- list(time = "Time", status = "event")
+#' covars <- list(fixed = c("male", "stage", "bmi"),
+#'                varying = c("treatment"))
+#' w <- 60; lms <- c(0, 6, 12, 18)
+#' lmdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
+#'                      id = "ID", rtime = "T_txgiven")
+#' lmdata <- add_interactions(lmdata, func_covars = c("linear", "quadratic"),
+#'                            func_lms = c("linear", "quadratic"))
+#' formula <- "Hist(Time, event, LM) ~ male + male_LM1 + male_LM2 +
+#'             stage + stage_LM1 + stage_LM2 + bmi + bmi_LM1 + bmi_LM2 +
+#'             treatment + treatment_LM1 + treatment_LM2 + LM1 + LM2 + cluster(ID)"
+#' supermodel <- dynamic_lm(lmdata, as.formula(formula), "CSC", x = TRUE)
+#'
+#' par(mfrow = c(2, 3))
+#' plot(supermodel)
+#'
+#' par(mfrow = c(1, 2))
+#' plot(supermodel,
+#'      covars = c("stage", "bmi"), # subset of covariates to plot
+#'      logHR = FALSE,              # plot HR instead of log HR
+#'      conf_int = FALSE,           # do not plot confidence intervals
+#'      main = c("HR of stage", "HR of BMI"))
+#'
 plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
                            logHR = TRUE, extend = FALSE, silence = FALSE,
                            xlab = "Landmark time", ylab, ylim, main, ...) {

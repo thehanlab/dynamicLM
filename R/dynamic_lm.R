@@ -112,35 +112,39 @@ dynamic_lm.formula <-  function(formula, lmdata, type, ...) {
 #'   - lm_col: column name that indicates the landmark time point for a row.
 #'
 #' @examples
-#' \dontrun{
+#'
 #' data(relapse)
 #' outcome <- list(time = "Time", status = "event")
-#' covars <- list(fixed = c("age.at.time.0", "male", "stage", "bmi"),
+#' covars <- list(fixed = c("male", "stage", "bmi"),
 #'                varying = c("treatment"))
 #' w <- 60; lms <- c(0, 6, 12, 18)
-#' # Choose covariates that will have time interaction
-#' pred_covars <- c("age", "male", "stage", "bmi", "treatment")
-#' # Stack landmark datasets
 #' lmdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
 #'                      id = "ID", rtime = "T_txgiven")
-#'
-#' # Update complex landmark-varying covariates
-#' # note age is in years and LM is in months
-#' lmdata$data$age <- lmdata$data$age.at.time.0 + lmdata$data$LM/12
-#' # Add LM-time interactions
-#' lmdata <- add_interactions(lmdata, pred_covars,
-#'                            func_covars = c("linear", "quadratic"),
+#' lmdata <- add_interactions(lmdata, func_covars = c("linear", "quadratic"),
 #'                            func_lms = c("linear", "quadratic"))
 #'
-#' formula <- "Hist(Time, event, LM) ~ age + male + stage + bmi + treatment +
-#'            age_1 + age_2 + male_1 + male_2 + stage_1 + stage_2 + bmi_1 +
-#'            bmi_2 + treatment_1 + treatment_2 + LM_1 + LM_2 + cluster(ID)"
-#' supermodel <- dynamic_lm(lmdata, as.formula(formula), "CSC")
+#' # for competing risk data (in this example)
+#' formula <- "Hist(Time, event, LM) ~ male + male_LM1 + male_LM2 +
+#'             stage + stage_LM1 + stage_LM2 + bmi + bmi_LM1 + bmi_LM2 +
+#'             treatment + treatment_LM1 + treatment_LM2 + LM1 + LM2 + cluster(ID)"
+#' supermodel <- dynamic_lm(lmdata, as.formula(formula), "CSC", x = TRUE)
+#'
+#' #' \dontrun{
+#' # for survival data
+#' formula <- "Surv(LM, Time, event) ~
+#'             age + age_LM1 + age_LM2 + male + male_LM1 + male_LM2 +
+#'             stage + stage_LM1 + stage_LM2 + bmi + bmi_LM1 + bmi_LM2 +
+#'             treatment + treatment_LM1 + treatment_LM2 + LM1 + LM2 + cluster(ID)"
+#' supermodel <- dynamic_lm(lmdata, as.formula(formula), "coxph")
+#' }
+#'
 #' print(supermodel)
 #'
-#' par(mfrow = c(2,3))
+#' coef(supermodel)
+#'
+#' par(mfrow = c(2, 3))
 #' plot(supermodel)
-#' }
+#'
 #' @import survival
 #' @export
 #'

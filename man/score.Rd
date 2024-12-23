@@ -145,28 +145,35 @@ unintentionally.
 }
 \examples{
 \dontrun{
-# Internal validation
-scores <- score(list("Model1" = supermodel),
-                times = c(0, 6)) # lms at which to provide calibration plots
-scores
+# Internal validation (using model)
+scores <- score(list("Model1" = supermodel))
+print(scores)
 
-# Bootstrapping
-# Remember to fit the supermodel with argument 'x = TRUE'
-scores <- score(list("Model1" = supermodel),
-                times = c(0, 6),
-                split.method = "bootcv", B = 10) # 10 bootstraps
-scores
-
-par(mfrow=c(1,2))
+par(mfrow=c(1, 4))
 plot(scores)
 
+# Internal validation (using predictions)
+p1 <- predict(supermodel)
+scores <- score(list("Model1" = p1))
+print(scores)
+
+
+# # Bootstrapping
+# Remember to fit the supermodel with argument 'x = TRUE'
+scores <- score(list("Model1" = supermodel),
+                split.method = "bootcv", B = 10) # 10 bootstraps
+print(scores)
+
 # External validation
-# Either input an object from predict as the object or a supermodel and
-# "data" & "lms" argument
+# a) newdata is a dataframe
 newdata <- relapse[relapse$T_txgiven == 0, ]
 newdata$age <- newdata$age.at.time.0
 newdata$LM <- 0
-score(list("CSC" = supermodel), cause = 1, data = newdata, lms = "LM")
+score(list("Model1" = supermodel), data = newdata, lms = "LM")
+
+# b) newdata is a landmark dataset
+lmdata_new <- lmdata
+score(list("Model1" = supermodel), data = lmdata_new)
 }
 
 }

@@ -26,6 +26,27 @@
 #' @seealso [print.pen_lm()], [plot.pen_lm()], [dynamic_lm.pen_lm()]
 #' @examples
 #' \dontrun{
+#' data(relapse)
+#' outcome <- list(time = "Time", status = "event")
+#' covars <- list(fixed = c("age.at.time.0", "male", "stage", "bmi"),
+#'                varying = c("treatment"))
+#' w <- 60; lms <- c(0, 6, 12, 18)
+#' # Choose covariates that will have time interaction
+#' pred_covars <- c("age", "male", "stage", "bmi", "treatment")
+#' # Stack landmark datasets
+#' lmdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
+#'                      id = "ID", rtime = "T_txgiven")
+#'
+#' # use all covariates
+#' path <- pen_lm(lmdata, alpha = 0)
+#' print(path, all_causes = TRUE)
+#'
+#' par(mfrow = c(1, 2))
+#' plot(path, all_causes = TRUE)
+#'
+#' # only use a subset of covariates
+#' path1 <- pen_lm(lmdata, y = c("male", "male_LM1", "male_LM2",
+#'                               "stage", "stage_LM1", "stage_LM2"))
 #' }
 #' @import glmnet
 #' @export

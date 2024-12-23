@@ -68,7 +68,6 @@ one column for each interaction given in func_lms is added
 (length(func_lms) == j).
 }
 \examples{
-\dontrun{
 data(relapse)
 outcome <- list(time = "Time", status = "event")
 covars <- list(fixed = c("age.at.time.0", "male", "stage", "bmi"),
@@ -87,7 +86,6 @@ lmdata <- add_interactions(lmdata, pred_covars,
                            func_covars = c("linear", "quadratic"),
                            func_lms = c("linear", "quadratic"))
 head(lmdata$data)
-}
 
 }
 \seealso{

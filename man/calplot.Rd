@@ -131,31 +131,37 @@ made during the bootstrap resampling.
 \examples{
 \dontrun{
 # Internal validation
-par(mfrow=c(1,2),pty="s")
-outlist <- calplot(list("Model_1" = supermodel),
-                   times = c(0, 6),             # landmark times at which to plot
-                   method = "quantile", q = 10, # method for calibration plot
+par(mfrow = c(2, 2), pty = "s")
+outlist <- calplot(list("Model1" = supermodel),
+                   method = "quantile", q = 5,  # method for calibration plot
                    regression_values = TRUE,    # output regression values
                    ylim = c(0, 0.4), xlim = c(0, 0.4)) # optional
 outlist$regression_values
 
 # Bootstrapping
 # Remember to fit the supermodel with argument 'x = TRUE'
-par(mfrow=c(1,2),pty="s")
-outlist = calplot(list("Model_1" = supermodel),
-                  times = c(0, 6),
-                  method = "quantile", q=10,
-                  split.method = "bootcv", B = 10, # 10 bootstraps
-                  ylim = c(0, 0.4), xlim = c(0, 0.4))
+par(mfrow = c(2, 2), pty = "s")
+outlist <- calplot(list("Model1" = supermodel),
+                   method = "quantile", q = 5,
+                   split.method = "bootcv", B = 10, # 10 bootstraps
+                   ylim = c(0, 0.4), xlim = c(0, 0.4))
 
 # External validation
-# Either input an object from predict as the object or a supermodel and
-# "data" & "lms" argument
+# a) newdata is a dataframe
 newdata <- relapse[relapse$T_txgiven == 0, ]
 newdata$age <- newdata$age.at.time.0
 newdata$LM <- 0
-par(mfrow = c(1,1))
-cal <- calplot(list("CSC" = supermodel), cause = 1, data = newdata, lms = "LM",
-               method = "quantile", q = 10, ylim = c(0, 0.1), xlim = c(0, 0.1))
+par(mfrow = c(1, 1))
+cal <- calplot(list("Model1" = supermodel), data = newdata, lms = "LM",
+               method = "quantile", q = 5, ylim = c(0, 0.1), xlim = c(0, 0.1))
+
+# b) newdata is a landmark dataset
+par(mfrow = c(2, 2), pty = "s")
+lmdata_new <- lmdata
+cal <- calplot(list("Model1" = supermodel), data = lmdata_new,
+               method = "quantile", q = 10, ylim = c(0, 0.4), xlim = c(0, 0.4))
 }
+}
+\seealso{
+\code{\link[=score]{score()}}, \code{\link[pec:calPlot]{pec::calPlot()}}
 }

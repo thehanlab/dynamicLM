@@ -47,7 +47,6 @@
 #'   (length(func_lms) == j).
 #'
 #' @examples
-#' \dontrun{
 #' data(relapse)
 #' outcome <- list(time = "Time", status = "event")
 #' covars <- list(fixed = c("age.at.time.0", "male", "stage", "bmi"),
@@ -66,7 +65,6 @@
 #'                            func_covars = c("linear", "quadratic"),
 #'                            func_lms = c("linear", "quadratic"))
 #' head(lmdata$data)
-#' }
 #'
 #' @seealso [dynamicLM::stack_data()], [dynamicLM::dynamic_lm()]
 #' @export

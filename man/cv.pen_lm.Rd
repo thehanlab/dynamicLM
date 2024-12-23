@@ -62,6 +62,26 @@ or with a landmark super dataset specifying the dependent columns in \code{y}.
 }
 \examples{
 \dontrun{
+data(relapse)
+outcome <- list(time = "Time", status = "event")
+covars <- list(fixed = c("male", "stage", "bmi"),
+               varying = c("treatment"))
+w <- 60; lms <- c(0, 6, 12, 18)
+lmdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
+                     id = "ID", rtime = "T_txgiven")
+lmdata <- add_interactions(lmdata, func_covars = c("linear", "quadratic"),
+                           func_lms = c("linear", "quadratic"))
+
+# use all covariates
+cv_model <- cv.pen_lm(lmdata, alpha = 1)
+print(cv_model, all_causes = TRUE)
+
+par(mfrow = c(1, 2))
+plot(cv_model, all_causes = TRUE)
+
+# only use a subset of covariates
+cv_model1 <- cv.pen_lm(lmdata, y = c("male", "male_LM1", "male_LM2",
+                                     "stage", "stage_LM1", "stage_LM2"))
 }
 }
 \seealso{

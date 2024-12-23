@@ -104,28 +104,35 @@
 #'   32(30):5381–5397, 2013.
 #' @examples
 #' \dontrun{
-#' # Internal validation
-#' scores <- score(list("Model1" = supermodel),
-#'                 times = c(0, 6)) # lms at which to provide calibration plots
-#' scores
+#' # Internal validation (using model)
+#' scores <- score(list("Model1" = supermodel))
+#' print(scores)
 #'
-#' # Bootstrapping
-#' # Remember to fit the supermodel with argument 'x = TRUE'
-#' scores <- score(list("Model1" = supermodel),
-#'                 times = c(0, 6),
-#'                 split.method = "bootcv", B = 10) # 10 bootstraps
-#' scores
-#'
-#' par(mfrow=c(1,2))
+#' par(mfrow=c(1, 4))
 #' plot(scores)
 #'
+#' # Internal validation (using predictions)
+#' p1 <- predict(supermodel)
+#' scores <- score(list("Model1" = p1))
+#' print(scores)
+#'
+#'
+#' # # Bootstrapping
+#' # Remember to fit the supermodel with argument 'x = TRUE'
+#' scores <- score(list("Model1" = supermodel),
+#'                 split.method = "bootcv", B = 10) # 10 bootstraps
+#' print(scores)
+#'
 #' # External validation
-#' # Either input an object from predict as the object or a supermodel and
-#' # "data" & "lms" argument
+#' # a) newdata is a dataframe
 #' newdata <- relapse[relapse$T_txgiven == 0, ]
 #' newdata$age <- newdata$age.at.time.0
 #' newdata$LM <- 0
-#' score(list("CSC" = supermodel), cause = 1, data = newdata, lms = "LM")
+#' score(list("Model1" = supermodel), data = newdata, lms = "LM")
+#'
+#' # b) newdata is a landmark dataset
+#' lmdata_new <- lmdata
+#' score(list("Model1" = supermodel), data = lmdata_new)
 #' }
 #'
 #' @import riskRegression
@@ -197,7 +204,7 @@ score <-
     # TODO: parallelize?
     # Get the metrics for each bootstrap (if not bootstrapping then for the
     # single iteration)
-    metrics <- lapply(unique(data$bootstrap), function(b) {
+    metrics <- lapply(1:num_B, function(b) {
       lapply(seq_along(times), function(t) {
         tLM <- times[t]
         idx <- (pred_LMs == tLM) & (data$bootstrap == b)
@@ -240,13 +247,13 @@ score <-
 
         # Error handing & get what we need from the output
         if (inherits(score_t, "try-error")) {
-          # If error: df with one row of NAs of the relevant column names
-          auct_b <- initialize_df("AUC", bootstrap = b)
-          briert_b <- initialize_df("Brier", bootstrap = b)
-          auc_contrasts_b <- initialize_df("delta.AUC", bootstrap = b)
-          brier_contrasts_b <- initialize_df("delta.Brier", bootstrap = b)
-          a_iid <- initialize_df("IF.AUC", bootstrap = b)
-          b_iid <- initialize_df("IF.Brier", bootstrap = b)
+          if (!silent) {
+            cat(paste0(
+              "\nError in bootstrap ", b, " for landmark time ", tLM,
+              ". The error is the following:\n\n"))
+            cat(score_t)
+          }
+          return(NULL)
         } else {
           auct_b <- cbind(tLM, score_t$AUC$score, bootstrap = b)
           briert_b <- cbind(tLM, score_t$Brier$score, bootstrap = b)
@@ -257,18 +264,26 @@ score <-
             a_iid <- cbind(tLM, score_t$AUC$iid.decomp, bootstrap = b)
           if (get.b.iid)
             b_iid <- cbind(tLM, score_t$Brier$iid.decomp, bootstrap = b)
-        }
 
-        list(
+        return(list(
           AUC = if (get.auc) auct_b else NULL,
           Brier = if (get.bs) briert_b else NULL,
           a_contrasts = if (contrasts && get.auc) auc_contrasts_b else NULL,
           b_contrasts = if (contrasts && get.bs) brier_contrasts_b else NULL,
           a_iid = if (get.a.iid) a_iid else NULL,
           b_iid = if (get.b.iid) b_iid else NULL
-        )
+        ))
+        }
       })
     })
+
+    failures <- sapply(metrics, function(m) any(sapply(m, is.null)))
+    num_failures <- sum(failures)
+    if (num_failures > 0)
+      cat(paste("\n--> WARNING:", num_failures, "bootstrap(s) dropped due to",
+        "errors/unreliable results. Results are computed on the remaining",
+        "iterations.\n"))
+    metrics <- metrics[!failures]
 
     # Convert to dataframe
     get_metrics <- function(metrics, metric_name) {
@@ -276,10 +291,13 @@ score <-
         do.call("rbind", lapply(mb, function(mi) mi[[metric_name]]))))
     }
     auct <- get_metrics(metrics, "AUC")
+    # print("auc done")
     briert <- get_metrics(metrics, "Brier")
     a_contrasts <- get_metrics(metrics, "a_contrasts")
+    # print("a contrasts done")
     b_contrasts <- get_metrics(metrics, "b_contrasts")
     a_iid <- get_metrics(metrics, "a_iid")
+    # print("a iid done")
     b_iid <- get_metrics(metrics, "b_iid")
 
     # Clean output and handle bootstrapping results
@@ -297,19 +315,19 @@ score <-
       b_contrasts_out <- clean_if(contrasts && get.bs, b_contrasts,
                                   "delta.Brier", contrasts = TRUE)
 
-      if (!silent) {
-        b_na <- auct$bootstrap[is.na(auct$AUC)]
-        tlm_na <- auct$tLM[is.na(auct$AUC)]
-        model_na <- auct$model[is.na(auct$AUC)]
-        if (length(b_na) != 0) {
-          message(tidymess(paste0(
-          "Upper limit of followup in bootstrap samples was too low. Results
-          at evaluation time(s) beyond these points could not be computed and
-          are left as NA.\nMetrics not computed for (model, b, tLM) = ",
-          paste0("(", model_na, ", ", b_na, ", ", tlm_na, ")",
-                 collapse = ", "))))
-        }
-      }
+      # if (!silent) {
+      #   b_na <- auct$bootstrap[is.na(auct$AUC)]
+      #   tlm_na <- auct$tLM[is.na(auct$AUC)]
+      #   model_na <- auct$model[is.na(auct$AUC)]
+      #   if (length(b_na) != 0) {
+      #     message(tidymess(paste0(
+      #     "Upper limit of followup in bootstrap samples was too low. Results
+      #     at evaluation time(s) beyond these points could not be computed and
+      #     are left as NA.\nMetrics not computed for (model, b, tLM) = ",
+      #     paste0("(", model_na, ", ", b_na, ", ", tlm_na, ")",
+      #            collapse = ", "))))
+      #   }
+      # }
       # if (na.rm == FALSE) {
       #   auct_out <- auct_out[is.na(auct_out[, 3]),
       #                        `:=`("se" = NA, "lower" = NA, "upper" = NA)]
@@ -334,7 +352,7 @@ score <-
     if (get.bs)
       outlist$Brier <- list(score = briert_out, contrasts = b_contrasts_out)
     if (B > 1) {
-      outlist$B <- B
+      outlist$B <- B - num_failures
       outlist$split.method <- split.method
     }
 
