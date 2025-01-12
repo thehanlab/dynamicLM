@@ -82,7 +82,7 @@ formula <- "Hist(Time, event, LM) ~ male + male_LM1 + male_LM2 +
             treatment + treatment_LM1 + treatment_LM2 + LM1 + LM2 + cluster(ID)"
 supermodel <- dynamic_lm(lmdata, as.formula(formula), "CSC", x = TRUE)
 
-#' \dontrun{
+\dontrun{
 # for survival data
 formula <- "Surv(LM, Time, event) ~
             age + age_LM1 + age_LM2 + male + male_LM1 + male_LM2 +

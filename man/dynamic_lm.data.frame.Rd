@@ -90,7 +90,3 @@ For standard survival data (one event and possible censoring), use
 censoring), use \code{type = "CSC"} and a LHS of the form
 \code{Hist(Time, event, LM)}
 }
-\examples{
-\dontrun{
-}
-}

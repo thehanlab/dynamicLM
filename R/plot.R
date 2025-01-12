@@ -55,7 +55,8 @@
 #'
 plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
                            logHR = TRUE, extend = FALSE, silence = FALSE,
-                           xlab = "Landmark time", ylab, ylim, main, ...) {
+                           xlab = "Landmark time", discrete_grid = 0.1,
+                           ylab, ylim, main, ...) {
   fm <- x$model
 
   if (conf_int) {
@@ -128,7 +129,7 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
   set_ylim <- FALSE
   if (missing(ylim)) set_ylim <- TRUE
 
-  t <- seq(0, end_time, by = 0.1)
+  t <- seq(0, end_time, by = discrete_grid)
 
   for (i in seq_along(covars)){
     idx <- startsWith(names(bet), covars[i])
@@ -169,9 +170,9 @@ plot.dynamicLM <- function(x, covars, conf_int = TRUE, cause, end_time,
     plot(t, HR, xlab = xlab, ylab = ylab, main = main[i], type = "l",
          ylim = ylim, ...)
     if (logHR) {
-      graphics::lines(t, rep(0, end_time / 0.1 + 1), col = "grey")
+      graphics::lines(t, rep(0, end_time / discrete_grid + 1), col = "grey")
     } else {
-      graphics::lines(t, rep(1, end_time / 0.1 + 1), col = "grey")
+      graphics::lines(t, rep(1, end_time / discrete_grid + 1), col = "grey")
     }
     if(conf_int) {
       graphics::lines(t, lower, lty = 2)

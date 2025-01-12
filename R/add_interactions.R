@@ -93,7 +93,7 @@ add_interactions <- function(lmdata, lm_covs,
   # Process landmark-transformations
   if (inherits(func_covars, "character"))
     func_covars <- lapply(func_covars, predefined_funcs)
-  else if (!is.list(funcs))
+  else if (!is.list(func_covars))
     stop("`func_covars` must be a character vector or list of functions")
 
   if (inherits(func_lms, "character"))

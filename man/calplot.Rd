@@ -120,7 +120,7 @@ Note that only complete cases of data are considered (whatever type of
 calibration is performed).
 
 A comment on the following message:
-"Dropping bootstrap b = {X} for model {name} due
+"Dropping bootstrap b = ... for model ... due
 to unreliable predictions". As certain approximations are made, numerical
 overflow sometimes occurs in predictions for bootstrapped samples. To avoid
 potential errors, the whole bootstrap sample is dropped in this case. Note

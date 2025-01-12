@@ -14,6 +14,7 @@
   extend = FALSE,
   silence = FALSE,
   xlab = "Landmark time",
+  discrete_grid = 0.1,
   ylab,
   ylim,
   main,
@@ -45,6 +46,8 @@ fitting the model}
 
 \item{xlab}{x label for the plots}
 
+\item{discrete_grid}{Defaults to 0.1, how to discretize the grid for plotting}
+
 \item{ylab}{y label for the plots}
 
 \item{ylim}{y limit for the plots}
@@ -53,8 +56,6 @@ fitting the model}
 the same order as covars.}
 
 \item{...}{Additional arguments passed to plot}
-
-\item{discrete_grid}{Defaults to 0.1, how to discretize the grid for plotting}
 }
 \value{
 Plots for each variable in covars showing the dynamic hazard ratio

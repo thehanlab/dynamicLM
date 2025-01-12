@@ -32,8 +32,8 @@ score(
 outputs from \code{\link[=predict.dynamicLM]{predict.dynamicLM()}} or supermodels from \code{\link[=dynamic_lm]{dynamic_lm()}}
 depending on the type of calibration.}
 
-\item{times}{Landmark times for which calibration must be plot. These must be
-a subset of landmark times used during the prediction}
+\item{times}{Landmark times for which metrics should be calculated.
+These must be a subset of landmark times used during the prediction.}
 
 \item{metrics}{Character vector specifying which metrics to apply. Choices
 are "auc" and "brier".}
@@ -136,7 +136,7 @@ slim. If you wish to see which model/bootstrap/landmark times failed, set
 SILENT=FALSE. Currently ignores these bootstraps and calculates
 metrics from the bootstrap samples that worked.
 
-Another message may occur: "Dropping bootstrap b = {X} for model {name} due
+Another message may occur: "Dropping bootstrap b = ... for model ... due
 to unreliable predictions". As certain approximations are made, numerical
 overflow sometimes occurs in predictions for bootstrapped samples. To avoid
 potential errors, the whole bootstrap sample is dropped in this case. Note

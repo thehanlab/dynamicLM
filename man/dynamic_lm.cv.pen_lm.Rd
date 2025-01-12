@@ -41,6 +41,29 @@ The Breslow method is used for handling ties, as we use the \code{glmnet}
 package which does the same.
 }
 \examples{
-\dontrun{
-}
+data(relapse)
+outcome <- list(time = "Time", status = "event")
+covars <- list(fixed = c("male", "stage", "bmi"),
+               varying = c("treatment"))
+w <- 60; lms <- c(0, 6, 12, 18)
+lmdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
+                     id = "ID", rtime = "T_txgiven")
+lmdata <- add_interactions(lmdata, func_covars = c("linear", "quadratic"),
+                           func_lms = c("linear", "quadratic"))
+
+# Fit cross-validated coefficient path
+cv_model <- cv.pen_lm(lmdata, alpha = 1)
+
+# Fit penalized supermodel
+supermodel_pen <- dynamic_lm(cv_model, lambda = "lambda.min")
+print(supermodel_pen, all_causes = TRUE)
+
+# Plot largest coefficients
+par(mar = c(5, 10, 1, 7))
+plot(supermodel_pen, max_coefs = 5, all_causes = TRUE)
+
+# Plot dynamic hazard ratios
+par(mfrow = c(1,2))
+plot(supermodel_pen, HR = TRUE)
+
 }

@@ -44,6 +44,7 @@
 #'   code
 #' @export
 #' @examples
+#' \dontrun{
 #' data(relapse)
 #'
 #' # select patients whose risk we want to plot
@@ -65,6 +66,7 @@
 #'
 #' plotrisk(supermodel, dat, format = "long", ylim = c(0, 1), #0.7),
 #'          x.legend = "bottomright")
+#'}
 #'
 plotrisk <- function(
     object,

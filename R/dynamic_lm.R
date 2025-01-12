@@ -129,7 +129,7 @@ dynamic_lm.formula <-  function(formula, lmdata, type, ...) {
 #'             treatment + treatment_LM1 + treatment_LM2 + LM1 + LM2 + cluster(ID)"
 #' supermodel <- dynamic_lm(lmdata, as.formula(formula), "CSC", x = TRUE)
 #'
-#' #' \dontrun{
+#' \dontrun{
 #' # for survival data
 #' formula <- "Surv(LM, Time, event) ~
 #'             age + age_LM1 + age_LM2 + male + male_LM1 + male_LM2 +
@@ -238,9 +238,6 @@ dynamic_lm.LMdataframe <-  function(lmdata,
 #'   - id_col: the cluster argument, often specifies the column with patient ID
 #'   - lm_col: column name that indicates the landmark time point for a row.
 #'
-#' @examples
-#' \dontrun{
-#' }
 #' @import survival
 #' @export
 #'
@@ -336,8 +333,32 @@ dynamic_lm.data.frame <- function(lmdata,
 #'   - id_col: the cluster argument, often specifies the column with patient ID
 #'   - lm_col: column name that indicates the landmark time point for a row.
 #' @examples
-#' \dontrun{
-#' }
+#' # Prepare data
+#' data(relapse)
+#' outcome <- list(time = "Time", status = "event")
+#' covars <- list(fixed = c("male", "stage", "bmi"),
+#'                varying = c("treatment"))
+#' w <- 60; lms <- c(0, 6, 12, 18)
+#' lmdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
+#'                      id = "ID", rtime = "T_txgiven")
+#' lmdata <- add_interactions(lmdata, func_covars = c("linear", "quadratic"),
+#'                            func_lms = c("linear", "quadratic"))
+#'
+#' # Fit coefficient path
+#' path <- pen_lm(lmdata, alpha = 0)
+#'
+#' # Fit penalized supermodel
+#' supermodel_pen <- dynamic_lm(path, lambda = c(0.01, 0.01)) # specify penalty for each cause
+#' print(supermodel_pen, all_causes = TRUE)
+#'
+#' # Plot largest coefficients
+#' par(mar = c(5, 10, 1, 7))
+#' plot(supermodel_pen, max_coefs=15)
+#'
+#' # Plot dynamic hazard ratios
+#' par(mfrow = c(1, 3))
+#' plot(supermodel_pen, HR = TRUE)
+#'
 #' @import survival glmnet
 #' @export
 dynamic_lm.pen_lm <- function(object, lambda, x = FALSE, ...) {
@@ -509,8 +530,31 @@ dynamic_lm.pen_lm <- function(object, lambda, x = FALSE, ...) {
 #'     that this vector has not been centered.
 #'   - lambda: the values of lambda for which this model has been fit.
 #' @examples
-#' \dontrun{
-#' }
+#' data(relapse)
+#' outcome <- list(time = "Time", status = "event")
+#' covars <- list(fixed = c("male", "stage", "bmi"),
+#'                varying = c("treatment"))
+#' w <- 60; lms <- c(0, 6, 12, 18)
+#' lmdata <- stack_data(relapse, outcome, lms, w, covars, format = "long",
+#'                      id = "ID", rtime = "T_txgiven")
+#' lmdata <- add_interactions(lmdata, func_covars = c("linear", "quadratic"),
+#'                            func_lms = c("linear", "quadratic"))
+#'
+#' # Fit cross-validated coefficient path
+#' cv_model <- cv.pen_lm(lmdata, alpha = 1)
+#'
+#' # Fit penalized supermodel
+#' supermodel_pen <- dynamic_lm(cv_model, lambda = "lambda.min")
+#' print(supermodel_pen, all_causes = TRUE)
+#'
+#' # Plot largest coefficients
+#' par(mar = c(5, 10, 1, 7))
+#' plot(supermodel_pen, max_coefs = 5, all_causes = TRUE)
+#'
+#' # Plot dynamic hazard ratios
+#' par(mfrow = c(1,2))
+#' plot(supermodel_pen, HR = TRUE)
+#'
 #' @import survival glmnet
 #' @export
 dynamic_lm.cv.pen_lm <- function(object, lambda = "lambda.min", x = FALSE,

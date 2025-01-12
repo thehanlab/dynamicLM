@@ -105,6 +105,7 @@ See our \href{https://github.com/thehanlab/dynamicLM}{GitHub} for example
 code
 }
 \examples{
+\dontrun{
 data(relapse)
 
 # select patients whose risk we want to plot
@@ -126,5 +127,6 @@ head(dat)
 
 plotrisk(supermodel, dat, format = "long", ylim = c(0, 1), #0.7),
          x.legend = "bottomright")
+}
 
 }
