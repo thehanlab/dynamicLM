@@ -435,9 +435,10 @@ likelihood $l$ of the model with a penalty $p$, which can be a LASSO
 (the L1-norm), Ridge (the L2-norm), or an elastic net (a combination of
 the two).
 
-$$\log l(\beta, \alpha) - \lambda p(\beta, \alpha)$$ Penalization
-balances model complexity and goodness-of-fit, where the optimal weight
-$\lambda$ is chosen via cross-validation.
+$$\log l(\beta, \alpha) - \lambda p(\beta, \alpha)$$ 
+
+Penalization balances model complexity and goodness-of-fit, where the 
+optimal weight $\lambda$ is chosen via cross-validation.
 
 To fit a penalized landmark supermodel, the lmdata is the only required
 input. First, either a coefficient path (using `pen_lm`) or a
