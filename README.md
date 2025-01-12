@@ -200,7 +200,7 @@ covars <- list(fixed = fixed_variables, varying = varying_variables)
 ```
 
 We will produce 5-year dynamic predictions of transplant (`w`). Landmark
-time points (`lms`) are set as every year between 0 and 5 years to train
+time points (`lms`) are set as every year between 0 and 4 years to train
 the model. This means we are only interested in predicting the 5-year
 risk of transplant for patients both at baseline and at later points -
 up to 4 years after diagnosis.
