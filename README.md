@@ -1,24 +1,24 @@
-- [1 dynamicLM](#dynamiclm)
-- [2 Introduction](#introduction)
-  - [2.1 What is landmarking and when is it used?](#what-is-landmarking-and-when-is-it-used)
-  - [2.2 Installation](#installation)
-- [3 Tutorial: basic example](#tutorial-basic-example)
-  - [3.1 Data preparation](#data-preparation)
-    - [3.1.1 Data](#data)
-    - [3.1.2 Build a super data set](#build-a-super-data-set)
-  - [3.2 Model fitting](#model-fitting)
-    - [3.2.1 Traditional (unpenalized) landmark supermodel](#traditional-unpenalized-landmark-supermodel)
-    - [3.2.2 Penalized landmark supermodel](#penalized-landmark-supermodel)
-  - [3.3 Prediction](#prediction)
-    - [3.3.1 Training data](#training-data)
-    - [3.3.2 Testing data](#testing-data)
-  - [3.4 Model evaluation](#model-evaluation)
-    - [3.4.1 Calibration plots](#calibration-plots)
-    - [3.4.2 Predictive performance](#predictive-performance)
-    - [3.4.3 Bootstrapping](#bootstrapping)
-    - [3.4.4 External validation](#external-validation)
-    - [3.4.5 Visualize individual dynamic risk trajectories](#visualize-individual-dynamic-risk-trajectories)
-- [4 References](#references)
+- [1 dynamicLM](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#1-dynamiclm)
+- [2 Introduction](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#2-introduction)
+  - [2.1 What is landmarking and when is it used?](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#21-what-is-landmarking-and-when-is-it-used)
+  - [2.2 Installation](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#22-installation)
+- [3 Tutorial: basic example](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#3-tutorial-basic-example)
+  - [3.1 Data preparation](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#31-data-preparation)
+    - [3.1.1 Data](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#311-data)
+    - [3.1.2 Build a super data set](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#312-build-a-super-data-set)
+  - [3.2 Model fitting](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#32-model-fitting)
+    - [3.2.1 Traditional (unpenalized) landmark supermodel](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#321-traditional-unpenalized-landmark-supermodel)
+    - [3.2.2 Penalized landmark supermodel](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#322-penalized-landmark-supermodel)
+  - [3.3 Prediction](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#33-prediction)
+    - [3.3.1 Training data](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#331-training-data)
+    - [3.3.2 Testing data](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#332-testing-data)
+  - [3.4 Model evaluation](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#34-model-evaluation)
+    - [3.4.1 Calibration plots](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#341-calibration-plots)
+    - [3.4.2 Predictive performance](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#342-predictive-performance)
+    - [3.4.3 Bootstrapping](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#343-bootstrapping)
+    - [3.4.4 External validation](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#344-external-validation)
+    - [3.4.5 Visualize individual dynamic risk trajectories](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#345-visualize-individual-dynamic-risk-trajectories)
+- [4 References](https://github.com/thehanlab/dynamicLM/tree/main?tab=readme-ov-file#4-references)
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
@@ -160,49 +160,14 @@ covariates:
 
 We illustrate the package using the long-form PBC data sets from the
 `survival` package, which gives the time-to-event of a transplant under
-the competing event of death. We combine the `pbc` data which contains
-baseline data and follow-up status with the `pbcseq` data which has
-repeated laboratory values where `futime` gives the time at which this
-patient entry was created. In the merged data, the follow-up time has
-column name `tstart`. Run `?pbc` or `?pbcseq` for more information on
-the data.
+the competing event of death. Using `get_pbc_long()`, we combine `pbc`
+(containing baseline information and follow-up status) with `pbcseq`
+(repeated laboratory values). In the merged data, the follow-up time has
+column name `tstart`. Running `?pbc` or `?pbcseq` gives more information
+on the data.
 
 ``` r
-library(survival)
-data(pbc, package="survival")     # baseline data
-data(pbcseq, package="survival")  # longitudinal data
-#> Warning in data(pbcseq, package = "survival"): data set 'pbcseq' not found
-
-# only the first 312 patients are in both datasets
-pbc1 <- subset(pbc, id <= 312, select=c(id:sex, stage)) 
-# merge baseline data with longitudinal data
-pbc_df <- tmerge(pbc1, pbc1, id=id, endpt = event(time, status))
-pbc_df <- tmerge(pbc_df, pbcseq, id=id, 
-                 # make sure time-dependent covariates (tdc) vary
-                 albumin = tdc(day, albumin),
-                 alk.phos = tdc(day, alk.phos),
-                 ascites = tdc(day, ascites),
-                 ast = tdc(day, ast),
-                 bili = tdc(day, bili), 
-                 chol = tdc(day, chol), 
-                 edema = tdc(day, edema),
-                 hepato = tdc(day, hepato), 
-                 platelet = tdc(day, platelet),
-                 protime = tdc(day, protime), 
-                 spiders = tdc(day, spiders))
-
-# use complete data
-incomplete_ids <- unique(pbc_df$id[!complete.cases(pbc_df)])
-pbc_df <- pbc_df[!pbc_df$id %in% incomplete_ids, ]
-
-# convert times to years for easier reading later
-pbc_df$time <- round(pbc_df$time / 365.25, 1)
-pbc_df$tstart <- round(pbc_df$tstart / 365.25, 1)
-pbc_df$tstop <- round(pbc_df$tstop / 365.25, 1)
-
-# convert factor variables to numeric
-pbc_df$male <- ifelse(pbc_df$sex == "m", 1, 0); pbc_df$sex <- NULL
-
+pbc_df <- get_pbc_long()
 head(pbc_df)
 #>   id time status trt      age stage tstart tstop endpt albumin alk.phos ascites
 #> 1  1  1.1      2   1 58.76523     4    0.0   0.5     0    2.60     1718       1
@@ -766,8 +731,6 @@ fitting the model (i.e., when calling `dynamic_lm()`).
 scores <- score(list("LM" = supermodel, "penLM" = supermodel_pen),
               times = c(0, 2, 4), metrics = "auc",
               split.method = "bootcv", B = 10)       # 10 bootstraps
-#> 
-#> --> WARNING: 1 bootstrap(s) dropped due to errors/unreliable results. Results are computed on the remaining iterations.
 ```
 
 ### 3.4.4 External validation

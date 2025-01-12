@@ -36,10 +36,6 @@ and `T_txgiven` gives the time at which this patient entry was created.
 
 ``` r
 library(dynamicLM)
-#> Loading required package: prodlim
-#> Loading required package: riskRegression
-#> riskRegression version 2024.12.06
-#> Loading required package: survival
 ```
 
 ``` r

@@ -47,7 +47,7 @@ baseline, stage of initial cancer, bmi, male). A time-dependent
 covariate treatment indicates if the treatment is on or off treatment
 and `T_txgiven` gives the time at which this patient entry was created.
 
-```{r}
+```{r, echo=TRUE, warning=FALSE, message=FALSE, results='hide'}
 library(dynamicLM)
 ```
 
