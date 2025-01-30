@@ -40,6 +40,11 @@ If you use our library, please reference it:
 > landmark supermodel for survival data under competing risks,
 > *International Journal of Epidemiology*, Volume 52, Issue 6, December
 > 2023, Pages 1984–1989, <https://doi.org/10.1093/ije/dyad122>
+>
+> Anya H Fries\*, Eunji Choi\*, Summer S Han, Penalized landmark
+> supermodels (penLM) for dynamic prediction for time-to-event outcomes
+> in high-dimensional data. *BMC Med Res Methodol*, Volume 25, Article
+> Number 22, January 2025, https://doi.org/10.1186/s12874-024-02418-9
 
 # 2 Introduction
 
