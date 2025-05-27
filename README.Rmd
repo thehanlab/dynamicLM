@@ -65,7 +65,7 @@ In short, the creation of the landmark model for survival data is built on the c
 
 ## Installation
 
-In order to use `dynamicLM`, you can download it from [GitHub](https://github.com/) with:
+You can download `dynamicLM` from [GitHub](https://github.com/) with:
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, results='hide', eval=FALSE}
 # install.packages("devtools")
