@@ -120,7 +120,6 @@ with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("tagteam/riskRegression")
 devtools::install_github("thehanlab/dynamicLM")
 ```
 
