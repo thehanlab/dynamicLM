@@ -115,8 +115,7 @@ patient’s covariate values.
 
 ## 2.2 Installation
 
-In order to use `dynamicLM`, you need the development version of
-`riskRegression`. Both are available from [GitHub](https://github.com/)
+You can download `dynamicLM` from [GitHub](https://github.com/)
 with:
 
 ``` r
